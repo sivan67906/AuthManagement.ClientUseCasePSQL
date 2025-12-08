@@ -1,0 +1,74 @@
+@page "/"
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthStateProvider
+@inject IJSRuntime JS
+
+<AuthorizeView>
+    <Authorized>
+
+   <Dashboard/>
+
+    </Authorized>
+    <NotAuthorized>
+        <!-- Redirect handled in code -->
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private string? DisplayName { get; set; }
+    private string? Email { get; set; }
+    private string AvatarInitials { get; set; } = "";
+    private string? PrimaryRole { get; set; }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        if (authState.User.Identity?.IsAuthenticated != true)
+        {
+            Navigation.NavigateTo("/login", replace: true);
+            return;
+        }
+
+        var user = authState.User;
+        var first = user.FindFirst("given_name")?.Value;
+        var last = user.FindFirst("family_name")?.Value;
+
+        var fullName = string.Join(" ", new[] { first, last }.Where(s => !string.IsNullOrWhiteSpace(s)));
+        Email = user.FindFirst("email")?.Value ?? user.FindFirst(ClaimTypes.Email)?.Value;
+
+        var userName = user.FindFirst("given_name")?.Value
+                       ?? user.FindFirst(ClaimTypes.Name)?.Value
+                       ?? Email;
+
+        DisplayName = !string.IsNullOrWhiteSpace(fullName)
+            ? fullName
+            : (userName ?? "User");
+
+        AvatarInitials = BuildInitials(first, last, DisplayName);
+
+        var roles = user.FindAll(ClaimTypes.Role).Select(c => c.Value).Distinct().ToList();
+        PrimaryRole = roles.FirstOrDefault() ?? string.Empty;
+    }
+
+    private string BuildInitials(string? first, string? last, string? fallback)
+    {
+        var initials = "";
+
+        if (!string.IsNullOrWhiteSpace(first))
+            initials += char.ToUpperInvariant(first[0]);
+        if (!string.IsNullOrWhiteSpace(last))
+            initials += char.ToUpperInvariant(last[0]);
+
+        if (string.IsNullOrWhiteSpace(initials) && !string.IsNullOrWhiteSpace(fallback))
+        {
+            var parts = fallback.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length > 0)
+                initials = char.ToUpperInvariant(parts[0][0]).ToString();
+        }
+
+        return initials;
+    }
+}

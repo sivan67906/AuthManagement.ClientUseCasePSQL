@@ -1,0 +1,266 @@
+@page "/register"
+@using AuthManagement.Models
+@using System.Net.Http.Json
+@inject HttpClient Http
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+@layout AuthLayout
+@implements IAsyncDisposable
+
+<div class="authentication-wrapper authentication-basic container-p-y">
+    <div class="authentication-inner py-6">
+        <!-- Register Card -->
+        <div class="card">
+            <div class="card-body">
+                <!-- Logo -->
+                <div class="app-brand justify-content-center mb-6">
+                    <a href="/" class="app-brand-link">
+                        <span class="app-brand-logo demo">
+                            <span class="text-primary">
+                                <!-- logo svg -->
+                            </span>
+                        </span>
+                        <span class="app-brand-text demo text-heading fw-bold">Vuexy</span>
+                    </a>
+                </div>
+                <!-- /Logo -->
+
+                <h4 class="mb-1">Adventure starts here 🚀</h4>
+                <p class="mb-6">Make your app management easy and fun!</p>
+
+                <EditForm Model="registerModel" OnValidSubmit="HandleRegister" class="mb-6">
+                    <div class="mb-6 form-control-validation">
+                        <label for="firstname" class="form-label">First Name</label>
+                        <input type="text" class="form-control" id="firstname" oninput="this.value = this.value.replace(/[^A-Za-z ]/g, '')"
+                               @bind="registerModel.FirstName" placeholder="Enter your first name" autofocus>
+                    </div>
+                    <div class="mb-6 form-control-validation">
+                        <label for="lastname" class="form-label">Last Name</label>
+                        <input type="text" class="form-control" id="lastname" oninput="this.value = this.value.replace(/[^A-Za-z ]/g, '')"
+                               @bind="registerModel.LastName" placeholder="Enter your last name">
+                    </div>
+                    <div class="mb-6 form-control-validation">
+                        <label for="email" class="form-label">Email</label>
+
+                        <input type="email"
+                               class="form-control"
+                               id="email"
+                               @bind="registerModel.Email"
+                               placeholder="Enter your email"
+                               autocomplete="email"
+                               required>
+
+                    </div>
+
+                    @* <div class="mb-6 form-control-validation">
+                        <label for="phone" class="form-label">Phone Number</label>
+                        <input type="tel" class="form-control" id="phone" @bind="registerModel.PhoneNumber" placeholder="Enter your phone number (e.g., +1234567890)">
+                    </div> *@
+
+                    <div class="mb-6 form-control-validation">
+                        <label class="form-label">Phone Number</label>
+
+                        <div class="input-group">
+                            <span class="input-group-text">+91</span>
+                            <input type="tel"
+                                   class="form-control"
+                                   placeholder="Enter phone number" maxlength="10"
+                                   @bind="registerModel.PhoneNumber" oninput="this.value = this.value.replace(/[^0-9]/g, '')"/>
+                            
+                        </div>
+                    </div>
+
+
+
+                    <div class="mb-6 form-password-toggle form-control-validation">
+                        <label class="form-label" for="password">Password</label>
+                        <div class="input-group input-group-merge">
+                            <input type="password" id="password" class="form-control" @bind="registerModel.Password" placeholder="Enter your password" aria-describedby="password">
+                            <span class="input-group-text cursor-pointer password-eye"><i class="icon-base ti tabler-eye-off"></i></span>
+                        </div>
+                    </div>
+
+                    <div class="my-8 form-control-validation">
+                        <div class="form-check mb-0 ms-2">
+                            <input class="form-check-input" type="checkbox" id="terms-conditions" @bind="acceptTerms">
+                            <label class="form-check-label" for="terms-conditions">
+                                I agree to privacy policy & terms
+                            </label>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary d-flex w-100" type="submit" disabled="@isLoading">
+                        @if (isLoading)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                            <span>Signing up...</span>
+                        }
+                        else
+                        {
+                            <span>Sign up</span>
+                        }
+                    </button>
+                </EditForm>
+
+                <p class="text-center">
+                    <span>Already have an account?</span>
+                    <a href="/login">
+                        <span>Sign in instead</span>
+                    </a>
+                </p>
+            </div>
+        </div>
+        <!-- Register Card -->
+    </div>
+</div>
+
+@code {
+    private RegisterModel registerModel = new();
+    private string? message;
+    private bool isLoading;
+    private bool acceptTerms;
+    // private string PhonePrefix = "";
+    // private void OnCountryChanged(ChangeEventArgs e)
+    // {
+    //     var selected = e.Value?.ToString();
+
+    //     switch (selected)
+    //     {
+    //         case "India":
+    //             PhonePrefix = "+91";
+    //             break;
+
+    //         case "USA":
+    //             PhonePrefix = "+1";
+    //             break;
+
+    //         case "UK":
+    //             PhonePrefix = "+44";
+    //             break;
+
+    //         default:
+    //             PhonePrefix = "";
+    //             break;
+    //     }
+    // }
+
+
+    public bool ValidateEmail(string email)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+            return false;
+
+        var pattern = @"^[^\s@]+@[^\s@]+\.[^\s@]+$";
+        return System.Text.RegularExpressions.Regex.IsMatch(email, pattern);
+    }
+
+
+
+    private class RegisterModel
+    {
+        public string FirstName { get; set; } = string.Empty;
+        public string LastName { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string PhoneNumber { get; set; } = string.Empty; //  Added
+        public string Password { get; set; } = string.Empty;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JS.InvokeVoidAsync("loadScriptAndTrigger", "assets/js/main.js", true);
+            await JS.InvokeVoidAsync("loadScriptAndTrigger", "assets/js/popular.js", true);
+            await JS.InvokeVoidAsync("loadScriptAndTrigger", "assets/js/bootstrap5.js", true);
+            await JS.InvokeVoidAsync("loadScriptAndTrigger", "assets/js/auto-focus.js", true);
+            await JS.InvokeVoidAsync("loadScriptAndTrigger", "assets/js/pages-auth.js", true);
+            await JS.InvokeVoidAsync("loadScriptAndTrigger", "assets/js/toast.js", true);
+        }
+        await JS.InvokeVoidAsync("eval", "typeof initPagesAuth === 'function' && initPagesAuth();");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await JS.InvokeVoidAsync("eval", "window.destroyPagesAuth && window.destroyPagesAuth();");
+    }
+
+    private async Task HandleRegister(EditContext editContext) //  Correct signature
+    {
+
+        if (!ValidateEmail(registerModel.Email))
+        {
+            message = "Invalid email format";
+            await JS.InvokeVoidAsync("showToast", "error", message);
+
+            return;
+        }
+
+        if (!acceptTerms)
+        {
+            message = "You must accept the terms and conditions to register.";
+            await JS.InvokeVoidAsync("showToast", "error", message);
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(registerModel.Email))
+        {
+            await JS.InvokeVoidAsync("showToast", "error", "Email is required.");
+            return;
+        }
+        if (string.IsNullOrWhiteSpace(registerModel.FirstName))
+        {
+            await JS.InvokeVoidAsync("showToast", "error", "First name is required.");
+            return;
+        }
+        if (string.IsNullOrWhiteSpace(registerModel.LastName))
+        {
+            await JS.InvokeVoidAsync("showToast", "error", "Last name is required.");
+            return;
+        }
+        if (string.IsNullOrWhiteSpace(registerModel.PhoneNumber))
+        {
+            await JS.InvokeVoidAsync("showToast", "error", "Phone number is required.");
+            return;
+        }
+        if (string.IsNullOrWhiteSpace(registerModel.Password))
+        {
+            await JS.InvokeVoidAsync("showToast", "error", "Password is required.");
+            return;
+        }
+
+        isLoading = true;
+        message = null;
+
+        try
+        {
+            var response = await Http.PostAsJsonAsync("/auth/register", registerModel);
+            var result = await response.Content.ReadFromJsonAsync<ApiResponse<object>>();
+
+            if (response.IsSuccessStatusCode && result?.Success == true)
+            {
+                Nav.NavigateTo($"/verify-mail?email={Uri.EscapeDataString(registerModel.Email)}");
+            }
+            else
+            {
+                if (result?.Errors != null && result.Errors.Count > 0)
+                {
+                    message = string.Join(", ", result.Errors);
+                }
+                else
+                {
+                    message = result?.Message ?? "Registration failed. Please try again.";
+                }
+                await JS.InvokeVoidAsync("showToast", "error", message);
+            }
+        }
+        catch (Exception)
+        {
+            message = "An error occurred during registration. Please try again.";
+            await JS.InvokeVoidAsync("showToast", "error", message);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

@@ -1,0 +1,106 @@
+﻿@page "/BillingPlan"
+
+@using AuthManagement.Models
+@using System.Net.Http.Headers
+@using System.Net.Http.Json
+@using AuthManagement.Services
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+@inject HttpClient Http
+@inject JwtAuthenticationStateProvider AuthProvider
+
+
+
+
+             <div class="card mb-6">
+                        <div class="user-profile-header-banner">
+                            <img src="assets/img/avatars/profile-banner.png" alt="Banner image" class="rounded-top">
+                        </div>
+                        <div class="user-profile-header d-flex flex-column flex-lg-row text-sm-start text-center mb-5">
+                            <div class="flex-shrink-0 mt-n2 mx-sm-0 mx-auto">
+                                <img src="assets/img/avatars/1.png" alt="user image" class="d-block h-auto ms-0 ms-sm-6 rounded user-profile-img">
+                            </div>
+                            <div class="flex-grow-1 mt-3 mt-lg-5">
+                                <div class="d-flex align-items-md-end align-items-sm-start align-items-center justify-content-md-between justify-content-start mx-5 flex-md-row flex-column gap-4">
+                                     @if (profile!=null){
+        
+                                    <div class="user-profile-info">
+                                        <h4 class="mb-2 mt-lg-6">@profile.FirstName @profile.LastName</h4>
+                                        <ul class="list-inline mb-0 d-flex align-items-center flex-wrap justify-content-sm-start justify-content-center gap-4 my-2">
+                                            <li class="list-inline-item d-flex gap-2 align-items-center"><i class="icon-base ti tabler-mail icon-lg"></i><span class="fw-medium">@profile.Email</span></li>
+                                            <li class="list-inline-item d-flex gap-2 align-items-center"><i class="icon-base ti tabler-user  icon-lg"></i><span class="fw-medium"> @profile.FirstName @profile.LastName</span></li>
+                                        </ul>
+                                    </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+<div class="nav-align-top mt-3">
+    <ul class="nav nav-pills flex-column flex-md-row mb-6 gap-md-0 gap-2">
+        <li class="nav-item">
+            <a class="nav-link" href="/profile"><i class="icon-base ti tabler-users icon-sm me-1_5"></i> Account</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/change-password"><i class="icon-base ti tabler-lock icon-sm me-1_5"></i> Security</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link active" href="javascript:void(0);"><i class="icon-base ti tabler-bookmark icon-sm me-1_5"></i> Billing & Plans</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/Notification"><i class="icon-base ti tabler-bell icon-sm me-1_5"></i> Notifications</a>
+        </li>
+    </ul>
+</div>
+<div class="empty-state-container card mb-3" >
+    <div class="p-5 empty-card" style="    justify-items: center;">
+        <div class="icon-box">
+            <i class="bi bi-credit-card" style="font-size: 114px;
+    color: #80808052;"></i>
+        </div>
+        <h2 style="    font-size: 21px;
+    color: #80808091;    margin-bottom: 0;">
+            No Billing Plans Found
+        </h2>
+        <p>It looks like you haven’t created any billing plans yet.</p>
+
+    </div>
+</div>
+
+
+
+@code {
+    private ProfileDto? profile;
+    private string? message;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var token = await AuthProvider.GetTokenAsync();
+        if (!string.IsNullOrEmpty(token))
+        {
+            Http.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", token);
+        }
+
+        var response = await Http.GetAsync("/auth/profile");
+        if (response.IsSuccessStatusCode)
+        {
+            var apiResponse = await response.Content.ReadFromJsonAsync<ApiResponse<ProfileDto>>();
+            if (apiResponse?.Success == true && apiResponse.Data is not null)
+            {
+                profile = apiResponse.Data;
+            }
+            else
+            {
+                message = apiResponse?.Message ?? "Failed to load profile.";
+            }
+        }
+        else
+        {
+            message = "Failed to load profile.";
+        }
+    }
+}

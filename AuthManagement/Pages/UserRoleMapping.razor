@@ -1,0 +1,1061 @@
+@page "/userrolemapping"
+@using AuthManagement.Models
+@using AuthManagement.Services
+@using AuthManagement.Shared
+@inject RBACService RBACService
+@inject PermissionService PermissionService
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthStateProvider
+@inject ILogger<UserRoleMapping> Logger
+@inject ISnackbar Snackbar
+@attribute [Authorize]
+@inject IJSRuntime JS
+
+<PageTitle>User Role Mapping</PageTitle>
+
+<style>
+    /* Page Header */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 0;
+    }
+
+    .page-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #333;
+        margin: 0;
+    }
+    .breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 15px;
+        color: #666;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+    .breadcrumb-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .breadcrumb-separator {
+        color: #999;
+    }
+
+    .breadcrumb-link {
+        color: #7c3aed;
+        text-decoration: none;
+    }
+
+        .breadcrumb-link:hover {
+            text-decoration: underline;
+        }
+
+    .breadcrumb-current {
+        color: #666;
+    }
+
+    /* Container */
+    .mapping-container {
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        padding-left: 21px;
+        padding-right: 21px;
+        padding-bottom: 21px;
+    }
+
+    /* Toolbar */
+    .toolbar-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 0px;
+        background: white;
+        border-bottom: 1px solid #f0f0f0;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .toolbar-left {
+        display: flex;
+        align-items: center;
+    }
+
+        .toolbar-left::before {
+            content: "";
+            height: 21px;
+            width: 0.2rem;
+            inset-block-start: 0.15rem;
+            inset-inline-start: -0.65rem;
+            background: linear-gradient(to bottom, #26bf9491 50%, #97959e8a 50%);
+            border-radius: 0.5rem;
+        }
+
+
+    .mappings-list-label {
+        font-size: 14px;
+        font-weight: 600;
+        color: #333;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding-left: 7px;
+    }
+
+    .toolbar-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-left: auto;
+    }
+
+    .search-box {
+        position: relative;
+        min-width: 280px;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 8px 12px 8px 36px;
+        border: 1px solid #d9d9e3;
+        font-size: 14px;
+        padding-left: 39px;
+        border-radius: 0.25rem;
+        padding-top: 5px;
+        padding-bottom: 7px;
+    }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--bs-primary);
+            box-shadow: 0 0 0 0.2rem rgba(124, 58, 237, 0.1);
+        }
+
+    .search-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #999;
+        font-size: 18px;
+    }
+
+    /* Table */
+    .mapping-table {
+        width: 100%;
+        border-collapse: collapse;
+        border: 1px solid #80808054;
+    }
+
+        .mapping-table thead {
+            background-color: #fafafa;
+        }
+
+        .mapping-table th {
+            padding: 7px 16px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #0000002b;
+            cursor: pointer;
+            user-select: none;
+            color: black;
+            background: white;
+        }
+
+            .mapping-table th:last-child {
+                border-right: none;
+            }
+
+            .mapping-table th.sortable {
+                position: relative;
+                padding-right: 30px;
+            }
+
+    .sort-indicator {
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .sort-arrow {
+        width: 0;
+        height: 0;
+        border-left: 4px solid transparent;
+        border-right: 4px solid transparent;
+    }
+
+        .sort-arrow.up {
+            border-bottom: 5px solid #ccc;
+        }
+
+            .sort-arrow.up.active {
+                border-bottom-color: #7c3aed;
+            }
+
+        .sort-arrow.down {
+            border-top: 5px solid #ccc;
+        }
+
+            .sort-arrow.down.active {
+                border-top-color: #7c3aed;
+            }
+
+    .mapping-table th.text-center {
+        text-align: center;
+    }
+
+    .mapping-table tbody tr {
+        transition: background-color 0.2s;
+        border-bottom: 1px solid #f8f9fa;
+    }
+
+    .mapping-table td {
+        padding: 5px 16px;
+        font-size: 14px;
+        color: #333;
+    }
+
+    .mapping-table tbody tr:last-child {
+        border-bottom: none;
+    }
+
+    .serial-number {
+        color: #666;
+        font-weight: 500;
+    }
+
+    .user-email {
+        color: #333;
+        font-weight: 600;
+    }
+
+    .user-name {
+        color: #666;
+        font-size: 13px;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 6px;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .action-btn {
+        width: 32px;
+        height: 32px;
+        border: none;
+        background: #f5f5f5;
+        border-radius: 6px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        color: #666;
+        font-size: 18px;
+    }
+
+        .action-btn i {
+            font-size: 18px;
+            display: block;
+            line-height: 1;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .action-btn.btn-assign {
+            background-color: #e3f2fd;
+            color: #1976d2;
+        }
+
+            .action-btn.btn-assign:hover {
+                background-color: #1976d2;
+                color: white;
+            }
+
+
+
+
+    /* Pagination */
+    .pagination-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 13px 0px;
+        background: white;
+        border-left: 1px solid #80808047;
+        margin-bottom: 1px;
+        border-right: 1px solid #80808047;
+        border-bottom: 1px solid #80808047;
+    }
+
+
+
+
+    .pagination-info {
+        font-size: 14px;
+        color: #666;
+    }
+
+    .pagination-controls {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .page-size-selector {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-right: 16px;
+    }
+
+        .page-size-selector label {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .page-size-selector select {
+            padding: 4px 8px;
+            border: 1px solid #d9d9e3;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+    .pagination-buttons {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .page-btn {
+        min-width: 40px;
+        height: 40px;
+        padding: 0 8px;
+        border: 1px solid #d9d9e373;
+        border-radius: 50%;
+        font-size: 18px;
+        cursor: pointer;
+        transition: all 0.2s;
+        color: #333;
+    }
+
+        .page-btn:hover:not(:disabled) {
+            background: #f5f5f5;
+            border-color: var(--bs-primary);
+            color: var(--bs-primary);
+        }
+
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .page-btn.active {
+            color: white;
+            border-color: var(--bs-primary);
+            font-weight: 700;
+            background: var(--bs-primary);
+        }
+
+
+    /* Loading and Error States */
+    .loading-container, .error-container, .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+    .spinner-border {
+        width: 3rem;
+        height: 3rem;
+        border-width: 0.3em;
+    }
+
+    .empty-state i {
+        font-size: 64px;
+        color: #ccc;
+        margin-bottom: 16px;
+    }
+
+    .empty-state h5 {
+        color: #666;
+        margin-bottom: 8px;
+    }
+
+    .empty-state p {
+        color: #999;
+        font-size: 14px;
+    }
+</style>
+<div class="flex-grow-1">
+    @if (_isLoading)
+    {
+        <LoadingSpinner FullPage="true" />
+    }
+    else{
+    <div class="page-header">
+            <h1 class="page-title">User Role Mapping</h1>
+        <nav>
+            <ul class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="/" class="breadcrumb-link">
+                        <i class="ti tabler-home"></i>Home
+                    </a>
+                    <span class="breadcrumb-separator">></span>
+                </li>
+                <li class="">
+                        <span class="breadcrumb-current">User Role Mapping</span>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+
+<div class="mapping-container">
+    <!-- Toolbar -->
+    <div class="toolbar-container">
+        <div class="toolbar-left">
+            <span class="mappings-list-label">Active Users Without Roles</span>
+        </div>
+        <div class="toolbar-right">
+            <div class="search-box">
+                <i class="ti tabler-search search-icon"></i>
+                <input type="text"
+                       class="search-input"
+                       placeholder="Search by email or name..."
+                       @bind-value="_searchString"
+                       @bind-value:event="oninput"
+                       @onchange="@(() => OnSearchChanged(_searchString))" />
+            </div>
+        </div>
+    </div>
+
+    <!-- Table -->
+    @if (_isLoading)
+    {
+        <div class="loading-container">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-3 mb-0">Loading users without roles...</p>
+        </div>
+    }
+    else if (_hasError)
+    {
+        <div class="error-container">
+            <i class="ti tabler-alert-circle" style="font-size: 64px; color: #f44336;"></i>
+            <h5 class="mt-3">Error Loading Data</h5>
+            <p>@_errorMessage</p>
+        </div>
+    }
+    else if (_pagedUsers != null && _pagedUsers.Any())
+    {
+        <table class="mapping-table" id="userRoleMap">
+            <thead>
+                <tr>
+                            <th class="plusHeading"></th>
+                    <th @onclick="@(() => ToggleSort("no"))" class="sortable">
+                        #
+                        <span class="sort-indicator">
+                            <span class="sort-arrow up @(_sortColumn == "no" && _sortDirection == "asc" ? "active" : "")"></span>
+                            <span class="sort-arrow down @(_sortColumn == "no" && _sortDirection == "desc" ? "active" : "")"></span>
+                        </span>
+                    </th>
+                    <th @onclick="@(() => ToggleSort("email"))" class="sortable">
+                        Email
+                        <span class="sort-indicator">
+                            <span class="sort-arrow up @(_sortColumn == "email" && _sortDirection == "asc" ? "active" : "")"></span>
+                            <span class="sort-arrow down @(_sortColumn == "email" && _sortDirection == "desc" ? "active" : "")"></span>
+                        </span>
+                    </th>
+                    <th @onclick="@(() => ToggleSort("name"))" class="sortable">
+                        Full Name
+                        <span class="sort-indicator">
+                            <span class="sort-arrow up @(_sortColumn == "name" && _sortDirection == "asc" ? "active" : "")"></span>
+                            <span class="sort-arrow down @(_sortColumn == "name" && _sortDirection == "desc" ? "active" : "")"></span>
+                        </span>
+                    </th>
+                    <th @onclick="@(() => ToggleSort("username"))" class="sortable">
+                        Username
+                        <span class="sort-indicator">
+                            <span class="sort-arrow up @(_sortColumn == "username" && _sortDirection == "asc" ? "active" : "")"></span>
+                            <span class="sort-arrow down @(_sortColumn == "username" && _sortDirection == "desc" ? "active" : "")"></span>
+                        </span>
+                    </th>
+                    <th class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var user in _pagedUsers)
+                {
+                    <tr>
+
+                                <td class="details-control" @onclick="@(() => ShowDetails(user))">
+                                    <div class="plus" style="border-radius: 50%;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    box-sizing: content-box;
+                                    border: 2px solid var(--bs-paper-bg);
+                                    background-color: var(--bs-primary);
+                                    block-size: .85rem;
+                                    box-shadow: 0 0 3px var(--bs-gray-800);
+                                    color: var(--bs-white);    width: 17px;
+                        height: 17px;">
+                                        <i class="ti tabler-plus"></i>
+                                    </div>
+                                </td>
+                        <td class="serial-number">@GetGlobalSerialNumber(user)</td>
+                        <td class="user-email">@user.Email</td>
+                        <td class="user-name">@GetFullName(user)</td>
+                        <td class="user-name">@(user.UserName ?? "-")</td>
+                        <td>
+                            <div class="action-buttons">
+                                @if (_canCreate)
+                                {
+                                    <button class="action-btn btn-assign"
+                                            title="Assign Role"
+                                            @onclick="@(() => OpenAssignRoleDialog(user))">
+                                        <i class="ti tabler-user-plus"></i>
+                                    </button>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+                <div class="pagination-container">
+                    @* <div class="pagination-info">
+          Showing @GetStartRecord() to @GetEndRecord() of @_totalItems entries
+      </div> *@
+                    <div class="pagination-controls">
+
+                        @* mobile  screen *@
+
+                        @{
+                            var range = GetMobilePageRange();
+                        }
+
+                        <div class="pagination-buttons mobile-only">
+
+                            <button class="page-btn" @onclick="() => GoToPage(1)" disabled="@(_currentPage == 1)">
+                                <i class="bi bi-chevron-bar-left"></i>
+                            </button>
+
+                            <button class="page-btn" @onclick="() => GoToPage(_currentPage - 1)" disabled="@(_currentPage == 1)">
+                                <i class="ti tabler-chevron-left"></i>
+                            </button>
+
+                            <button class="page-btn active">
+                                @_currentPage
+                            </button>
+
+                            <button class="page-btn" @onclick="() => GoToPage(_currentPage + 1)" disabled="@(_currentPage == _totalPages)">
+                                <i class="ti tabler-chevron-right"></i>
+                            </button>
+
+                            <button class="page-btn" @onclick="() => GoToPage(_totalPages)" disabled="@(_currentPage == _totalPages)">
+                                <i class="bi bi-chevron-bar-right"></i>
+                            </button>
+
+                        </div>
+
+
+
+                        <div class="pagination-buttons web-Only">
+                            <button class="page-btn" @onclick="() => GoToPage(1)" disabled="@(_currentPage == 1)">
+                                <i class="bi bi-chevron-bar-left"></i>
+                            </button>
+                            <button class="page-btn" @onclick="() => GoToPage(_currentPage - 1)" disabled="@(_currentPage == 1)">
+                                <i class="ti tabler-chevron-left"></i>
+                            </button>
+
+                            @for (int i = GetStartPage(); i <= GetEndPage(); i++)
+                            {
+                                var pageNum = i;
+                                <button class="page-btn @(_currentPage == pageNum ? "active" : "")"
+                                        @onclick="() => GoToPage(pageNum)">
+                                    @pageNum
+                                </button>
+                            }
+
+                            <button class="page-btn" @onclick="() => GoToPage(_currentPage + 1)" disabled="@(_currentPage == _totalPages)">
+                                <i class="ti tabler-chevron-right"></i>
+                            </button>
+                            <button class="page-btn" @onclick="() => GoToPage(_totalPages)" disabled="@(_currentPage == _totalPages)">
+                                <i class="bi bi-chevron-bar-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+    }
+    else
+    {
+        <div class="empty-state">
+            <i class="ti tabler-users-group"></i>
+            <h5>No Users Without Roles</h5>
+            <p>All active users have been assigned roles.</p>
+        </div>
+    }
+</div>
+}
+</div>
+
+
+
+
+
+@if (showPopup && _selectedUser != null)
+{
+
+    <div class="modal-backdrop show" @onclick:stopPropagation="true"></div>
+    <div class="modal show d-block" tabindex="-1" @onclick:stopPropagation="true">
+        <div class="modal-dialog modal-dialog-top">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        Role Department Mapping
+                    </h5>
+                    <button type="button" class="btn-close" @onclick="closeSelectFeatures"></button>
+                </div>
+                <div class="modal-body" style="padding: 24px;">
+                    <p><b>Email :</b> @_selectedUser.Email</p>
+                    <p><b>Full Name :</b> @GetFullName(_selectedUser)</p>
+                   
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+}
+
+
+<!-- Assign Role Dialog Component -->
+<UserRoleMappingFormDialog IsOpen="_isDialogOpen"
+                           IsEditMode="false"
+                           IsSaving="_isSaving"
+                           FormModel="_mappingModel"
+                           Departments="_departments"
+                           Users="_usersForDialog"
+                           Roles="_filteredRoles"
+                           OnCancel="CloseDialog"
+                           OnSubmit="HandleSubmit"
+                           OnDepartmentChanged="OnDepartmentChanged" />
+
+@code {
+    private List<UserWithoutRoleDto> _usersWithoutRoles = new();
+    private List<UserWithoutRoleDto> _filteredUsers = new();
+    private List<UserWithoutRoleDto> _pagedUsers = new();
+    private List<DepartmentDto> _departments = new();
+    private List<UserDto> _usersForDialog = new();
+    private List<RoleDto> _roles = new();
+    private List<RoleDto> _filteredRoles = new();
+
+    private UserWithoutRoleDto? _selectedUser;
+    private MappingFormModel _mappingModel = new();
+
+    private bool _isLoading = true;
+    private bool _hasError = false;
+    private string _errorMessage = string.Empty;
+    private bool _isDialogOpen = false;
+    private bool _isSaving = false;
+
+    private bool _canView = false;
+    private bool _canCreate = false;
+    private bool _canEdit = false;
+    private bool _canDelete = false;
+
+    private string _searchString = string.Empty;
+    private string _sortColumn = "email";
+    private string _sortDirection = "asc";
+    private int _currentPage = 1;
+    private int _pageSize = 10;
+    private int _totalItems = 0;
+    private int _totalPages = 1;
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JS.InvokeVoidAsync("loadScriptAndTrigger", "assets/js/toast.js", true);
+
+        }
+    }
+
+
+    bool showPopup = false;
+
+    void closeSelectFeatures()
+    {
+        showPopup=false;
+    }
+
+    void ShowDetails(UserWithoutRoleDto userWithoutRoleDto)
+    {
+        _selectedUser = userWithoutRoleDto;
+        showPopup = true;
+    }
+
+    void ClosePopup()
+    {
+        showPopup = false;
+    }
+    // pagination
+
+    private (int start, int end) GetMobilePageRange()
+    {
+        //int windowSize = 2; // always show 2 page numbers
+
+        int start = _currentPage;
+        int end = _currentPage + 1;
+
+        if (end > _totalPages)
+        {
+            end = _totalPages;
+            start = Math.Max(1, end - 1);
+        }
+
+        return (start, end);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            if (!authState.User.Identity?.IsAuthenticated ?? true)
+            {
+                NavigationManager.NavigateTo("/login");
+                return;
+            }
+
+            var permissions = await PermissionService.GetPagePermissionsAsync("/userrolemapping");
+            _canView = permissions.CanView;
+            _canCreate = permissions.CanAdd;
+            _canEdit = permissions.CanEdit;
+            _canDelete = permissions.CanDelete;
+
+            Logger.LogInformation("Permissions set - View: {View}, Add: {Add}, Edit: {Edit}, Delete: {Delete}",
+                _canView, _canCreate, _canEdit, _canDelete);
+
+            await LoadData();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error initializing UserRoleMapping page");
+            _hasError = true;
+            _errorMessage = $"Error initializing page: {ex.Message}";
+            _isLoading = false;
+        }
+    }
+
+    private async Task LoadData(bool useImmediateConsistency = false)
+    {
+        _isLoading = true;
+        _hasError = false;
+
+        try
+        {
+            // Use immediate consistency endpoint after role assignment, regular endpoint for initial load
+            var usersWithoutRolesTask = useImmediateConsistency
+                ? RBACService.GetUsersWithoutRolesImmediateAsync()
+                : RBACService.GetUsersWithoutRolesAsync();
+
+            var departmentsTask = RBACService.GetAllDepartmentsAsync();
+            var rolesTask = RBACService.GetAllRolesAsync();
+
+            await Task.WhenAll(usersWithoutRolesTask, departmentsTask, rolesTask);
+
+            var usersResponse = await usersWithoutRolesTask;
+            var departmentsResponse = await departmentsTask;
+            var rolesResponse = await rolesTask;
+
+            if (usersResponse.Success && usersResponse.Data != null)
+            {
+                _usersWithoutRoles = usersResponse.Data;
+                Logger.LogInformation("Loaded {Count} users without roles", _usersWithoutRoles.Count);
+            }
+            else
+            {
+                _hasError = true;
+                _errorMessage = usersResponse.Message ?? "Failed to load users without roles";
+            }
+
+            if (departmentsResponse.Success && departmentsResponse.Data != null)
+            {
+                _departments = departmentsResponse.Data;
+            }
+
+            if (rolesResponse.Success && rolesResponse.Data != null)
+            {
+                _roles = rolesResponse.Data;
+            }
+
+            UpdateFilteredUsers();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error loading data");
+            _hasError = true;
+            _errorMessage = $"Error loading data: {ex.Message}";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private void UpdateFilteredUsers()
+    {
+        // Filter
+        if (string.IsNullOrWhiteSpace(_searchString))
+        {
+            _filteredUsers = _usersWithoutRoles.ToList();
+        }
+        else
+        {
+            _filteredUsers = _usersWithoutRoles
+                .Where(u => FilterFunc(u))
+                .ToList();
+        }
+
+        // Sort
+        _filteredUsers = (_sortColumn, _sortDirection) switch
+        {
+            ("no", "asc") => _filteredUsers.OrderBy(u => _usersWithoutRoles.IndexOf(u)).ToList(),
+            ("no", "desc") => _filteredUsers.OrderByDescending(u => _usersWithoutRoles.IndexOf(u)).ToList(),
+            ("email", "asc") => _filteredUsers.OrderBy(u => u.Email).ToList(),
+            ("email", "desc") => _filteredUsers.OrderByDescending(u => u.Email).ToList(),
+            ("name", "asc") => _filteredUsers.OrderBy(u => GetFullName(u)).ToList(),
+            ("name", "desc") => _filteredUsers.OrderByDescending(u => GetFullName(u)).ToList(),
+            ("username", "asc") => _filteredUsers.OrderBy(u => u.UserName ?? string.Empty).ToList(),
+            ("username", "desc") => _filteredUsers.OrderByDescending(u => u.UserName ?? string.Empty).ToList(),
+            _ => _filteredUsers.OrderBy(u => u.Email).ToList()
+        };
+
+        _totalItems = _filteredUsers.Count;
+        _totalPages = _totalItems > 0 ? (int)Math.Ceiling((double)_totalItems / _pageSize) : 1;
+
+        if (_currentPage > _totalPages)
+        {
+            _currentPage = _totalPages;
+        }
+        if (_currentPage < 1)
+        {
+            _currentPage = 1;
+        }
+
+        _pagedUsers = _filteredUsers
+            .Skip((_currentPage - 1) * _pageSize)
+            .Take(_pageSize)
+            .ToList();
+    }
+
+    private void OnSearchChanged(string value)
+    {
+        _searchString = value;
+        _currentPage = 1;
+        UpdateFilteredUsers();
+        StateHasChanged();
+    }
+
+    private void ToggleSort(string column)
+    {
+        if (_sortColumn == column)
+        {
+            _sortDirection = _sortDirection == "asc" ? "desc" : "asc";
+        }
+        else
+        {
+            _sortColumn = column;
+            _sortDirection = "asc";
+        }
+        UpdateFilteredUsers();
+        StateHasChanged();
+    }
+
+    private bool FilterFunc(UserWithoutRoleDto user)
+    {
+        if (string.IsNullOrWhiteSpace(_searchString))
+            return true;
+
+        var searchLower = _searchString.ToLower();
+        return user.Email.ToLower().Contains(searchLower) ||
+               (user.FirstName?.ToLower().Contains(searchLower) ?? false) ||
+               (user.LastName?.ToLower().Contains(searchLower) ?? false) ||
+               (user.UserName?.ToLower().Contains(searchLower) ?? false);
+    }
+
+    private string GetFullName(UserWithoutRoleDto user)
+    {
+        if (!string.IsNullOrEmpty(user.FirstName) && !string.IsNullOrEmpty(user.LastName))
+            return $"{user.FirstName} {user.LastName}";
+        if (!string.IsNullOrEmpty(user.FirstName))
+            return user.FirstName;
+        if (!string.IsNullOrEmpty(user.LastName))
+            return user.LastName;
+        return "-";
+    }
+
+    private int GetGlobalSerialNumber(UserWithoutRoleDto user)
+    {
+        var index = _filteredUsers.IndexOf(user);
+        return index + 1;
+    }
+
+    private int GetStartRecord()
+    {
+        return _totalItems > 0 ? (_currentPage - 1) * _pageSize + 1 : 0;
+    }
+
+    private int GetEndRecord()
+    {
+        return Math.Min(_currentPage * _pageSize, _totalItems);
+    }
+
+    private int GetStartPage()
+    {
+        return Math.Max(1, _currentPage - 2);
+    }
+
+    private int GetEndPage()
+    {
+        return Math.Min(_totalPages, _currentPage + 2);
+    }
+
+    private void GoToPage(int page)
+    {
+        if (page >= 1 && page <= _totalPages)
+        {
+            _currentPage = page;
+            UpdateFilteredUsers();
+            StateHasChanged();
+        }
+    }
+
+    private void OpenAssignRoleDialog(UserWithoutRoleDto user)
+    {
+        _selectedUser = user;
+        _mappingModel = new MappingFormModel
+        {
+            UserId = user.Id.ToString()
+        };
+
+        // Convert UserWithoutRoleDto to UserDto for the dialog
+        _usersForDialog = new List<UserDto>
+        {
+            new UserDto
+            {
+                Id = user.Id,
+                Email = user.Email,
+                UserName = user.UserName,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                IsActive = user.IsActive
+            }
+        };
+
+        _filteredRoles = new List<RoleDto>();
+        _isDialogOpen = true;
+    }
+
+    private void CloseDialog()
+    {
+        _isDialogOpen = false;
+        _selectedUser = null;
+        _mappingModel = new MappingFormModel();
+        _usersForDialog = new List<UserDto>();
+        _filteredRoles = new List<RoleDto>();
+    }
+
+    private void OnDepartmentChanged(string departmentId)
+    {
+        if (!string.IsNullOrEmpty(departmentId))
+        {
+            var deptId = Guid.Parse(departmentId);
+            // Include both department-specific roles AND system roles (DepartmentId == null)
+            _filteredRoles = _roles
+                .Where(r => r.DepartmentId == deptId || r.DepartmentId == null)
+                .ToList();
+        }
+        else
+        {
+            _filteredRoles = new List<RoleDto>();
+        }
+
+        // Reset role selection when department changes
+        _mappingModel.RoleId = string.Empty;
+        StateHasChanged();
+    }
+
+    private async Task HandleSubmit(MappingFormModel model)
+    {
+        _isSaving = true;
+        try
+        {
+            var userId = Guid.Parse(model.UserId);
+            var roleId = Guid.Parse(model.RoleId);
+            var departmentId = Guid.Parse(model.DepartmentId);
+
+            // Get current user email for AssignedByEmail
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            var currentUserEmail = authState.User.Identity?.Name ?? "";
+
+            var createRequest = new CreateUserRoleMappingRequest
+            {
+                UserId = userId,
+                RoleId = roleId,
+                DepartmentId = departmentId,
+                AssignedByEmail = currentUserEmail
+            };
+
+            var response = await RBACService.CreateUserRoleMappingAsync(createRequest);
+            if (response.Success)
+            {
+                await JS.InvokeVoidAsync("showToast", "success", "User role assigned successfully", Severity.Success);
+                CloseDialog();
+
+                // Reload data with immediate consistency to get updated list from Command DB
+                await LoadData(useImmediateConsistency: true);
+                StateHasChanged();
+            }
+            else
+            {
+                await JS.InvokeVoidAsync("showToast", "error", response.Message ?? "Failed to assign user role", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error assigning user role");
+            await JS.InvokeVoidAsync("showToast", "error", $"Error: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+}

@@ -1,0 +1,339 @@
+@page "/two-factor"
+@using AuthManagement.Services
+@using AuthManagement.Models
+@using Microsoft.AspNetCore.Authorization
+@using System.Net.Http.Headers
+@using System.Net.Http.Json
+@attribute [Authorize]
+@inject HttpClient Http
+@inject JwtAuthenticationStateProvider AuthProvider
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+
+
+
+
+
+<div class="authentication-wrapper authentication-basic container-p-y">
+
+
+    <div class="authentication-inner py-6" style="height: auto;">
+        <div class="card">
+            <div class="twofactor-header text-center mb-4">
+                <div class="twofactor-icon-wrapper mb-0">
+                    <i class="bi-shield-lock-fill fs-1 text-primary"></i>
+                </div>
+                <h4 class="mb-0">Two-Factor Authentication</h4>
+                <p class="text-muted mb-0">Enhance your account security</p>
+            </div>
+
+            <hr class="my-4" />
+
+            @if (isLoading)
+            {
+                <LoadingSpinner FullPage="true" />
+            }
+            else
+            {
+                <div class="twofactor-content">
+                    <div class="p-0">
+                        <div class="status-header d-flex justify-content-between align-items-center">
+                            <h6>Current Status</h6>
+                            @if (twoFactorType == "Authenticator")
+                            {
+                                <span class="badge bg-success">
+                                    <i class="bi-phone me-1"></i>Authenticator App
+                                </span>
+                            }
+                            else if (twoFactorType == "Email")
+                            {
+                                <span class="badge bg-info">
+                                    <i class="bi-envelope me-1"></i>Email OTP
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-warning text-dark">Disabled</span>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="p-0">
+                        <p class="text-start text-muted mb-0">
+                            Two-factor authentication adds an extra layer of security to your account by requiring
+                            a verification code in addition to your password when signing in.
+                        </p>
+                    </div>
+
+                    <div class="options-section mt-3">
+                        <h6 class="mb-3">Authentication Method</h6>
+
+                        <!-- Disable 2FA -->
+                        <div class="option-card p-3 mb-3 rounded border @(twoFactorType == "None" ? "border-primary bg-light" : "")">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="twoFactorOptions"
+                                       id="disable2fa"
+                                       checked="@(twoFactorType == "None")"
+                                       disabled="@isBusy"
+                                       @onclick="DisableTwoFactor" />
+                                <label class="form-check-label w-100" for="disable2fa">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="bi-unlock fs-4 text-danger me-2"></i>
+                                        <strong>Disabled</strong>
+                                    </div>
+                                    <p class="text-muted mb-0 small">Sign in with just your password (not recommended)</p>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Email OTP -->
+                        <div class="option-card p-3 mb-3 rounded border @(twoFactorType == "Email" ? "border-primary bg-light" : "")">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="twoFactorOptions"
+                                       id="enableEmail2fa"
+                                       checked="@(twoFactorType == "Email")"
+                                       disabled="@isBusy"
+                                       @onclick="EnableEmailTwoFactor" />
+                                <label class="form-check-label w-100" for="enableEmail2fa">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="bi-envelope-fill fs-4 text-info me-2"></i>
+                                        <strong>Email Verification</strong>
+                                    </div>
+                                    <p class="text-muted mb-0 small">Receive a verification code via email</p>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Authenticator App -->
+                        <div class="option-card p-3 mb-3 rounded border @(twoFactorType == "Authenticator" ? "border-primary bg-light" : "")">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="form-check flex-grow-1">
+                                    <input class="form-check-input" type="radio" name="twoFactorOptions"
+                                           id="enableAuthenticator"
+                                           checked="@(twoFactorType == "Authenticator")"
+                                           disabled="@isBusy"
+                                           @onclick="NavigateToAuthenticatorSetup" />
+                                    <label class="form-check-label w-100" for="enableAuthenticator">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <i class="bi-phone-fill fs-4 text-success me-2"></i>
+                                            <strong>Authenticator App</strong>
+                                            <span class="badge bg-success ms-2">Recommended</span>
+                                        </div>
+                                        <p class="text-muted mb-0 small">
+                                            Use Google Authenticator, Microsoft Authenticator, or similar apps
+                                        </p>
+                                    </label>
+                                </div>
+                                @* @if (twoFactorType != "Authenticator")
+                                {
+                                    <button class="btn btn-sm btn-outline-primary ms-2" 
+                                            @onclick="NavigateToAuthenticatorSetup" 
+                                            disabled="@isBusy">
+                                        Set Up
+                                    </button>
+                                } *@
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (isBusy)
+                    {
+                        <div class="saving-section text-center mt-3">
+                            <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                            <p class="text-muted mb-0">Saving changes...</p>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .twofactor-container {
+        display: flex;
+        justify-content: center;
+        padding: 2rem 1rem;
+        min-height: 70vh;
+        align-items: start;
+    }
+
+    .twofactor-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        padding: 2.5rem;
+        max-width: 700px;
+        width: 100%;
+    }
+
+    .loading-section {
+        padding: 2rem 0;
+    }
+
+    .twofactor-content {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .option-card {
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+
+    .option-card:hover {
+        border-color: #7367f0 !important;
+        background-color: #f8f7ff;
+    }
+
+    .saving-section {
+        padding: 1rem;
+        background: #fef3c7;
+        border-radius: 8px;
+    }
+
+    @@media (max-width: 600px) {
+        .twofactor-card {
+            padding: 1.5rem;
+        }
+
+        .status-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+    }
+</style>
+
+@code {
+    private bool isLoading = true;
+    private bool isBusy;
+    private string twoFactorType = "None";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JS.InvokeVoidAsync("loadScriptAndTrigger", "assets/js/toast.js", true);
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var token = await AuthProvider.GetTokenAsync();
+        if (string.IsNullOrEmpty(token))
+        {
+            Nav.NavigateTo("/login");
+            return;
+        }
+
+        Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        try
+        {
+            var resp = await Http.GetAsync("/auth/profile");
+            if (resp.IsSuccessStatusCode)
+            {
+                var api = await resp.Content.ReadFromJsonAsync<ApiResponse<ProfileDto>>();
+                if (api?.Success == true && api.Data is not null)
+                {
+                    twoFactorType = api.Data.TwoFactorType;
+                }
+            }
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task DisableTwoFactor()
+    {
+        if (isBusy || twoFactorType == "None") return;
+
+        isBusy = true;
+
+        try
+        {
+            var token = await AuthProvider.GetTokenAsync();
+            Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            // If authenticator is enabled, disable it
+            if (twoFactorType == "Authenticator")
+            {
+                var authResponse = await Http.PostAsync("/auth/authenticator/disable", null);
+                if (!authResponse.IsSuccessStatusCode)
+                {
+                    var result = await authResponse.Content.ReadFromJsonAsync<ApiResponse<object>>();
+                    await JS.InvokeVoidAsync("showToast", "error", result?.Message ?? "Failed to disable authenticator.");
+                    return;
+                }
+            }
+            else
+            {
+                // Disable email 2FA
+                var response = await Http.PostAsync("/auth/2fa/disable", null);
+                if (!response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadFromJsonAsync<ApiResponse<object>>();
+                    await JS.InvokeVoidAsync("showToast", "error", result?.Message ?? "Failed to disable two-factor.");
+                    return;
+                }
+            }
+
+            twoFactorType = "None";
+            await JS.InvokeVoidAsync("showToast", "success", "Two-factor authentication has been disabled.");
+        }
+        finally
+        {
+            isBusy = false;
+        }
+    }
+
+    private async Task EnableEmailTwoFactor()
+    {
+        if (isBusy || twoFactorType == "Email") return;
+
+        isBusy = true;
+
+        try
+        {
+            var token = await AuthProvider.GetTokenAsync();
+            Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            // If authenticator is currently enabled, disable it first
+            if (twoFactorType == "Authenticator")
+            {
+                var disableResponse = await Http.PostAsync("/auth/authenticator/disable", null);
+                if (!disableResponse.IsSuccessStatusCode)
+                {
+                    await JS.InvokeVoidAsync("showToast", "error", "Failed to switch authentication method.");
+                    return;
+                }
+            }
+
+            // Enable email 2FA
+            var response = await Http.PostAsync("/auth/2fa/enable", null);
+            if (response.IsSuccessStatusCode)
+            {
+                twoFactorType = "Email";
+                await JS.InvokeVoidAsync("showToast", "success", "Email verification has been enabled.");
+            }
+            else
+            {
+                var result = await response.Content.ReadFromJsonAsync<ApiResponse<object>>();
+                await JS.InvokeVoidAsync("showToast", "error", result?.Message ?? "Failed to enable email verification.");
+            }
+        }
+        finally
+        {
+            isBusy = false;
+        }
+    }
+
+    private void NavigateToAuthenticatorSetup()
+    {
+        Nav.NavigateTo("/authenticator-setup");
+    }
+}

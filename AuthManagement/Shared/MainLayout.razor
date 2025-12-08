@@ -1,0 +1,326 @@
+﻿@inherits LayoutComponentBase
+@inject NavigationService NavService
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthStateProvider
+@inject ILogger<MainLayout> Logger
+@implements IDisposable
+@* @inject IJSRuntime JSRuntime *@
+@inject IJSRuntime JS
+
+<MudThemeProvider />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<ToastContainer />
+<ConfirmDialog />
+
+
+
+
+
+<div class="layout-wrapper layout-content-navbar">
+	<div class="layout-container">
+		<!-- Left Sidebar Navigation Menu -->
+		<DynamicNavMenu />
+
+		<!-- Layout Page -->
+		<div class="layout-page">
+			<!-- Top Navbar -->
+			<nav @ref="HeaderRef" class="layout-navbar container-fluidnavbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme pe-6 d-flex pl-6 w-100" id="layout-navbar"
+				 style="position: fixed;
+    left: 0;
+    background: white;">
+				<div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none">
+					<a class="nav-item nav-link px-0 me-xl-6" href="javascript:void(0)" @onclick="ToggleMobileMenu">
+						<i class="icon-base ti tabler-menu-2 icon-md"></i>
+					</a>
+				</div>
+
+				<div class="navbar-nav-right d-flex align-items-center justify-content-end" id="navbar-collapse">
+					<ul class="navbar-nav flex-row align-items-center ms-md-auto gap-6">
+						<!-- Theme Toggle -->
+						<li class="nav-item dropdown">
+							<a href="javascript:void(0);" class="header-link layout-setting" @onclick="ToggleTheme">
+								<span class="light-layout" style="@LightStyle">
+									<i class="bi bi-moon header-link-icon" style="font-size: 18px;"></i>
+								</span>
+								<span class="dark-layout" style="@DarkStyle">
+									<i class="bi bi-brightness-high header-link-icon" style="font-size: 18px; color: white;"></i>
+								</span>
+							</a>
+						</li>
+						<li class="nav-item dropdown">
+							<a href="javascript:void(0);" class="header-link layout-setting" id="themeToggleBtn1">
+								<span class="light-layout">
+									<i id="fsIcon" class="bi bi-fullscreen" style="font-size:18px;"></i>
+								</span>
+							</a>
+
+						</li>
+
+
+						<!-- Notification -->
+						<li class="nav-item dropdown-notifications navbar-dropdown dropdown ">
+							<a class="nav-link dropdown-toggle hide-arrow btn btn-icon  rounded-pill" href="javascript:void(0);" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+								<span class="position-relative">
+									<i class="ti tabler-bell" style="color:#7367f0"></i>
+									<span class="badge rounded-pill bg-danger badge-dot badge-notifications border"
+										  style="    width: 16px;
+    height: 16px;
+    left: 16px;">6</span>
+								</span>
+							</a>
+							<ul class="dropdown-menu dropdown-menu-end p-0">
+								<li class="dropdown-menu-header border-bottom">
+									<div class="dropdown-header d-flex align-items-center py-3">
+										<h6 class="mb-0 me-auto">Notification</h6>
+										<div class="d-flex align-items-center h6 mb-0">
+											<span class="badge bg-label-primary me-2">8 New</span>
+											@* <a href="javascript:void(0)" class="dropdown-notifications-all p-2 btn btn-icon" data-bs-toggle="tooltip" data-bs-placement="top" title="Mark all as read"><i class="icon-base ti tabler-mail-opened text-heading"></i></a> *@
+										</div>
+									</div>
+								</li>
+								<li class="dropdown-notifications-list scrollable-container" style="    height: 470px;
+    overflow: auto;">
+									<ul class="list-group list-group-flush">
+										<li class="list-group-item list-group-item-action dropdown-notifications-item">
+											<div class="d-flex">
+												<div class="flex-shrink-0 me-3">
+													<div class="avatar">
+														<img src="assets/img/avatars/1.png" alt class="rounded-circle" />
+													</div>
+												</div>
+												<div class="flex-grow-1">
+													<h6 class="small mb-1">Congratulation Lettie 🎉</h6>
+													<small class="mb-1 d-block text-body">Won the monthly best seller gold badge</small>
+													<small class="text-body-secondary">1h ago</small>
+												</div>
+												<div class="flex-shrink-0 dropdown-notifications-actions">
+													<a href="javascript:void(0)" class="dropdown-notifications-read"><span class="badge badge-dot"></span></a>
+													<a href="javascript:void(0)" class="dropdown-notifications-archive"><span class="icon-base ti tabler-x"></span></a>
+												</div>
+											</div>
+										</li>
+										<li class="list-group-item list-group-item-action dropdown-notifications-item">
+											<div class="d-flex">
+												<div class="flex-shrink-0 me-3">
+													<div class="avatar">
+														<span class="avatar-initial rounded-circle bg-label-danger">CF</span>
+													</div>
+												</div>
+												<div class="flex-grow-1">
+													<h6 class="mb-1 small">Charles Franklin</h6>
+													<small class="mb-1 d-block text-body">Accepted your connection</small>
+													<small class="text-body-secondary">12hr ago</small>
+												</div>
+												<div class="flex-shrink-0 dropdown-notifications-actions">
+													<a href="javascript:void(0)" class="dropdown-notifications-read"><span class="badge badge-dot"></span></a>
+													<a href="javascript:void(0)" class="dropdown-notifications-archive"><span class="icon-base ti tabler-x"></span></a>
+												</div>
+											</div>
+										</li>
+										<li class="list-group-item list-group-item-action dropdown-notifications-item marked-as-read">
+											<div class="d-flex">
+												<div class="flex-shrink-0 me-3">
+													<div class="avatar">
+														<img src="assets/img/avatars/2.png" alt class="rounded-circle" />
+													</div>
+												</div>
+												<div class="flex-grow-1">
+													<h6 class="mb-1 small">New Message ✉️</h6>
+													<small class="mb-1 d-block text-body">You have new message from Natalie</small>
+													<small class="text-body-secondary">1h ago</small>
+												</div>
+												<div class="flex-shrink-0 dropdown-notifications-actions">
+													<a href="javascript:void(0)" class="dropdown-notifications-read"><span class="badge badge-dot"></span></a>
+													<a href="javascript:void(0)" class="dropdown-notifications-archive"><span class="icon-base ti tabler-x"></span></a>
+												</div>
+											</div>
+										</li>
+										<li class="list-group-item list-group-item-action dropdown-notifications-item">
+											<div class="d-flex">
+												<div class="flex-shrink-0 me-3">
+													<div class="avatar">
+														<span class="avatar-initial rounded-circle bg-label-success"><i class="icon-base ti tabler-shopping-cart"></i></span>
+													</div>
+												</div>
+												<div class="flex-grow-1">
+													<h6 class="mb-1 small">Whoo! You have new order 🛒</h6>
+													<small class="mb-1 d-block text-body">ACME Inc. made new order $1,154</small>
+													<small class="text-body-secondary">1 day ago</small>
+												</div>
+												<div class="flex-shrink-0 dropdown-notifications-actions">
+													<a href="javascript:void(0)" class="dropdown-notifications-read"><span class="badge badge-dot"></span></a>
+													<a href="javascript:void(0)" class="dropdown-notifications-archive"><span class="icon-base ti tabler-x"></span></a>
+												</div>
+											</div>
+										</li>
+										<li class="list-group-item list-group-item-action dropdown-notifications-item marked-as-read">
+											<div class="d-flex">
+												<div class="flex-shrink-0 me-3">
+													<div class="avatar">
+														<img src="assets/img/avatars/9.png" alt class="rounded-circle" />
+													</div>
+												</div>
+												<div class="flex-grow-1">
+													<h6 class="mb-1 small">Application has been approved 🚀</h6>
+													<small class="mb-1 d-block text-body">Your ABC project application has been approved.</small>
+													<small class="text-body-secondary">2 days ago</small>
+												</div>
+												<div class="flex-shrink-0 dropdown-notifications-actions">
+													<a href="javascript:void(0)" class="dropdown-notifications-read"><span class="badge badge-dot"></span></a>
+													<a href="javascript:void(0)" class="dropdown-notifications-archive"><span class="icon-base ti tabler-x"></span></a>
+												</div>
+											</div>
+										</li>
+										<li class="list-group-item list-group-item-action dropdown-notifications-item marked-as-read">
+											<div class="d-flex">
+												<div class="flex-shrink-0 me-3">
+													<div class="avatar">
+														<span class="avatar-initial rounded-circle bg-label-success"><i class="icon-base ti tabler-chart-pie"></i></span>
+													</div>
+												</div>
+												<div class="flex-grow-1">
+													<h6 class="mb-1 small">Monthly report is generated</h6>
+													<small class="mb-1 d-block text-body">July monthly financial report is generated </small>
+													<small class="text-body-secondary">3 days ago</small>
+												</div>
+												<div class="flex-shrink-0 dropdown-notifications-actions">
+													<a href="javascript:void(0)" class="dropdown-notifications-read"><span class="badge badge-dot"></span></a>
+													<a href="javascript:void(0)" class="dropdown-notifications-archive"><span class="icon-base ti tabler-x"></span></a>
+												</div>
+											</div>
+										</li>
+
+
+
+									</ul>
+								</li>
+								<li class="border-top">
+									<div class="d-grid p-4">
+										<a class="btn btn-primary btn-sm d-flex" href="javascript:void(0);">
+											<small class="align-middle">View all notifications</small>
+										</a>
+									</div>
+								</li>
+							</ul>
+						</li>
+						<!--/ Notification -->
+
+
+						<AuthorizeView>
+							<Authorized>
+								<UserInfo />
+							</Authorized>
+						</AuthorizeView>
+					</ul>
+				</div>
+			</nav>
+
+			<!-- Content Wrapper -->
+			<div class="content-wrapper" style="margin-top:64px">
+				<div class="container-fluid flex-grow-1" style=" padding-left: 12px;
+                     padding-top: 0;
+                     padding-right: 12px;">
+					@Body
+				</div>
+				<div class="content-backdrop fade"></div>
+			</div>
+		</div>
+	</div>
+
+	<div class="layout-overlay layout-menu-toggle" @onclick="ToggleMobileMenu"></div>
+	<div class="drag-target"></div>
+</div>
+
+@code {
+	private bool _isDisposed = false;
+	private bool isDark = false;
+	// [Inject]
+	// private IJSRuntime? JS { get; set; }
+	// private IJSRuntime JS { get; set; }
+
+	private string LightStyle => isDark ? "display: none;" : "display: inline;";
+	private string DarkStyle => isDark ? "display: inline;" : "display: none;";
+	private ElementReference HeaderRef;
+	private string HeaderHeightPx = "0px";
+
+	private async Task ToggleTheme()
+	{
+		isDark = !isDark;
+		string theme = isDark ? "dark" : "light";
+		var js = (IJSInProcessRuntime)JS;
+		await JS.InvokeVoidAsync("document.documentElement.setAttribute", "data-bs-theme", theme);
+	}
+
+
+
+	private async Task SetHeaderHeightAsync()
+	{
+		var height = await JS.InvokeAsync<int>("getElementHeight", HeaderRef);
+		HeaderHeightPx = $"{height}px";
+		StateHasChanged();
+	}
+
+	[JSInvokable]
+	public async Task OnResize()
+	{
+		await SetHeaderHeightAsync();
+	}
+
+
+
+
+	protected override void OnInitialized()
+	{
+		AuthStateProvider.AuthenticationStateChanged += OnAuthenticationStateChanged;
+	}
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender)
+		{
+			try
+			{
+				await SetHeaderHeightAsync();   // ← REQUIRED
+												// Listen to resize events
+				await JS.InvokeVoidAsync("window.addEventListener", "resize",
+					DotNetObjectReference.Create(this), "OnResize");
+				await JS.InvokeVoidAsync("initThemeToggle");
+				await JS.InvokeVoidAsync("initMenuToggle");
+				await JS.InvokeVoidAsync("fullscreen");
+
+
+			}
+			catch (Exception ex)
+			{
+				Logger.LogError(ex, "Error initializing theme/menu");
+			}
+		}
+	}
+
+	private void OnAuthenticationStateChanged(Task<AuthenticationState> task)
+	{
+		if (_isDisposed) return;
+		_ = InvokeAsync(StateHasChanged);
+	}
+
+	private async Task ToggleMobileMenu()
+	{
+		try
+		{
+			await JS.InvokeVoidAsync("toggleMobileMenu");
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(ex, "Error toggling mobile menu");
+		}
+	}
+
+	public void Dispose()
+	{
+		_isDisposed = true;
+		AuthStateProvider.AuthenticationStateChanged -= OnAuthenticationStateChanged;
+	}
+}

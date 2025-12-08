@@ -1,0 +1,382 @@
+@using AuthManagement.Models
+
+@if (IsOpen && Mapping != null)
+{
+    <div class="offcanvas-backdrop show" @onclick="HandleClose" style="    z-index: 11111;"></div>
+
+    <div class="offcanvas offcanvas-end show" style="    z-index: 11111;">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title">
+                <i class="ti tabler-layout-sidebar" style="color: #7c3aed; margin-right: 8px;"></i>
+                Mapping Details
+            </h5>
+            <button type="button" class="btn-close" @onclick="HandleClose"></button>
+        </div>
+        <div class="offcanvas-body">
+            <div class="detail-section">
+                <h6 class="detail-section-title">
+                    <i class="ti tabler-user-check"></i>
+                    Role Information
+                </h6>
+                <div class="detail-row">
+                    <span class="detail-label">Role Name:</span>
+                    <span class="detail-value">@Mapping.RoleName</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Status:</span>
+                    <span class="detail-value">
+                        @if (Mapping.IsActive)
+                        {
+                            <span class="badge badge-success">Active</span>
+                        }
+                        else
+                        {
+                            <span class="badge badge-secondary">Inactive</span>
+                        }
+                    </span>
+                </div>
+            </div>
+
+            <div class="detail-section">
+                <h6 class="detail-section-title">
+                    <i class="ti tabler-layout-sidebar"></i>
+                    Feature/Menu Information
+                </h6>
+                <div class="detail-row">
+                    <span class="detail-label">Feature Name:</span>
+                    <span class="detail-value">
+                        @if (Feature != null && !string.IsNullOrEmpty(Feature.Icon))
+                        {
+                            <i class="@Feature.Icon" style="color: #7c3aed; margin-right: 6px;"></i>
+                        }
+                        @Mapping.FeatureName
+                    </span>
+                </div>
+                @if (Feature != null)
+                {
+                    <div class="detail-row">
+                        <span class="detail-label">Menu Type:</span>
+                        <span class="detail-value">
+                            @if (Feature.IsMainMenu)
+                            {
+                                <span class="badge badge-info">Main Menu</span>
+                            }
+                            else
+                            {
+                                <span class="badge badge-secondary">Sub Menu</span>
+                            }
+                        </span>
+                    </div>
+                    @if (!string.IsNullOrEmpty(Feature.RouteUrl))
+                    {
+                        <div class="detail-row">
+                            <span class="detail-label">Route URL:</span>
+                            <span class="detail-value code">@Feature.RouteUrl</span>
+                        </div>
+                    }
+                    <div class="detail-row">
+                        <span class="detail-label">Display Order:</span>
+                        <span class="detail-value">@Feature.DisplayOrder</span>
+                    </div>
+                    @if (!string.IsNullOrEmpty(Feature.Description))
+                    {
+                        <div class="detail-row">
+                            <span class="detail-label">Description:</span>
+                            <span class="detail-value">@Feature.Description</span>
+                        </div>
+                    }
+                }
+            </div>
+
+            <div class="detail-section">
+                <h6 class="detail-section-title">
+                    <i class="ti tabler-building"></i>
+                    Department Information
+                </h6>
+                <div class="detail-row">
+                    <span class="detail-label">Department:</span>
+                    <span class="detail-value">
+                        @if (Mapping.DepartmentId.HasValue)
+                        {
+                            @Mapping.DepartmentName
+                        }
+                        else
+                        {
+                            <span style="color: #999; font-style: italic;">System-wide (All Departments)</span>
+                        }
+                    </span>
+                </div>
+                @if (!Mapping.DepartmentId.HasValue)
+                {
+                    <div class="alert alert-info" style="font-size: 12px; padding: 8px 12px; margin-top: 8px;">
+                        <i class="ti tabler-info-circle"></i>
+                        This menu item will be visible to all users with the <strong>@Mapping.RoleName</strong> role, regardless of department.
+                    </div>
+                }
+            </div>
+
+            <div class="detail-section">
+                <h6 class="detail-section-title">
+                    <i class="ti tabler-eye"></i>
+                    Visibility Control
+                </h6>
+                <div class="alert alert-warning" style="font-size: 12px; padding: 12px;">
+                    <strong>What this mapping does:</strong>
+                    <ul style="margin: 8px 0 0 0; padding-left: 20px;">
+                        <li>Users with role <strong>@Mapping.RoleName</strong> @(Mapping.DepartmentId.HasValue ? $"in {Mapping.DepartmentName} department" : "(all departments)") will see the menu item: <strong>@Mapping.FeatureName</strong></li>
+                        <li>Without this mapping, the menu item would be hidden for this role</li>
+                        <li>This controls navigation menu visibility only, not page access permissions</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="detail-section">
+                <h6 class="detail-section-title">
+                    <i class="ti tabler-clock"></i>
+                    Audit Information
+                </h6>
+                <div class="detail-row">
+                    <span class="detail-label">Created At:</span>
+                    <span class="detail-value">@Mapping.CreatedAt.ToString("MMM dd, yyyy hh:mm tt")</span>
+                </div>
+                @if (!string.IsNullOrEmpty(Mapping.CreatedBy))
+                {
+                    <div class="detail-row">
+                        <span class="detail-label">Created By:</span>
+                        <span class="detail-value">@Mapping.CreatedBy</span>
+                    </div>
+                }
+                @if (Mapping.UpdatedAt.HasValue)
+                {
+                    <div class="detail-row">
+                        <span class="detail-label">Updated At:</span>
+                        <span class="detail-value">@Mapping.UpdatedAt.Value.ToString("MMM dd, yyyy hh:mm tt")</span>
+                    </div>
+                }
+                @if (!string.IsNullOrEmpty(Mapping.ModifiedBy))
+                {
+                    <div class="detail-row">
+                        <span class="detail-label">Modified By:</span>
+                        <span class="detail-value">@Mapping.ModifiedBy</span>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    .offcanvas-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 1040;
+        width: 100vw;
+        height: 100vh;
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    .offcanvas {
+        position: fixed;
+        top: 0;
+        right: 0;
+        z-index: 1045;
+        display: flex;
+        flex-direction: column;
+        max-width: 100%;
+        width: 500px;
+        height: 100vh;
+        visibility: visible;
+        background-color: #fff;
+        background-clip: padding-box;
+        outline: 0;
+        box-shadow: -2px 0 8px rgba(0,0,0,0.15);
+        transform: translateX(0);
+        transition: transform 0.3s ease-in-out;
+    }
+
+    .offcanvas-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 20px 24px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .offcanvas-title {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+        color: #333;
+        display: flex;
+        align-items: center;
+    }
+
+    .btn-close {
+        padding: 8px;
+        background: transparent;
+        border: none;
+        font-size: 20px;
+        font-weight: 700;
+        line-height: 1;
+        color: #000;
+        opacity: .5;
+        cursor: pointer;
+    }
+
+    .btn-close:hover {
+        opacity: .75;
+    }
+
+    .offcanvas-body {
+        flex-grow: 1;
+        padding: 24px;
+        overflow-y: auto;
+    }
+
+    .detail-section {
+        margin-bottom: 24px;
+        padding-bottom: 24px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .detail-section:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .detail-section-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .detail-section-title i {
+        color: #7c3aed;
+        font-size: 18px;
+    }
+
+    .detail-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding: 10px 0;
+        gap: 16px;
+    }
+
+    .detail-row:first-child {
+        padding-top: 0;
+    }
+
+    .detail-label {
+        font-size: 13px;
+        font-weight: 500;
+        color: #6b7280;
+        min-width: 120px;
+    }
+
+    .detail-value {
+        font-size: 14px;
+        color: #374151;
+        text-align: right;
+        word-break: break-word;
+        flex: 1;
+    }
+
+    .detail-value.code {
+        font-family: 'Courier New', monospace;
+        font-size: 12px;
+        color: #7c3aed;
+        background-color: #f9fafb;
+        padding: 4px 8px;
+        border-radius: 4px;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    .badge-success {
+        background-color: #d1fae5;
+        color: #065f46;
+    }
+
+    .badge-secondary {
+        background-color: #f3f4f6;
+        color: #6b7280;
+    }
+
+    .badge-info {
+        background-color: #dbeafe;
+        color: #1e40af;
+    }
+
+    .alert {
+        padding: 12px 16px;
+        border-radius: 6px;
+        border-left: 4px solid;
+    }
+
+    .alert-info {
+        background-color: #dbeafe;
+        border-left-color: #3b82f6;
+        color: #1e40af;
+    }
+
+    .alert-warning {
+        background-color: #fef3c7;
+        border-left-color: #f59e0b;
+        color: #92400e;
+    }
+
+    .alert ul {
+        font-size: 12px;
+    }
+
+    @@media (max-width: 576px) {
+        .offcanvas {
+            width: 100%;
+        }
+
+        .detail-row {
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .detail-label {
+            min-width: auto;
+        }
+
+        .detail-value {
+            text-align: left;
+        }
+    }
+</style>
+
+@code {
+    [Parameter]
+    public bool IsOpen { get; set; }
+
+    [Parameter]
+    public DisplayRoleFeatureMapping? Mapping { get; set; }
+
+    [Parameter]
+    public FeatureDto? Feature { get; set; }
+
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+    private async Task HandleClose()
+    {
+        await OnClose.InvokeAsync();
+    }
+}

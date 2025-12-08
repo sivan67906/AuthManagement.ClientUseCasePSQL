@@ -1,0 +1,1233 @@
+@page "/rolehierarchymapping"
+@using AuthManagement.Models
+@using AuthManagement.Services
+@using AuthManagement.Shared
+@inject RBACService RBACService
+@inject PermissionService PermissionService
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthStateProvider
+@inject ILogger<RoleHierarchyMapping> Logger
+@inject ISnackbar Snackbar
+@attribute [Authorize]
+@inject IJSRuntime JS
+<PageTitle>Role Hierarchy Mapping</PageTitle>
+
+<style>
+    /* Page Header */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 0;
+    }
+
+    .page-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #333;
+        margin: 0;
+    }
+    .breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 15px;
+        color: #666;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+
+    .breadcrumb-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .breadcrumb-separator {
+        color: #999;
+    }
+
+    .breadcrumb-link {
+        color: #7c3aed;
+        text-decoration: none;
+    }
+
+        .breadcrumb-link:hover {
+            text-decoration: underline;
+        }
+
+    .breadcrumb-current {
+        color: #666;
+    }
+
+    /* Container */
+    .mapping-container {
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        padding-left: 21px;
+        padding-right: 21px;
+        padding-bottom:21px
+    }
+
+    /* Toolbar */
+    .toolbar-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 0px;
+        background: white;
+        border-bottom: 1px solid #f0f0f0;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .toolbar-left {
+        display: flex;
+        align-items: center;
+    }
+
+
+    
+.toolbar-left::before {
+    content: "";
+    height: 21px;
+    width: 0.2rem;
+    inset-block-start: 0.15rem;
+    inset-inline-start: -0.65rem;
+    background: linear-gradient(to bottom, #26bf9491 50%, #97959e8a 50%);
+    border-radius: 0.5rem;
+}
+
+
+
+    .mappings-list-label {
+        font-size: 14px;
+        font-weight: 600;
+        color: #333;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding-left: 7px;
+    }
+
+    .toolbar-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-left: auto;
+    }
+
+    .search-box {
+        position: relative;
+        min-width: 280px;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 8px 12px 8px 36px;
+        border: 1px solid #d9d9e3;
+        font-size: 14px;
+        padding-left: 39px;
+        border-radius: 0.25rem;
+        padding-top: 5px;
+        padding-bottom: 7px;
+    }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #7c3aed;
+            box-shadow: 0 0 0 0.2rem rgba(124, 58, 237, 0.1);
+        }
+
+    .search-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #999;
+        font-size: 18px;
+    }
+
+    .add-button {
+        background-color: var(--bs-primary) !important;
+        color: white;
+        border: none;
+        font-weight: 500;
+        cursor: pointer !important;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        white-space: nowrap;
+        font-size: 0.75rem;
+        padding: 0.42rem 0.5rem !important;
+        border-radius: 0.25rem;
+    }
+
+        /* .add-button:hover {
+            background-color: #6d28d9;
+        } */
+
+        .add-button i {
+            font-size: 18px;
+        }
+
+    /* Table */
+    .mapping-table {
+        width: 100%;
+        border-collapse: collapse;
+        border: 1px solid #80808054;
+    }
+
+        .mapping-table thead {
+            background-color: #fafafa;
+        }
+
+        .mapping-table th {
+            padding: 7px 16px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #00000024;
+            cursor: pointer;
+            user-select: none;
+            color: black;
+            background: white;
+        }
+
+            .mapping-table th:last-child {
+                border-right: none;
+            }
+
+            .mapping-table th.sortable {
+                position: relative;
+                padding-right: 30px;
+            }
+
+    .sort-indicator {
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .sort-arrow {
+        width: 0;
+        height: 0;
+        border-left: 4px solid transparent;
+        border-right: 4px solid transparent;
+    }
+
+        .sort-arrow.up {
+            border-bottom: 5px solid #ccc;
+        }
+
+            .sort-arrow.up.active {
+                border-bottom-color: #7c3aed;
+            }
+
+        .sort-arrow.down {
+            border-top: 5px solid #ccc;
+        }
+
+            .sort-arrow.down.active {
+                border-top-color: #7c3aed;
+            }
+
+    .mapping-table th.text-center {
+        text-align: center;
+    }
+
+    .mapping-table tbody tr {
+        transition: background-color 0.2s;
+        border-bottom: 1px solid #00000024
+    }
+
+    .mapping-table td {
+        padding: 5px 16px;
+        font-size: 14px;
+        color: #333;
+    }
+
+    .mapping-table tbody tr:last-child {
+        border-bottom: none;
+    }
+
+    .serial-number {
+        color: #666;
+        font-weight: 500;
+    }
+
+    .role-name {
+        color: #333;
+        font-weight: 600;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 6px;
+        justify-content: center;
+        align-items: center;
+    }
+
+
+    .action-btn {
+        width: 32px;
+        height: 32px;
+        border: none;
+        background: #f5f5f5;
+        border-radius: 6px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        color: #666;
+        font-size: 18px;
+    }
+
+        .action-btn i {
+            font-size: 14px;
+            display: block;
+            line-height: 1;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .action-btn.view-btn {
+            background-color: #e3f2fdcf;
+            color: #2196f3;
+        }
+
+            .action-btn.view-btn:hover {
+                background-color: #2196f3;
+                color: white;
+            }
+
+        .action-btn.edit-btn {
+            background-color: #fff3e0ad;
+            color: #ff9800;
+        }
+
+
+            .action-btn.edit-btn:hover {
+                background-color: #ff9800;
+                color: white;
+            }
+
+
+        .action-btn.delete-btn {
+            background-color: #ffebee94;
+            color: #f44336;
+        }
+
+
+            .action-btn.delete-btn:hover {
+                background-color: #f44336;
+                color: white;
+            }
+
+    /* Pagination */
+    .pagination-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 13px 0px;
+        background: white;
+        border-left: 1px solid #80808047;
+        margin-bottom: 1px;
+        border-right: 1px solid #80808047;
+        border-bottom: 1px solid #80808047;
+    }
+
+
+    .pagination-info {
+        font-size: 14px;
+        color: #666;
+    }
+
+    .pagination-controls {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .page-size-selector {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-right: 16px;
+    }
+
+        .page-size-selector label {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .page-size-selector select {
+            padding: 4px 8px;
+            border: 1px solid #d9d9e3;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+    .pagination-buttons {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .page-btn {
+        min-width: 40px;
+        height: 40px;
+        padding: 0 8px;
+        border: 1px solid #d9d9e373;
+        border-radius: 50%;
+        font-size: 18px;
+        cursor: pointer;
+        transition: all 0.2s;
+        color: #333;
+    }
+
+        .page-btn:hover:not(:disabled) {
+            background: #f5f5f5;
+            border-color: var(--bs-primary);
+            color: var(--bs-primary);
+        }
+
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .page-btn.active {
+            color: white;
+            border-color: var(--bs-primary);
+            font-weight: 700;
+            background: var(--bs-primary);
+        }
+
+
+    /* Loading and Error States */
+    .loading-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 60px 20px;
+    }
+
+    .spinner {
+        width: 48px;
+        height: 48px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #7c3aed;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @@keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    .loading-text {
+        margin-top: 16px;
+        font-size: 14px;
+        color: #666;
+    }
+
+    .error-container {
+        padding: 20px;
+        background: #ffebee;
+        border: 1px solid #ef5350;
+        border-radius: 8px;
+        margin: 20px;
+    }
+
+    .error-message {
+        color: #c62828;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .error-message i {
+            font-size: 20px;
+        }
+
+    .no-data-container {
+        padding: 60px 20px;
+        text-align: center;
+    }
+
+    .no-data-icon {
+        font-size: 64px;
+        color: #e0e0e0;
+        margin-bottom: 16px;
+    }
+
+    .no-data-text {
+        font-size: 16px;
+        color: #666;
+    }
+</style>
+
+<div class="flex-grow-1">
+    @if (_isLoading)
+    {
+        <LoadingSpinner FullPage="true" />
+    }
+    else{
+
+     <div class="page-header">
+        <h1 class="page-title">Role Hierarchy Mapping</h1>
+        <nav>
+            <ul class="breadcrumb">
+                <li class="breadcrumb-item">
+                   
+                    <a href="/" class="breadcrumb-link">
+                        <i class="ti tabler-home"></i>Home
+                    </a>
+                    <span class="breadcrumb-separator">></span>
+                </li>
+                <li class="">
+                    <span class="breadcrumb-current">Role Hierarchy Mapping</span>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+
+
+
+    <!-- Main Content Card -->
+    <div class="mapping-container">
+        <!-- Toolbar -->
+        <div class="toolbar-container">
+            <div class="toolbar-left">
+                <span class="mappings-list-label">Mappings List</span>
+            </div>
+            <div class="toolbar-right">
+                <div class="search-box">
+                    <i class="ti tabler-search search-icon"></i>
+                    <input type="text"
+                           class="search-input"
+                           placeholder="Search mappings..."
+                           value="@_searchString"
+                           @oninput="@((e) => OnSearchChanged(e.Value?.ToString() ?? string.Empty))" />
+                </div>
+                @if (_canCreate)
+                {
+                    <button class="add-button" @onclick="OpenAddDialog">
+                        <i class="ti tabler-plus"></i>
+                        <span>Add Mapping</span>
+                    </button>
+                }
+            </div>
+        </div>
+
+        <!-- Table Content -->
+        @if (_isLoading)
+        {
+            <div class="loading-container">
+                <div class="spinner"></div>
+                <p class="loading-text">Loading role hierarchy mappings...</p>
+            </div>
+        }
+        else if (_hasError)
+        {
+            <div class="error-container">
+                <div class="error-message">
+                    <i class="ti tabler-alert-triangle"></i>
+                    <span>@_errorMessage</span>
+                </div>
+            </div>
+        }
+        else if (_pagedMappings != null && _pagedMappings.Any())
+        {
+            <table class="mapping-table">
+                <thead>
+                    <tr>
+                            <th class="plusHeading"></th>
+
+                        <th class="sortable" @onclick='() => ToggleSort("no")'>
+                            #
+                            <span class="sort-indicator">
+                                <span class="sort-arrow up @(_sortColumn == "no" && _sortDirection == "asc" ? "active" : "")"></span>
+                                <span class="sort-arrow down @(_sortColumn == "no" && _sortDirection == "desc" ? "active" : "")"></span>
+                            </span>
+                        </th>
+                        <th class="sortable" @onclick='() => ToggleSort("parent")'>
+                            PARENT ROLE
+                            <span class="sort-indicator">
+                                <span class="sort-arrow up @(_sortColumn == "parent" && _sortDirection == "asc" ? "active" : "")"></span>
+                                <span class="sort-arrow down @(_sortColumn == "parent" && _sortDirection == "desc" ? "active" : "")"></span>
+                            </span>
+                        </th>
+                        <th class="sortable" @onclick='() => ToggleSort("child")'>
+                            CHILD ROLE
+                            <span class="sort-indicator">
+                                <span class="sort-arrow up @(_sortColumn == "child" && _sortDirection == "asc" ? "active" : "")"></span>
+                                <span class="sort-arrow down @(_sortColumn == "child" && _sortDirection == "desc" ? "active" : "")"></span>
+                            </span>
+                        </th>
+                        <th class="text-center">ACTIONS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var mapping in _pagedMappings)
+                    {
+                        <tr>
+                                <td class="details-control" @onclick="@(() => ShowDetails(mapping))">
+                                    <div class="plus" style="border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        box-sizing: content-box;
+                        border: 2px solid var(--bs-paper-bg);
+                        background-color: var(--bs-primary);
+                        block-size: .85rem;
+                        box-shadow: 0 0 3px var(--bs-gray-800);
+                        color: var(--bs-white);    width: 17px;
+            height: 17px;">
+                                        <i class="ti tabler-plus"></i>
+                                    </div>
+                                </td>
+
+                            <td><span class="serial-number">@GetGlobalSerialNumber(mapping)</span></td>
+                            <td><span class="role-name">@mapping.ParentRoleName</span></td>
+                            <td><span class="role-name">@mapping.ChildRoleName</span></td>
+                            <td>
+                                <div class="action-buttons">
+                                    @if (_canView)
+                                    {
+                                        <button class="action-btn view-btn"
+                                                @onclick="() => OpenViewDialog(mapping)"
+                                                title="View Details">
+                                            <i class="ti tabler-eye"></i>
+                                        </button>
+                                    }
+                                    @if (_canEdit)
+                                    {
+                                        <button class="action-btn edit-btn"
+                                                @onclick="() => OpenEditDialog(mapping)"
+                                                title="Edit">
+                                            <i class="ti tabler-edit"></i>
+                                        </button>
+                                    }
+                                    @if (_canDelete)
+                                    {
+                                        <button class="action-btn delete-btn"
+                                                @onclick="() => DeleteMapping(mapping)"
+                                                title="Delete">
+                                            <i class="ti tabler-trash"></i>
+                                        </button>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <!-- Pagination -->
+                <div class="pagination-container">
+                    @* <div class="pagination-info">
+          Showing @GetStartRecord() to @GetEndRecord() of @_totalItems entries
+      </div> *@
+                    <div class="pagination-controls">
+
+                        @* mobile  screen *@
+
+                        @{
+                            var range = GetMobilePageRange();
+                        }
+
+                        <div class="pagination-buttons mobile-only">
+
+                            <button class="page-btn" @onclick="() => GoToPage(1)" disabled="@(_currentPage == 1)">
+                                <i class="bi bi-chevron-bar-left"></i>
+                            </button>
+
+                            <button class="page-btn" @onclick="() => GoToPage(_currentPage - 1)" disabled="@(_currentPage == 1)">
+                                <i class="ti tabler-chevron-left"></i>
+                            </button>
+
+                            <button class="page-btn active">
+                                @_currentPage
+                            </button>
+
+                            <button class="page-btn" @onclick="() => GoToPage(_currentPage + 1)" disabled="@(_currentPage == _totalPages)">
+                                <i class="ti tabler-chevron-right"></i>
+                            </button>
+
+                            <button class="page-btn" @onclick="() => GoToPage(_totalPages)" disabled="@(_currentPage == _totalPages)">
+                                <i class="bi bi-chevron-bar-right"></i>
+                            </button>
+
+                        </div>
+
+
+
+                        <div class="pagination-buttons web-Only">
+                            <button class="page-btn" @onclick="() => GoToPage(1)" disabled="@(_currentPage == 1)">
+                                <i class="bi bi-chevron-bar-left"></i>
+                            </button>
+                            <button class="page-btn" @onclick="() => GoToPage(_currentPage - 1)" disabled="@(_currentPage == 1)">
+                                <i class="ti tabler-chevron-left"></i>
+                            </button>
+
+                            @for (int i = GetStartPage(); i <= GetEndPage(); i++)
+                            {
+                                var pageNum = i;
+                                <button class="page-btn @(_currentPage == pageNum ? "active" : "")"
+                                        @onclick="() => GoToPage(pageNum)">
+                                    @pageNum
+                                </button>
+                            }
+
+                            <button class="page-btn" @onclick="() => GoToPage(_currentPage + 1)" disabled="@(_currentPage == _totalPages)">
+                                <i class="ti tabler-chevron-right"></i>
+                            </button>
+                            <button class="page-btn" @onclick="() => GoToPage(_totalPages)" disabled="@(_currentPage == _totalPages)">
+                                <i class="bi bi-chevron-bar-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+        }
+        else
+        {
+            <div class="no-data-container">
+                <div class="no-data-icon">
+                    <i class="ti tabler-database-off"></i>
+                </div>
+                <p class="no-data-text">No role hierarchy mappings found</p>
+            </div>
+        }
+    </div>
+}
+</div>
+
+<!-- Add/Edit Dialog -->
+<RoleHierarchyMappingFormDialog IsOpen="@_isDialogOpen"
+                                 IsEditMode="@_isEditMode"
+                                 IsSaving="@_isSaving"
+                                 FormModel="@_mappingModel"
+                                 Departments="@_departments"
+                                 FilteredRoles="@_filteredRoles"
+                                 OnCancel="@CloseDialog"
+                                 OnSubmit="@HandleSubmit"
+                                 OnDepartmentChanged="@OnDepartmentChangedFromDialog" />
+
+<!-- View Offcanvas -->
+<RoleHierarchyMappingDetailsOffcanvas IsOpen="@_isOffcanvasOpen"
+                                       Mapping="@_selectedMapping"
+                                       OnClose="@CloseOffcanvas" />
+
+
+@if (showPopup && selectedFeature != null)
+{
+
+    <div class="modal-backdrop show" @onclick:stopPropagation="true"></div>
+    <div class="modal show d-block" tabindex="-1" @onclick:stopPropagation="true">
+        <div class="modal-dialog modal-dialog-top">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        RoleHierachy Mapping 
+                    </h5>
+                    <button type="button" class="btn-close" @onclick="closeSelectFeatures"></button>
+                </div>
+                <div class="modal-body" style="padding: 24px;">
+                    <p><b>Parent Role:</b> @selectedFeature.ParentRoleName</p>
+                    <p><b>Child Role:</b> @selectedFeature.ChildRoleName</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+}
+
+
+
+@code {
+    private List<RoleHierarchyMappingDto> _mappings = new();
+    private List<RoleHierarchyMappingDto> _filteredMappings = new();
+    private List<RoleHierarchyMappingDto> _pagedMappings = new();
+    private List<DepartmentDto> _departments = new();
+    private List<RoleDto> _roles = new();
+    private List<RoleDto> _filteredRoles = new();
+    private RoleHierarchyMappingDto? _selectedMapping;
+    private RoleHierarchyMappingFormDialog.MappingFormModel _mappingModel = new();
+
+    private bool _isLoading = true;
+    private bool _isSaving = false;
+    private bool _isDialogOpen = false;
+    private bool _isOffcanvasOpen = false;
+    private bool _isEditMode = false;
+    private bool _hasError = false;
+    private string _errorMessage = string.Empty;
+
+    // Search and Pagination
+    private string _searchString = string.Empty;
+    private string _sortColumn = "parent";
+    private string _sortDirection = "asc";
+    private int _currentPage = 1;
+    private int _pageSize = 10;
+    private int _totalItems = 0;
+    private int _totalPages = 1;
+
+    // Permission flags
+    private bool _canView = false;
+    private bool _canCreate = false;
+    private bool _canEdit = false;
+    private bool _canDelete = false;
+
+
+     bool showPopup = false;
+RoleHierarchyMappingDto? selectedFeature;
+
+ void closeSelectFeatures()
+ {
+     showPopup=false;
+ }
+
+    void ShowDetails(RoleHierarchyMappingDto feature)
+ {
+     selectedFeature = feature;
+     showPopup = true;
+ }
+
+ void ClosePopup()
+ {
+     showPopup = false;
+ }
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JS.InvokeVoidAsync("loadScriptAndTrigger", "assets/js/toast.js", true);
+
+        }
+    }
+
+    // pagination
+
+    private (int start, int end) GetMobilePageRange()
+    {
+        //int windowSize = 2; // always show 2 page numbers
+
+        int start = _currentPage;
+        int end = _currentPage + 1;
+
+        if (end > _totalPages)
+        {
+            end = _totalPages;
+            start = Math.Max(1, end - 1);
+        }
+
+        return (start, end);
+    }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Logger.LogInformation("RoleHierarchyMapping page initializing...");
+
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            if (!authState.User.Identity?.IsAuthenticated ?? true)
+            {
+                Logger.LogWarning("User not authenticated, redirecting to login");
+                NavigationManager.NavigateTo("/login");
+                return;
+            }
+
+            Logger.LogInformation("User authenticated: {Email}", authState.User.Identity?.Name);
+
+            var permissions = await PermissionService.GetPagePermissionsAsync("RoleHierarchyMapping");
+            _canView = permissions.CanView;
+            _canCreate = permissions.CanAdd;
+            _canEdit = permissions.CanEdit;
+            _canDelete = permissions.CanDelete;
+
+            Logger.LogInformation("Permissions set - View: {View}, Create: {Create}, Edit: {Edit}, Delete: {Delete}",
+                _canView, _canCreate, _canEdit, _canDelete);
+
+            await LoadData();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error initializing RoleHierarchyMapping page");
+            _hasError = true;
+            _errorMessage = $"Error initializing page: {ex.Message}";
+            _isLoading = false;
+        }
+    }
+
+    private async Task LoadData()
+    {
+        _isLoading = true;
+        _hasError = false;
+
+        try
+        {
+            var departmentsTask = RBACService.GetAllDepartmentsAsync();
+            var rolesTask = RBACService.GetAllRolesAsync();
+            var mappingsTask = RBACService.GetAllRoleHierarchyMappingsAsync();
+
+            await Task.WhenAll(departmentsTask, rolesTask, mappingsTask);
+
+            var departmentsResponse = await departmentsTask;
+            var rolesResponse = await rolesTask;
+            var mappingsResponse = await mappingsTask;
+
+            if (departmentsResponse.Success && departmentsResponse.Data != null)
+            {
+                _departments = departmentsResponse.Data.Where(d => d.IsActive).ToList();
+            }
+
+            if (rolesResponse.Success && rolesResponse.Data != null)
+            {
+                _roles = rolesResponse.Data;
+            }
+
+            if (mappingsResponse.Success && mappingsResponse.Data != null)
+            {
+                _mappings = mappingsResponse.Data;
+            }
+
+            UpdateFilteredMappings();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error loading data");
+            _hasError = true;
+            _errorMessage = $"Error loading data: {ex.Message}";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private void UpdateFilteredMappings()
+    {
+        // Filter
+        if (string.IsNullOrWhiteSpace(_searchString))
+        {
+            _filteredMappings = _mappings.ToList();
+        }
+        else
+        {
+            _filteredMappings = _mappings
+                .Where(m => FilterFunc(m))
+                .ToList();
+        }
+
+        // Sort
+        _filteredMappings = (_sortColumn, _sortDirection) switch
+        {
+            ("no", "asc") => _filteredMappings.OrderBy(m => _mappings.IndexOf(m)).ToList(),
+            ("no", "desc") => _filteredMappings.OrderByDescending(m => _mappings.IndexOf(m)).ToList(),
+            ("parent", "asc") => _filteredMappings.OrderBy(m => m.ParentRoleName).ToList(),
+            ("parent", "desc") => _filteredMappings.OrderByDescending(m => m.ParentRoleName).ToList(),
+            ("child", "asc") => _filteredMappings.OrderBy(m => m.ChildRoleName).ToList(),
+            ("child", "desc") => _filteredMappings.OrderByDescending(m => m.ChildRoleName).ToList(),
+            _ => _filteredMappings.OrderBy(m => m.ParentRoleName).ToList()
+        };
+
+        _totalItems = _filteredMappings.Count;
+        _totalPages = _totalItems > 0 ? (int)Math.Ceiling((double)_totalItems / _pageSize) : 1;
+
+        if (_currentPage > _totalPages)
+        {
+            _currentPage = _totalPages;
+        }
+        if (_currentPage < 1)
+        {
+            _currentPage = 1;
+        }
+
+        _pagedMappings = _filteredMappings
+            .Skip((_currentPage - 1) * _pageSize)
+            .Take(_pageSize)
+            .ToList();
+    }
+
+    private void OnSearchChanged(string value)
+    {
+        _searchString = value;
+        _currentPage = 1;
+        UpdateFilteredMappings();
+        StateHasChanged();
+    }
+
+    private void ToggleSort(string column)
+    {
+        if (_sortColumn == column)
+        {
+            _sortDirection = _sortDirection == "asc" ? "desc" : "asc";
+        }
+        else
+        {
+            _sortColumn = column;
+            _sortDirection = "asc";
+        }
+        UpdateFilteredMappings();
+        StateHasChanged();
+    }
+
+    private bool FilterFunc(RoleHierarchyMappingDto mapping)
+    {
+        if (string.IsNullOrWhiteSpace(_searchString))
+            return true;
+
+        var searchLower = _searchString.ToLower();
+        return mapping.ParentRoleName.ToLower().Contains(searchLower) ||
+               mapping.ChildRoleName.ToLower().Contains(searchLower);
+    }
+
+    private int GetGlobalSerialNumber(RoleHierarchyMappingDto mapping)
+    {
+        var index = _filteredMappings.IndexOf(mapping);
+        return index + 1;
+    }
+
+    private int GetStartRecord()
+    {
+        return _totalItems > 0 ? (_currentPage - 1) * _pageSize + 1 : 0;
+    }
+
+    private int GetEndRecord()
+    {
+        return Math.Min(_currentPage * _pageSize, _totalItems);
+    }
+
+    private int GetStartPage()
+    {
+        return Math.Max(1, _currentPage - 2);
+    }
+
+    private int GetEndPage()
+    {
+        return Math.Min(_totalPages, _currentPage + 2);
+    }
+
+    private void GoToPage(int page)
+    {
+        if (page >= 1 && page <= _totalPages)
+        {
+            _currentPage = page;
+            UpdateFilteredMappings();
+            StateHasChanged();
+        }
+    }
+
+    private void OpenAddDialog()
+    {
+        _selectedMapping = null;
+        _isEditMode = false;
+        _mappingModel = new RoleHierarchyMappingFormDialog.MappingFormModel();
+        _filteredRoles = new List<RoleDto>();
+        _isDialogOpen = true;
+    }
+
+    private void OpenEditDialog(RoleHierarchyMappingDto mapping)
+    {
+        _selectedMapping = mapping;
+        _isEditMode = true;
+        _mappingModel = new RoleHierarchyMappingFormDialog.MappingFormModel
+            {
+                DepartmentId = mapping.ParentDepartmentId?.ToString() ?? "",
+                ParentRoleId = mapping.ParentRoleId.ToString(),
+                ChildRoleId = mapping.ChildRoleId.ToString()
+            };
+
+        // Load filtered roles for the selected department
+        if (!string.IsNullOrEmpty(_mappingModel.DepartmentId))
+        {
+            var departmentId = Guid.Parse(_mappingModel.DepartmentId);
+            _filteredRoles = _roles.Where(r => r.DepartmentId == departmentId).ToList();
+        }
+
+        _isDialogOpen = true;
+    }
+
+    private void OpenViewDialog(RoleHierarchyMappingDto mapping)
+    {
+        _selectedMapping = mapping;
+        _isOffcanvasOpen = true;
+    }
+
+    private void CloseDialog()
+    {
+        _isDialogOpen = false;
+        _selectedMapping = null;
+        _mappingModel = new RoleHierarchyMappingFormDialog.MappingFormModel();
+        _isEditMode = false;
+        _filteredRoles = new List<RoleDto>();
+    }
+
+    private void CloseOffcanvas()
+    {
+        _isOffcanvasOpen = false;
+        _selectedMapping = null;
+    }
+
+    private void OnDepartmentChangedFromDialog(string departmentId)
+    {
+        if (string.IsNullOrEmpty(departmentId))
+        {
+            _filteredRoles = new List<RoleDto>();
+        }
+        else
+        {
+            var deptId = Guid.Parse(departmentId);
+            _filteredRoles = _roles.Where(r => r.DepartmentId == deptId).ToList();
+        }
+
+        // Reset role selections when department changes
+        _mappingModel.ParentRoleId = string.Empty;
+        _mappingModel.ChildRoleId = string.Empty;
+        StateHasChanged();
+    }
+
+    private async Task HandleSubmit(RoleHierarchyMappingFormDialog.MappingFormModel model)
+    {
+        _isSaving = true;
+        try
+        {
+            var parentRoleId = Guid.Parse(model.ParentRoleId);
+            var childRoleId = Guid.Parse(model.ChildRoleId);
+
+            if (parentRoleId == childRoleId)
+            {
+                await JS.InvokeVoidAsync("showToast", "error", "Parent and child roles cannot be the same", Severity.Error);
+                _isSaving = false;
+                return;
+            }
+
+            //  DUPLICATE CHECK
+            var isDuplicate = _mappings.Any(m => 
+                m.ParentRoleId == parentRoleId && 
+                m.ChildRoleId == childRoleId && 
+                (!_isEditMode || m.Id != _selectedMapping?.Id));
+
+            if (isDuplicate)
+            {
+                var parentName = _roles.FirstOrDefault(r => r.Id == parentRoleId)?.Name ?? "Unknown Parent Role";
+                var childName = _roles.FirstOrDefault(r => r.Id == childRoleId)?.Name ?? "Unknown Child Role";
+                await JS.InvokeVoidAsync("showToast", "error", $"Duplicate hierarchy mapping: {parentName} → {childName} already exists", Severity.Warning);
+                _isSaving = false;
+                return;
+            }
+
+            if (_isEditMode && _selectedMapping != null)
+            {
+                var updateRequest = new UpdateRoleHierarchyMappingRequest
+                    {
+                        Id = _selectedMapping.Id,
+                        ParentRoleId = parentRoleId,
+                        ChildRoleId = childRoleId,
+                        Level = 1
+                    };
+
+                var response = await RBACService.UpdateRoleHierarchyMappingAsync(_selectedMapping.Id, updateRequest);
+                if (response.Success)
+                {
+                    await JS.InvokeVoidAsync("showToast", "success", "Role hierarchy mapping updated successfully", Severity.Success);
+                    await LoadData();
+                    CloseDialog();
+                }
+                else
+                {
+                    await JS.InvokeVoidAsync("showToast", "error", response.Message ?? "Failed to update role hierarchy mapping", Severity.Error);
+                }
+            }
+            else
+            {
+                var createRequest = new CreateRoleHierarchyMappingRequest
+                    {
+                        ParentRoleId = parentRoleId,
+                        ChildRoleId = childRoleId,
+                        Level = 1
+                    };
+
+                var response = await RBACService.CreateRoleHierarchyMappingAsync(createRequest);
+                if (response.Success)
+                {
+                    await JS.InvokeVoidAsync("showToast", "success", "Role hierarchy mapping created successfully", Severity.Success);
+                    await LoadData();
+                    CloseDialog();
+                }
+                else
+                {
+                    await JS.InvokeVoidAsync("showToast", "error", response.Message ?? "Failed to create role hierarchy mapping", Severity.Error);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error saving role hierarchy mapping");
+            await JS.InvokeVoidAsync("showToast", "error", $"Error: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+
+    private async Task DeleteMapping(RoleHierarchyMappingDto mapping)
+    {
+        try
+        {
+            var confirmed = await JSRuntime.InvokeAsync<bool>("showDeleteConfirmation",
+                "Delete Role Hierarchy Mapping",
+                $"Are you sure you want to delete the mapping between '{mapping.ParentRoleName}' and '{mapping.ChildRoleName}'? This action cannot be undone.");
+
+            if (confirmed)
+            {
+                var response = await RBACService.DeleteRoleHierarchyMappingAsync(mapping.Id);
+                if (response.Success)
+                {
+                    await JS.InvokeVoidAsync("showToast", "success", "Role hierarchy mapping deleted successfully", Severity.Success);
+                    await LoadData();
+                }
+                else
+                {
+                    await JS.InvokeVoidAsync("showToast", "error", response.Message ?? "Failed to delete role hierarchy mapping", Severity.Error);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error deleting role hierarchy mapping");
+            await JS.InvokeVoidAsync("showToast", "error", $"Error deleting role hierarchy mapping: {ex.Message}", Severity.Error);
+        }
+    }
+}

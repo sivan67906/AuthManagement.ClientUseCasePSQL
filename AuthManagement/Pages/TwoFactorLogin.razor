@@ -1,0 +1,505 @@
+@page "/two-factor-login"
+@using AuthManagement.Models
+@using AuthManagement.Services
+@using System.Net.Http.Json
+@inject HttpClient Http
+@inject JwtAuthenticationStateProvider AuthProvider
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+@layout AuthLayout
+@implements IAsyncDisposable
+
+<div class="authentication-wrapper authentication-basic container-p-y">
+    <div class="authentication-inner py-6">
+        <!-- Two Step Verification -->
+        <div class="card">
+            <div class="card-body">
+                <!-- Logo -->
+                <div class="app-brand justify-content-center mb-6">
+                    <a href="/" class="app-brand-link">
+                        <span class="app-brand-logo demo">
+                            <span class="text-primary">
+                                <svg width="32" height="22" viewBox="0 0 32 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M0.00172773 0V6.85398C0.00172773 6.85398 -0.133178 9.01207 1.98092 10.8388L13.6912 21.9964L19.7809 21.9181L18.8042 9.88248L16.4951 7.17289L9.23799 0H0.00172773Z" fill="currentColor"></path>
+                                    <path opacity="0.06" fill-rule="evenodd" clip-rule="evenodd" d="M7.69824 16.4364L12.5199 3.23696L16.5541 7.25596L7.69824 16.4364Z" fill="#161616"></path>
+                                    <path opacity="0.06" fill-rule="evenodd" clip-rule="evenodd" d="M8.07751 15.9175L13.9419 4.63989L16.5849 7.28475L8.07751 15.9175Z" fill="#161616"></path>
+                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M7.77295 16.3566L23.6563 0H32V6.88383C32 6.88383 31.8262 9.17836 30.6591 10.4057L19.7824 22H13.6938L7.77295 16.3566Z" fill="currentColor"></path>
+                                </svg>
+                            </span>
+                        </span>
+                        <span class="app-brand-text demo text-heading fw-bold">Auth System</span>
+                    </a>
+                </div>
+                <!-- /Logo -->
+                @if (!hasPendingTwoFactor)
+                {
+                    <div class="alert alert-warning" role="alert">
+                        <h6 class="alert-heading mb-1">Session Expired</h6>
+                        <p class="mb-0">Your two-factor authentication session has expired. Please log in again.</p>
+                    </div>
+                    <a href="/login" class="btn btn-primary w-100">Back to Login</a>
+                }
+                else
+                {
+                    @if (twoFactorType == "Authenticator")
+                    {
+                        <h4 class="mb-1">Authenticator App Verification</h4>
+                        <p class="mb-6">
+                            Enter the 6-digit code from your authenticator app.
+                            <span class="fw-medium d-block mt-1 text-muted">Code refreshes every 30 seconds</span>
+                        </p>
+                    }
+                    else
+                    {
+                        <h4 class="mb-1">Two Step Verification 💬</h4>
+                        <p class="mb-6">
+                            We sent a verification code to your email. Enter the code in the field below.
+                            <span class="fw-medium d-block mt-1">@MaskEmail(pendingEmail)</span>
+                        </p>
+                    }
+
+                    <div class="mb-4">
+                        <p class="mb-2">Type your 6 digit security code</p>
+                        <div class="d-flex gap-2 mb-6">
+                            <input @ref="box1" type="text" inputmode="numeric" maxlength="1"
+                                   class="form-control text-center digit-input"
+                                   style="width: 50px; height: 50px; font-size: 1.5rem;"
+                                   value="@digit1" pattern="[0-9]*"
+                                   onkeypress="return event.charCode >= 48 && event.charCode <= 57"
+                                   @oninput="(e) => OnDigitInput(e, 1)"
+                                   @onkeydown="(e) => OnKeyDown(e, 1)" />
+
+                            <input @ref="box2" type="text" inputmode="numeric" maxlength="1"
+                                   class="form-control text-center digit-input"
+                                   style="width: 50px; height: 50px; font-size: 1.5rem;"
+                                   value="@digit2" pattern="[0-9]*"
+                                   onkeypress="return event.charCode >= 48 && event.charCode <= 57"
+                                   @oninput="(e) => OnDigitInput(e, 2)"
+                                   @onkeydown="(e) => OnKeyDown(e, 2)" />
+
+                            <input @ref="box3" type="text" inputmode="numeric" maxlength="1"
+                                   class="form-control text-center digit-input"
+                                   style="width: 50px; height: 50px; font-size: 1.5rem;"
+                                   value="@digit3" pattern="[0-9]*"
+                                   onkeypress="return event.charCode >= 48 && event.charCode <= 57"
+                                   @oninput="(e) => OnDigitInput(e, 3)"
+                                   @onkeydown="(e) => OnKeyDown(e, 3)" />
+
+                            <input @ref="box4" type="text" inputmode="numeric" maxlength="1"
+                                   class="form-control text-center digit-input"
+                                   style="width: 50px; height: 50px; font-size: 1.5rem;"
+                                   value="@digit4" pattern="[0-9]*"
+                                   onkeypress="return event.charCode >= 48 && event.charCode <= 57"
+                                   @oninput="(e) => OnDigitInput(e, 4)"
+                                   @onkeydown="(e) => OnKeyDown(e, 4)" />
+
+                            <input @ref="box5" type="text" inputmode="numeric" maxlength="1"
+                                   class="form-control text-center digit-input"
+                                   style="width: 50px; height: 50px; font-size: 1.5rem;"
+                                   value="@digit5" pattern="[0-9]*"
+                                   onkeypress="return event.charCode >= 48 && event.charCode <= 57"
+                                   @oninput="(e) => OnDigitInput(e, 5)"
+                                   @onkeydown="(e) => OnKeyDown(e, 5)" />
+
+                            <input @ref="box6" type="text" inputmode="numeric" maxlength="1"
+                                   class="form-control text-center digit-input"
+                                   style="width: 50px; height: 50px; font-size: 1.5rem;"
+                                   value="@digit6" pattern="[0-9]*"
+                                   onkeypress="return event.charCode >= 48 && event.charCode <= 57"
+                                   @oninput="(e) => OnDigitInput(e, 6)"
+                                   @onkeydown="(e) => OnKeyDown(e, 6)" />
+                        </div>
+
+                        <button class="btn btn-primary d-flex w-100 mb-6" type="button"
+                                @onclick="HandleVerify" disabled="@(isLoading || isResending)">
+                            @if (isLoading)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                <span>Verifying...</span>
+                            }
+                            else
+                            {
+                                <span>Verify my account</span>
+                            }
+                        </button>
+                    </div>
+
+                    @if (twoFactorType == "Email")
+                    {
+                        <p class="text-center">
+                            Didn't get the code? 
+                            <a href="javascript:void(0);" @onclick="ResendCode" class="@(isResending ? "disabled" : "")" style="@(isResending ? "pointer-events: none; opacity: 0.6;" : "")">
+                                @if (isResending)
+                                {
+                                    <span class="spinner-border spinner-border-sm" role="status" style="width: 0.8rem; height: 0.8rem;"></span>
+                                    <span>Resending...</span>
+                                }
+                                else
+                                {
+                                    <span>Resend</span>
+                                }
+                            </a>
+                        </p>
+                    }
+                    else
+                    {
+                        <p class="text-center text-muted">
+                            <small>Open your authenticator app (Google Authenticator, Microsoft Authenticator, etc.) to get the code.</small>
+                        </p>
+                    }
+
+                    <div class="text-center mt-4">
+                        <a href="/login" class="text-muted">
+                            <i class="ti tabler-chevron-left me-1"></i>Back to login
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+        <!-- /Two Step Verification -->
+    </div>
+</div>
+
+<style>
+    .digit-input {
+        width: 45px;
+        height: 45px;
+        font-size: 1.25rem;
+        caret-color: transparent;
+    }
+
+        .digit-input:focus {
+            border-color: #7367f0;
+            box-shadow: 0 0 0 0.2rem rgba(115, 103, 240, 0.25);
+        }
+</style>
+
+@code {
+    private string? message;
+    private bool isLoading;
+    private bool isResending;
+    private string digit1 = "";
+    private string digit2 = "";
+    private string digit3 = "";
+    private string digit4 = "";
+    private string digit5 = "";
+    private string digit6 = "";
+
+    // Pending 2FA session info
+    private bool hasPendingTwoFactor;
+    private string? pendingEmail;
+    private string? pendingToken;
+    private string? twoFactorType;
+
+    ElementReference box1, box2, box3, box4, box5, box6;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Check for pending 2FA session
+        var pending = await AuthProvider.GetPendingTwoFactorAsync();
+        pendingEmail = pending.Email;
+        pendingToken = pending.Token;
+        twoFactorType = pending.Type;
+        hasPendingTwoFactor = !string.IsNullOrEmpty(pendingEmail) && !string.IsNullOrEmpty(pendingToken);
+
+        Console.WriteLine($"[2FA Login] Pending session: {hasPendingTwoFactor}, Type: {twoFactorType}");
+    }
+
+    private async Task OnDigitInput(ChangeEventArgs e, int index)
+    {
+        var value = e.Value?.ToString() ?? "";
+
+        // Only take first character if multiple entered
+        if (value.Length > 1)
+        {
+            value = value.Substring(0, 1);
+        }
+
+        // Only allow digits
+        if (!string.IsNullOrEmpty(value) && !char.IsDigit(value[0]))
+        {
+            value = "";
+        }
+
+        // Update the appropriate digit
+        switch (index)
+        {
+            case 1: digit1 = value; break;
+            case 2: digit2 = value; break;
+            case 3: digit3 = value; break;
+            case 4: digit4 = value; break;
+            case 5: digit5 = value; break;
+            case 6: digit6 = value; break;
+        }
+
+        StateHasChanged();
+
+        // Move to next box if a digit was entered
+        if (!string.IsNullOrEmpty(value))
+        {
+            await FocusNextBox(index);
+        }
+    }
+
+    private async Task OnKeyDown(KeyboardEventArgs e, int index)
+    {
+        if (e.Key == "Backspace")
+        {
+            // Get current value
+            var currentValue = index switch
+            {
+                1 => digit1,
+                2 => digit2,
+                3 => digit3,
+                4 => digit4,
+                5 => digit5,
+                6 => digit6,
+                _ => ""
+            };
+
+            // If current box is empty, move to previous and clear it
+            if (string.IsNullOrEmpty(currentValue) && index > 1)
+            {
+                // Clear previous box
+                switch (index - 1)
+                {
+                    case 1: digit1 = ""; break;
+                    case 2: digit2 = ""; break;
+                    case 3: digit3 = ""; break;
+                    case 4: digit4 = ""; break;
+                    case 5: digit5 = ""; break;
+                }
+                StateHasChanged();
+                await FocusPreviousBox(index);
+            }
+        }
+        else if (e.Key == "ArrowLeft" && index > 1)
+        {
+            await FocusPreviousBox(index);
+        }
+        else if (e.Key == "ArrowRight" && index < 6)
+        {
+            await FocusNextBox(index);
+        }
+        else if (e.Key == "Enter")
+        {
+            await HandleVerify();
+        }
+    }
+
+    private async Task FocusNextBox(int currentIndex)
+    {
+        ElementReference? nextBox = currentIndex switch
+        {
+            1 => box2,
+            2 => box3,
+            3 => box4,
+            4 => box5,
+            5 => box6,
+            _ => null
+        };
+
+        if (nextBox.HasValue)
+        {
+            await nextBox.Value.FocusAsync();
+        }
+    }
+
+    private async Task FocusPreviousBox(int currentIndex)
+    {
+        ElementReference? prevBox = currentIndex switch
+        {
+            2 => box1,
+            3 => box2,
+            4 => box3,
+            5 => box4,
+            6 => box5,
+            _ => null
+        };
+
+        if (prevBox.HasValue)
+        {
+            await prevBox.Value.FocusAsync();
+        }
+    }
+
+    private string MaskEmail(string? email)
+    {
+        if (string.IsNullOrEmpty(email)) return "***@***.***";
+
+        var atIndex = email.IndexOf('@');
+        if (atIndex <= 0) return "***@***.***";
+
+        var localPart = email.Substring(0, atIndex);
+        var domainPart = email.Substring(atIndex);
+
+        if (localPart.Length <= 2)
+            return $"{localPart[0]}***{domainPart}";
+
+        return $"{localPart[0]}***{localPart[^1]}{domainPart}";
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JS.InvokeVoidAsync("loadScriptAndTrigger", "assets/js/main.js", true);
+            await JS.InvokeVoidAsync("loadScriptAndTrigger", "assets/js/popular.js", true);
+            await JS.InvokeVoidAsync("loadScriptAndTrigger", "assets/js/bootstrap5.js", true);
+            await JS.InvokeVoidAsync("loadScriptAndTrigger", "assets/js/auto-focus.js", true);
+            await JS.InvokeVoidAsync("loadScriptAndTrigger", "assets/js/pages-auth.js", true);
+            await JS.InvokeVoidAsync("loadScriptAndTrigger", "assets/js/toast.js", true);
+        }
+        await JS.InvokeVoidAsync("eval", "typeof initPagesAuth === 'function' && initPagesAuth();");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await JS.InvokeVoidAsync("eval", "window.destroyPagesAuth && window.destroyPagesAuth();");
+    }
+
+    private async Task HandleVerify()
+    {
+        var code = $"{digit1}{digit2}{digit3}{digit4}{digit5}{digit6}";
+
+        if (code.Length != 6)
+        {
+            message = "Please enter all 6 digits.";
+            await JS.InvokeVoidAsync("showToast", "error", message);
+            return;
+        }
+
+        if (!hasPendingTwoFactor)
+        {
+            message = "Session expired. Please log in again.";
+            await JS.InvokeVoidAsync("showToast", "error", message);
+            Nav.NavigateTo("/login");
+            return;
+        }
+
+        isLoading = true;
+        message = null;
+
+        try
+        {
+            // Use the new verify-2fa-login endpoint
+            var request = new VerifyTwoFactorLoginRequest
+            {
+                Email = pendingEmail!,
+                TwoFactorToken = pendingToken!,
+                Code = code,
+                TwoFactorType = twoFactorType!
+            };
+
+            var response = await Http.PostAsJsonAsync("/auth/verify-2fa-login", request);
+            var result = await response.Content.ReadFromJsonAsync<ApiResponse<LoginResultDto>>();
+
+            if (response.IsSuccessStatusCode && result?.Success == true && result.Data != null)
+            {
+                // Clear pending 2FA session
+                await AuthProvider.ClearPendingTwoFactorAsync();
+
+                // Set the token from the response (stores in localStorage and updates auth state)
+                await AuthProvider.SetAuthenticationAsync(result.Data.AccessToken);
+                
+                await JS.InvokeVoidAsync("showToast", "success", "Verification successful!");
+
+                // Additional delay to ensure state is updated before navigation
+                await Task.Delay(100);
+
+                Nav.NavigateTo("/", forceLoad: false);
+            }
+            else
+            {
+                if (result?.Errors != null && result.Errors.Count > 0)
+                {
+                    message = string.Join(", ", result.Errors);
+                }
+                else
+                {
+                    message = result?.Message ?? "Invalid code. Please try again.";
+                }
+                await JS.InvokeVoidAsync("showToast", "error", message);
+
+                // Clear the input fields for retry
+                ClearDigits();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[2FA Login] Error: {ex.Message}");
+            message = "An error occurred. Please try again.";
+            await JS.InvokeVoidAsync("showToast", "error", message);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void ClearDigits()
+    {
+        digit1 = digit2 = digit3 = digit4 = digit5 = digit6 = "";
+        StateHasChanged();
+    }
+
+    private async Task ResendCode()
+    {
+        if (twoFactorType != "Email")
+        {
+            await JS.InvokeVoidAsync("showToast", "info", "Authenticator codes are generated by your app.");
+            return;
+        }
+
+        if (!hasPendingTwoFactor || string.IsNullOrEmpty(pendingEmail) || string.IsNullOrEmpty(pendingToken))
+        {
+            await JS.InvokeVoidAsync("showToast", "error", "Invalid session. Please login again.");
+            Nav.NavigateTo("/login");
+            return;
+        }
+
+        try
+        {
+            isResending = true;
+            StateHasChanged(); // Force UI update to show "Resending..."
+
+            // Call resend endpoint with email and two-factor token
+            var request = new ResendTwoFactorRequest
+            {
+                Email = pendingEmail,
+                TwoFactorToken = pendingToken
+            };
+
+            var response = await Http.PostAsJsonAsync("/auth/resend-2fa-login", request);
+            var result = await response.Content.ReadFromJsonAsync<ApiResponse<string>>();
+
+            if (response.IsSuccessStatusCode && result?.Success == true)
+            {
+                message = "Code resent successfully! Check your email.";
+                await JS.InvokeVoidAsync("showToast", "success", message);
+            }
+            else
+            {
+                message = result?.Message ?? "Failed to resend code.";
+                await JS.InvokeVoidAsync("showToast", "error", message);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[2FA Resend] Error: {ex.Message}");
+            message = "Failed to resend code. Please try again.";
+            await JS.InvokeVoidAsync("showToast", "error", message);
+        }
+        finally
+        {
+            isResending = false;
+            StateHasChanged(); // Force UI update to restore button
+        }
+    }
+
+    private class ResendTwoFactorRequest
+    {
+        public string Email { get; set; } = string.Empty;
+        public string TwoFactorToken { get; set; } = string.Empty;
+    }
+}
