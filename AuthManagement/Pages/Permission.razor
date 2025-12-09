@@ -708,7 +708,7 @@ PermissionDto? selectedFeature;
             ("name", "desc") => _filteredPermissions.OrderByDescending(p => p.Name).ToList(),
             ("description", "asc") => _filteredPermissions.OrderBy(p => p.Description ?? string.Empty).ToList(),
             ("description", "desc") => _filteredPermissions.OrderByDescending(p => p.Description ?? string.Empty).ToList(),
-            _ => _filteredPermissions.OrderBy(p => p.Name).ToList()
+            _ => _filteredPermissions // Preserve original order from API (descending by date)
         };
         _totalItems = _filteredPermissions.Count; _totalPages = _totalItems > 0 ? (int)Math.Ceiling((double)_totalItems / _pageSize) : 1;
         if (_currentPage > _totalPages) _currentPage = _totalPages; if (_currentPage < 1) _currentPage = 1;

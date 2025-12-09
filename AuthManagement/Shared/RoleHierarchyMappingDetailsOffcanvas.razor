@@ -26,6 +26,18 @@
                 <div class="details-list">
                     <div class="detail-item">
                         <div class="detail-icon">
+                            <i class="ti tabler-building" style="color: #667eea;"></i>
+                        </div>
+                        <div class="detail-content">
+                            <div class="detail-label">Department</div>
+                            <div class="detail-value">
+                                <span class="department-badge">@Mapping?.DepartmentName</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="detail-item">
+                        <div class="detail-icon">
                             <i class="ti tabler-shield" style="color: #667eea;"></i>
                         </div>
                         <div class="detail-content">
@@ -43,46 +55,6 @@
                             <div class="detail-value">@Mapping?.ChildRoleName</div>
                         </div>
                     </div>
-
-                    <div class="detail-item">
-                        <div class="detail-icon">
-                            <i class="ti tabler-layers-difference" style="color: #667eea;"></i>
-                        </div>
-                        <div class="detail-content">
-                            <div class="detail-label">Level</div>
-                            <div class="detail-value">@Mapping?.Level</div>
-                        </div>
-                    </div>
-
-                    @if (!string.IsNullOrEmpty(Mapping?.ParentDepartmentName))
-                    {
-                        <div class="detail-item">
-                            <div class="detail-icon">
-                                <i class="ti tabler-building" style="color: #667eea;"></i>
-                            </div>
-                            <div class="detail-content">
-                                <div class="detail-label">Parent Department</div>
-                                <div class="detail-value">
-                                    <span class="department-badge">@Mapping.ParentDepartmentName</span>
-                                </div>
-                            </div>
-                        </div>
-                    }
-
-                    @if (!string.IsNullOrEmpty(Mapping?.ChildDepartmentName))
-                    {
-                        <div class="detail-item">
-                            <div class="detail-icon">
-                                <i class="ti tabler-building" style="color: #667eea;"></i>
-                            </div>
-                            <div class="detail-content">
-                                <div class="detail-label">Child Department</div>
-                                <div class="detail-value">
-                                    <span class="department-badge">@Mapping.ChildDepartmentName</span>
-                                </div>
-                            </div>
-                        </div>
-                    }
 
                     <div class="detail-item">
                         <div class="detail-icon">

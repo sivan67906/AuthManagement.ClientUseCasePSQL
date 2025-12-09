@@ -34,6 +34,12 @@ builder.Services.AddScoped<MenuService>();
 // Register Navigation Service for hierarchical TreeView menu
 builder.Services.AddScoped<NavigationService>();
 
+// Register Page Access Service for URL-level access control
+builder.Services.AddScoped<PageAccessService>();
+
+// Register Navigation Guard for additional layer of protection
+builder.Services.AddScoped<NavigationGuard>();
+
 // Register Test Entity Service for RBAC testing (Singleton for in-memory data persistence)
 builder.Services.AddSingleton<TestEntityService>();
 

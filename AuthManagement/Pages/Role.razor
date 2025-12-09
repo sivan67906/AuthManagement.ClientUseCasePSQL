@@ -844,7 +844,7 @@ Role Details
             ("department", "desc") => _filteredRoles.OrderByDescending(r => r.DepartmentName ?? string.Empty).ToList(),
             ("description", "asc") => _filteredRoles.OrderBy(r => r.Description ?? string.Empty).ToList(),
             ("description", "desc") => _filteredRoles.OrderByDescending(r => r.Description ?? string.Empty).ToList(),
-            _ => _filteredRoles.OrderBy(r => r.Name).ToList()
+            _ => _filteredRoles // Preserve original order from API (descending by date)
         };
 
         _totalItems = _filteredRoles.Count;

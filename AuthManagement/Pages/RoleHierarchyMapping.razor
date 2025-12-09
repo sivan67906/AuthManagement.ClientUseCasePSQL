@@ -576,6 +576,13 @@
                                 <span class="sort-arrow down @(_sortColumn == "no" && _sortDirection == "desc" ? "active" : "")"></span>
                             </span>
                         </th>
+                        <th class="sortable" @onclick='() => ToggleSort("department")'>
+                            DEPARTMENT
+                            <span class="sort-indicator">
+                                <span class="sort-arrow up @(_sortColumn == "department" && _sortDirection == "asc" ? "active" : "")"></span>
+                                <span class="sort-arrow down @(_sortColumn == "department" && _sortDirection == "desc" ? "active" : "")"></span>
+                            </span>
+                        </th>
                         <th class="sortable" @onclick='() => ToggleSort("parent")'>
                             PARENT ROLE
                             <span class="sort-indicator">
@@ -614,6 +621,7 @@
                                 </td>
 
                             <td><span class="serial-number">@GetGlobalSerialNumber(mapping)</span></td>
+                            <td><span class="role-name">@mapping.DepartmentName</span></td>
                             <td><span class="role-name">@mapping.ParentRoleName</span></td>
                             <td><span class="role-name">@mapping.ChildRoleName</span></td>
                             <td>
@@ -754,11 +762,12 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">
-                        RoleHierachy Mapping 
+                        Role Hierarchy Mapping 
                     </h5>
                     <button type="button" class="btn-close" @onclick="closeSelectFeatures"></button>
                 </div>
                 <div class="modal-body" style="padding: 24px;">
+                    <p><b>Department:</b> @selectedFeature.DepartmentName</p>
                     <p><b>Parent Role:</b> @selectedFeature.ParentRoleName</p>
                     <p><b>Child Role:</b> @selectedFeature.ChildRoleName</p>
                 </div>
@@ -954,11 +963,13 @@ RoleHierarchyMappingDto? selectedFeature;
         {
             ("no", "asc") => _filteredMappings.OrderBy(m => _mappings.IndexOf(m)).ToList(),
             ("no", "desc") => _filteredMappings.OrderByDescending(m => _mappings.IndexOf(m)).ToList(),
+            ("department", "asc") => _filteredMappings.OrderBy(m => m.DepartmentName).ToList(),
+            ("department", "desc") => _filteredMappings.OrderByDescending(m => m.DepartmentName).ToList(),
             ("parent", "asc") => _filteredMappings.OrderBy(m => m.ParentRoleName).ToList(),
             ("parent", "desc") => _filteredMappings.OrderByDescending(m => m.ParentRoleName).ToList(),
             ("child", "asc") => _filteredMappings.OrderBy(m => m.ChildRoleName).ToList(),
             ("child", "desc") => _filteredMappings.OrderByDescending(m => m.ChildRoleName).ToList(),
-            _ => _filteredMappings.OrderBy(m => m.ParentRoleName).ToList()
+            _ => _filteredMappings.OrderBy(m => m.DepartmentName).ToList()
         };
 
         _totalItems = _filteredMappings.Count;

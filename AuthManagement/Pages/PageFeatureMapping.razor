@@ -964,7 +964,7 @@
             ("page", "desc") => _filteredMappings.OrderByDescending(m => m.PageName).ToList(),
             ("feature", "asc") => _filteredMappings.OrderBy(m => m.FeatureName).ToList(),
             ("feature", "desc") => _filteredMappings.OrderByDescending(m => m.FeatureName).ToList(),
-            _ => _filteredMappings.OrderBy(m => m.PageName).ToList()
+            _ => _filteredMappings // Preserve original order from API (descending by date)
         };
 
         _totalItems = _filteredMappings.Count;

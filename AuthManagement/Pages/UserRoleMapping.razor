@@ -854,7 +854,7 @@
             ("name", "desc") => _filteredUsers.OrderByDescending(u => GetFullName(u)).ToList(),
             ("username", "asc") => _filteredUsers.OrderBy(u => u.UserName ?? string.Empty).ToList(),
             ("username", "desc") => _filteredUsers.OrderByDescending(u => u.UserName ?? string.Empty).ToList(),
-            _ => _filteredUsers.OrderBy(u => u.Email).ToList()
+            _ => _filteredUsers // Preserve original order from API (descending by date)
         };
 
         _totalItems = _filteredUsers.Count;

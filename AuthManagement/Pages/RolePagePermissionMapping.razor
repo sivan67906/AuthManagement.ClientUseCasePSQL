@@ -573,6 +573,13 @@
                                     <span class="sort-arrow down @(_sortColumn == "no" && _sortDirection == "desc" ? "active" : "")"></span>
                                 </span>
                             </th>
+                            <th class="sortable" @onclick='() => ToggleSort("department")'>
+                                DEPARTMENT
+                                <span class="sort-indicator">
+                                    <span class="sort-arrow up @(_sortColumn == "department" && _sortDirection == "asc" ? "active" : "")"></span>
+                                    <span class="sort-arrow down @(_sortColumn == "department" && _sortDirection == "desc" ? "active" : "")"></span>
+                                </span>
+                            </th>
                             <th class="sortable" @onclick='() => ToggleSort("role")'>
                                 ROLE NAME
                                 <span class="sort-indicator">
@@ -592,13 +599,6 @@
                                 <span class="sort-indicator">
                                     <span class="sort-arrow up @(_sortColumn == "permission" && _sortDirection == "asc" ? "active" : "")"></span>
                                     <span class="sort-arrow down @(_sortColumn == "permission" && _sortDirection == "desc" ? "active" : "")"></span>
-                                </span>
-                            </th>
-                            <th class="sortable" @onclick='() => ToggleSort("department")'>
-                                DEPARTMENT
-                                <span class="sort-indicator">
-                                    <span class="sort-arrow up @(_sortColumn == "department" && _sortDirection == "asc" ? "active" : "")"></span>
-                                    <span class="sort-arrow down @(_sortColumn == "department" && _sortDirection == "desc" ? "active" : "")"></span>
                                 </span>
                             </th>
                             <th class="text-center">ACTIONS</th>
@@ -625,10 +625,10 @@
                                 </td>
 
                                 <td><span class="serial-number">@GetGlobalSerialNumber(mapping)</span></td>
+                                <td><span class="mapping-name">@(mapping.DepartmentName ?? "All Departments")</span></td>
                                 <td><span class="mapping-name">@mapping.RoleName</span></td>
                                 <td><span class="mapping-name">@mapping.PageName</span></td>
                                 <td><span class="mapping-name">@mapping.PermissionName</span></td>
-                                <td><span class="mapping-name">@(mapping.DepartmentName ?? "All Departments")</span></td>
                                 <td>
                                     <div class="action-buttons">
                                         @if (_canView)
@@ -768,10 +768,10 @@
                     <button type="button" class="btn-close" @onclick="closeSelectFeatures"></button>
                 </div>
                 <div class="modal-body" style="padding: 24px;">
+                    <p><b>Department:</b> @(selectedFeature.DepartmentName ?? "All Departments")</p>
                     <p><b>Role Name:</b> @selectedFeature.RoleName</p>
                     <p><b>Page Name:</b> @selectedFeature.PageName</p>
                     <p><b>Permission Name:</b> @selectedFeature.PermissionName</p>
-                    <p><b>Department:</b> @(selectedFeature.DepartmentName ?? "All Departments")</p>
                 </div>
             </div>
         </div>
@@ -1006,7 +1006,7 @@
             ("permission", "desc") => _filteredMappings.OrderByDescending(m => m.PermissionName).ToList(),
             ("department", "asc") => _filteredMappings.OrderBy(m => m.DepartmentName ?? "").ToList(),
             ("department", "desc") => _filteredMappings.OrderByDescending(m => m.DepartmentName ?? "").ToList(),
-            _ => _filteredMappings.OrderBy(m => m.RoleName).ToList()
+            _ => _filteredMappings // Preserve original order from API (descending by date)
         };
 
         _totalItems = _filteredMappings.Count;

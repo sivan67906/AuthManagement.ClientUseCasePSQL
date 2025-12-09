@@ -20,9 +20,9 @@
                         
                         <div class="mb-3">
                             <label class="form-label">Parent Feature</label>
-                            <select @bind="FormModel.ParentFeatureId" class="form-control" disabled="@IsSaving">
+                            <select @bind="FormModel.ParentFeatureId" @bind:after="OnParentFeatureChanged" class="form-control" disabled="@IsSaving">
                                 <option value="">No Parent (Top Level)</option>
-                                @foreach (var feature in ParentFeatures.Where(f => f.Id != FormModel.Id))
+                                @foreach (var feature in ParentFeatures.Where(f => f.IsMainMenu && (!IsEditMode || f.Id != FormModel.Id)))
                                 {
                                     <option value="@feature.Id">@feature.Name</option>
                                 }
@@ -41,21 +41,13 @@
                         </div>
                         
                         <div class="mb-3">
-                            <label class="form-label">Route URL</label>
-                            <InputText @bind-Value="FormModel.RouteUrl" class="form-control" placeholder="/example" disabled="@IsSaving" />
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Display Order<span class="text-danger">*</span></label>
-                                <InputNumber @bind-Value="FormModel.DisplayOrder" class="form-control" disabled="@IsSaving" />
-                                <ValidationMessage For="@(() => FormModel.DisplayOrder)" class="text-danger" />
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Level<span class="text-danger">*</span></label>
-                                <InputNumber @bind-Value="FormModel.Level" class="form-control" disabled="@IsSaving" />
-                                <ValidationMessage For="@(() => FormModel.Level)" class="text-danger" />
-                            </div>
+                            <label class="form-label">Display Order<span class="text-danger">*</span></label>
+                            <InputNumber @bind-Value="FormModel.DisplayOrder" class="form-control" min="0" disabled="@IsSaving" />
+                            <ValidationMessage For="@(() => FormModel.DisplayOrder)" class="text-danger" />
+                            @if (FormModel.DisplayOrder < 0)
+                            {
+                                <span class="text-danger">Display order cannot be negative</span>
+                            }
                         </div>
                         
                         <div class="mb-3">
@@ -65,9 +57,13 @@
                         
                         <div class="mb-3">
                             <div class="form-check">
-                                <InputCheckbox @bind-Value="FormModel.IsMainMenu" class="form-check-input" id="isMainMenu" disabled="@IsSaving" />
+                                <InputCheckbox @bind-Value="FormModel.IsMainMenu" class="form-check-input" id="isMainMenu" disabled="@(_isMainMenuDisabled || IsSaving)" />
                                 <label class="form-check-label" for="isMainMenu">Is Main Menu</label>
                             </div>
+                            @if (_isMainMenuRequired && !FormModel.IsMainMenu)
+                            {
+                                <span class="text-danger">Main features (with no parent) must be marked as Main Menu</span>
+                            }
                         </div>
                         
                         <div class="d-flex justify-content-end gap-2 mt-4">
@@ -118,14 +114,67 @@
     [Parameter] public EventCallback<FeatureFormModel> OnSubmit { get; set; }
 
     private Guid? _currentFeatureId;
+    private bool _isMainMenuDisabled = false;
+    private bool _isMainMenuRequired = false;
 
     protected override void OnParametersSet()
     {
         _currentFeatureId = FormModel.Id;
+        UpdateMainMenuValidation();
+    }
+
+    private void OnParentFeatureChanged()
+    {
+        UpdateMainMenuValidation();
+        // Auto-set Level based on ParentFeatureId
+        FormModel.Level = FormModel.ParentFeatureId.HasValue ? 1 : 0;
+        StateHasChanged();
+    }
+
+    private void UpdateMainMenuValidation()
+    {
+        // If Parent Feature is selected, disable IsMainMenu and set to false
+        if (FormModel.ParentFeatureId.HasValue && FormModel.ParentFeatureId != Guid.Empty)
+        {
+            _isMainMenuDisabled = true;
+            _isMainMenuRequired = false;
+            FormModel.IsMainMenu = false;
+            FormModel.Level = 1;
+        }
+        // If No Parent, enable IsMainMenu and require it to be checked
+        else
+        {
+            _isMainMenuDisabled = false;
+            _isMainMenuRequired = true;
+            FormModel.IsMainMenu = true; // Auto-check for main features
+            FormModel.Level = 0;
+        }
     }
 
     private async Task HandleCancel() { if (!IsSaving) await OnCancel.InvokeAsync(); }
-    private async Task HandleValidSubmit() => await OnSubmit.InvokeAsync(FormModel);
+    
+    private async Task HandleValidSubmit()
+    {
+        // Validate DisplayOrder is not negative
+        if (FormModel.DisplayOrder < 0)
+        {
+            return; // Don't submit if invalid
+        }
+
+        // Validate IsMainMenu requirement for top-level features
+        if (!FormModel.ParentFeatureId.HasValue && !FormModel.IsMainMenu)
+        {
+            return; // Don't submit if invalid
+        }
+
+        // Ensure Level is set correctly before submitting
+        FormModel.Level = FormModel.ParentFeatureId.HasValue ? 1 : 0;
+
+        // RouteUrl is not shown to user, so we can set it to null or empty
+        FormModel.RouteUrl = null;
+
+        await OnSubmit.InvokeAsync(FormModel);
+    }
 
     public class FeatureFormModel
     {
@@ -138,15 +187,15 @@
         [StringLength(500, ErrorMessage = "Description cannot exceed 500 characters")]
         public string? Description { get; set; }
 
-        public string? RouteUrl { get; set; }
+        public string? RouteUrl { get; set; } // Hidden from user
         public bool IsMainMenu { get; set; }
         public Guid? ParentFeatureId { get; set; }
         
         [Required(ErrorMessage = "Display order is required")]
+        [Range(0, int.MaxValue, ErrorMessage = "Display order cannot be negative")]
         public int DisplayOrder { get; set; }
         
-        [Required(ErrorMessage = "Level is required")]
-        public int Level { get; set; }
+        public int Level { get; set; } // Hidden from user, auto-calculated
         
         public string? Icon { get; set; }
     }

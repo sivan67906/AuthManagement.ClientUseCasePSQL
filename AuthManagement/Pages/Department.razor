@@ -970,7 +970,7 @@
             ("name", "desc") => _filteredDepartments.OrderByDescending(d => d.Name).ToList(),
             ("description", "asc") => _filteredDepartments.OrderBy(d => d.Description ?? string.Empty).ToList(),
             ("description", "desc") => _filteredDepartments.OrderByDescending(d => d.Description ?? string.Empty).ToList(),
-            _ => _filteredDepartments.OrderBy(d => d.Name).ToList()
+            _ => _filteredDepartments // Preserve original order from API (descending by date)
         };
 
         _totalItems = _filteredDepartments.Count;

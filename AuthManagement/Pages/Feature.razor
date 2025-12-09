@@ -768,7 +768,7 @@ Features Details
             ("description", "desc") => _filteredFeatures.OrderByDescending(f => f.Description ?? string.Empty).ToList(),
             ("routeurl", "asc") => _filteredFeatures.OrderBy(f => f.RouteUrl ?? string.Empty).ToList(),
             ("routeurl", "desc") => _filteredFeatures.OrderByDescending(f => f.RouteUrl ?? string.Empty).ToList(),
-            _ => _filteredFeatures.OrderBy(f => f.Name).ToList()
+            _ => _filteredFeatures // Preserve original order from API (descending by date)
         };
         _totalItems = _filteredFeatures.Count; _totalPages = _totalItems > 0 ? (int)Math.Ceiling((double)_totalItems / _pageSize) : 1;
         if (_currentPage > _totalPages) _currentPage = _totalPages; if (_currentPage < 1) _currentPage = 1;
