@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.WebAssembly.Http;
 using Microsoft.JSInterop;
 using AuthManagement.Models;
 
@@ -23,10 +24,14 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider, IDisp
     private readonly SemaphoreSlim _initializationLock = new(1, 1);
     private readonly SemaphoreSlim _refreshLock = new(1, 1);
 
-    // 🔥 NEW: Background token refresh timer
+    // 🔥 Background token refresh timer
     private System.Threading.Timer? _tokenRefreshTimer;
     private const int TokenRefreshCheckIntervalSeconds = 60; // Check every 60 seconds
-    private const int TokenRefreshThresholdMinutes = 2; // Refresh when <2 minutes remaining
+    private const int TokenRefreshThresholdMinutes = 3; // Refresh when <3 minutes remaining (increased from 2)
+
+    // 🔥 Rate limiting for refresh attempts
+    private DateTime _lastRefreshAttempt = DateTime.MinValue;
+    private readonly TimeSpan _minRefreshInterval = TimeSpan.FromSeconds(30);
 
     // Pending 2FA session storage
     private string? _pendingTwoFactorEmail;
@@ -48,27 +53,43 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider, IDisp
         _httpClientFactory = httpClientFactory;
         _logger = logger;
 
-        // 🔥 NEW: Start background token refresh timer
+        // 🔥 Start background token refresh timer
         StartTokenRefreshTimer();
     }
 
     /// <summary>
-    /// 🔥 NEW: Starts a background timer that periodically checks and refreshes expired tokens
+    /// 🔥 Starts a background timer that periodically checks and refreshes expired tokens
     /// </summary>
     private void StartTokenRefreshTimer()
     {
         _tokenRefreshTimer = new System.Threading.Timer(
-            async _ => await CheckAndRefreshTokenAsync(),
+            async _ => await SafeCheckAndRefreshTokenAsync(),
             null,
             TimeSpan.FromSeconds(TokenRefreshCheckIntervalSeconds),
             TimeSpan.FromSeconds(TokenRefreshCheckIntervalSeconds)
         );
         
-        _logger.LogInformation("[AUTH] Token refresh timer started (checks every {Interval}s)", TokenRefreshCheckIntervalSeconds);
+        _logger.LogInformation("[AUTH] Token refresh timer started (checks every {Interval}s, threshold {Threshold}m)", 
+            TokenRefreshCheckIntervalSeconds, TokenRefreshThresholdMinutes);
     }
 
     /// <summary>
-    /// 🔥 NEW: Proactively checks token expiry and refreshes if needed
+    /// 🔥 Safe wrapper for async timer callback with error handling
+    /// </summary>
+    private async Task SafeCheckAndRefreshTokenAsync()
+    {
+        try
+        {
+            await CheckAndRefreshTokenAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[AUTH] Unhandled error in background token refresh check");
+        }
+    }
+
+    /// <summary>
+    /// 🔥 Proactively checks token expiry and refreshes if needed
     /// This runs in the background every minute to prevent expired tokens
     /// </summary>
     private async Task CheckAndRefreshTokenAsync()
@@ -77,7 +98,8 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider, IDisp
         {
             if (!_isInitialized)
             {
-                return; // Not initialized yet
+                _logger.LogDebug("[AUTH] Background refresh skipped - not initialized yet");
+                return;
             }
 
             string? currentToken;
@@ -88,40 +110,43 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider, IDisp
 
             if (string.IsNullOrWhiteSpace(currentToken))
             {
-                return; // No token to refresh
+                _logger.LogDebug("[AUTH] Background refresh skipped - no token");
+                return;
             }
 
             // Parse token and check expiry
             var token = _tokenHandler.ReadJwtToken(currentToken);
             var timeUntilExpiry = token.ValidTo - DateTime.UtcNow;
 
-            // 🔥 Refresh token if it expires in less than 2 minutes
+            _logger.LogDebug("[AUTH] Background check - token expires in {Minutes:F2} minutes", timeUntilExpiry.TotalMinutes);
+
+            // 🔥 Refresh token if it expires in less than threshold minutes
             if (timeUntilExpiry.TotalMinutes < TokenRefreshThresholdMinutes && timeUntilExpiry.TotalSeconds > 0)
             {
-                _logger.LogInformation("[AUTH] Token expires in {Minutes} minutes, proactively refreshing...", 
-                    Math.Round(timeUntilExpiry.TotalMinutes, 2));
+                _logger.LogInformation("[AUTH] Token expires in {Minutes:F2} minutes (threshold={Threshold}m), proactively refreshing...", 
+                    timeUntilExpiry.TotalMinutes, TokenRefreshThresholdMinutes);
 
                 var refreshed = await TryRefreshTokenAsync();
                 
                 if (refreshed)
                 {
-                    _logger.LogInformation("[AUTH] Proactive token refresh successful");
+                    _logger.LogInformation("[AUTH] ✅ Proactive token refresh successful at {Time}", DateTime.Now.ToString("HH:mm:ss"));
                 }
                 else
                 {
-                    _logger.LogWarning("[AUTH] Proactive token refresh failed");
+                    _logger.LogWarning("[AUTH] ⚠️ Proactive token refresh failed");
                 }
             }
             else if (timeUntilExpiry.TotalSeconds <= 0)
             {
-                _logger.LogWarning("[AUTH] Token already expired, attempting refresh...");
+                _logger.LogWarning("[AUTH] ⚠️ Token already expired at {ExpiredAt}, attempting refresh...", token.ValidTo);
                 
                 var refreshed = await TryRefreshTokenAsync();
                 
                 if (!refreshed)
                 {
                     // Token expired and refresh failed - clear auth state
-                    _logger.LogWarning("[AUTH] Expired token refresh failed, clearing auth state");
+                    _logger.LogWarning("[AUTH] ❌ Expired token refresh failed, clearing auth state");
                     await ClearAsync();
                 }
             }
@@ -133,10 +158,19 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider, IDisp
     }
 
     /// <summary>
-    /// 🔥 NEW: Centralized token refresh logic
+    /// 🔥 Centralized token refresh logic with proper browser credentials
     /// </summary>
     private async Task<bool> TryRefreshTokenAsync()
     {
+        // 🔥 Rate limiting - prevent refresh storms
+        var timeSinceLastRefresh = DateTime.UtcNow - _lastRefreshAttempt;
+        if (timeSinceLastRefresh < _minRefreshInterval)
+        {
+            _logger.LogDebug("[AUTH] Refresh skipped - rate limited (last attempt {Seconds}s ago)", 
+                timeSinceLastRefresh.TotalSeconds);
+            return false;
+        }
+
         // Prevent concurrent refresh attempts
         if (!await _refreshLock.WaitAsync(0))
         {
@@ -146,13 +180,21 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider, IDisp
 
         try
         {
-            _logger.LogInformation("[AUTH] Attempting token refresh...");
+            _lastRefreshAttempt = DateTime.UtcNow;
+            _logger.LogInformation("[AUTH] 🔄 Attempting token refresh at {Time}...", DateTime.Now.ToString("HH:mm:ss"));
 
             var httpClient = _httpClientFactory.CreateClient("AuthApi");
             
-            // 🔥 CRITICAL: Call refresh-token endpoint
-            // The HttpOnly refresh token cookie will be sent automatically
-            var response = await httpClient.PostAsync("/auth/refresh-token", null);
+            // 🔥 CRITICAL FIX: Create request with browser credentials for cross-origin cookies
+            var request = new HttpRequestMessage(HttpMethod.Post, "/auth/refresh-token");
+            
+            // 🔥 CRITICAL: This is required for Blazor WASM to send HttpOnly cookies cross-origin
+            request.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
+            request.SetBrowserRequestMode(BrowserRequestMode.Cors);
+            
+            var response = await httpClient.SendAsync(request);
+
+            _logger.LogDebug("[AUTH] Refresh response status: {StatusCode}", response.StatusCode);
 
             if (response.IsSuccessStatusCode)
             {
@@ -163,26 +205,28 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider, IDisp
                     // Update access token
                     await SetAuthenticationAsync(result.Data.AccessToken);
                     
-                    _logger.LogInformation("[AUTH] Token refresh successful, new token expires in {Seconds}s", 
-                        result.Data.ExpiresInSeconds);
+                    _logger.LogInformation("[AUTH] ✅ Token refresh successful, new token expires in {Seconds}s ({Minutes:F1}m)", 
+                        result.Data.ExpiresInSeconds, result.Data.ExpiresInSeconds / 60.0);
                     
                     return true;
                 }
                 else
                 {
-                    _logger.LogWarning("[AUTH] Token refresh response not successful: {Message}", result?.Message);
+                    _logger.LogWarning("[AUTH] ⚠️ Token refresh response not successful: {Message}", result?.Message);
                 }
             }
             else
             {
-                _logger.LogWarning("[AUTH] Token refresh failed with status: {StatusCode}", response.StatusCode);
+                var errorContent = await response.Content.ReadAsStringAsync();
+                _logger.LogWarning("[AUTH] ⚠️ Token refresh failed with status: {StatusCode}, content: {Content}", 
+                    response.StatusCode, errorContent.Length > 200 ? errorContent[..200] : errorContent);
             }
 
             return false;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[AUTH] Token refresh exception");
+            _logger.LogError(ex, "[AUTH] ❌ Token refresh exception");
             return false;
         }
         finally
@@ -191,10 +235,22 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider, IDisp
         }
     }
 
+    /// <summary>
+    /// 🔥 Public method to force a token refresh (can be called from UI)
+    /// </summary>
+    public async Task<bool> ForceRefreshAsync()
+    {
+        _logger.LogInformation("[AUTH] Force refresh requested");
+        _lastRefreshAttempt = DateTime.MinValue; // Reset rate limiting
+        return await TryRefreshTokenAsync();
+    }
+
     public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
-        // Initialize from storage on first call
-        if (!_isInitialized && !_isInitializing)
+        // 🔥 CRITICAL FIX: Always call InitializeFromStorageAsync if not initialized
+        // The method has internal locking - concurrent callers will WAIT (not skip)
+        // This fixes the race condition where Call B would skip init and return unauthenticated
+        if (!_isInitialized)
         {
             await InitializeFromStorageAsync();
         }
@@ -220,7 +276,7 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider, IDisp
                 {
                     var token = _tokenHandler.ReadJwtToken(_accessToken);
 
-                    // 🔥 IMPROVED: Check if token is expired or expiring soon
+                    // Check if token is expired or expiring soon
                     var timeUntilExpiry = token.ValidTo - DateTime.UtcNow;
                     
                     if (timeUntilExpiry.TotalSeconds <= 0)
@@ -229,19 +285,19 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider, IDisp
                         currentUser = new ClaimsPrincipal(new ClaimsIdentity());
                         _accessToken = null;
                         
-                        // 🔥 Trigger background refresh for expired token
+                        // Trigger background refresh for expired token
                         _ = Task.Run(async () => await TryRefreshTokenAsync());
                     }
                     else if (timeUntilExpiry.TotalMinutes < TokenRefreshThresholdMinutes)
                     {
                         // Token expiring soon - create valid principal but trigger background refresh
-                        _logger.LogDebug("[AUTH] Token expiring soon ({Minutes} min), triggering background refresh", 
-                            Math.Round(timeUntilExpiry.TotalMinutes, 2));
+                        _logger.LogDebug("[AUTH] Token expiring soon ({Minutes:F2}m), triggering background refresh", 
+                            timeUntilExpiry.TotalMinutes);
                         
                         var identity = new ClaimsIdentity(token.Claims, "jwt");
                         currentUser = new ClaimsPrincipal(identity);
                         
-                        // 🔥 Trigger background refresh
+                        // Trigger background refresh
                         _ = Task.Run(async () => await TryRefreshTokenAsync());
                     }
                     else
@@ -289,7 +345,10 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider, IDisp
 
             _logger.LogInformation("[AUTH] Token from localStorage: {HasToken}", !string.IsNullOrWhiteSpace(_accessToken));
 
-            // 🔥 Check token and trigger refresh if needed
+            // 🔥 CRITICAL FIX: Determine if we need to refresh and AWAIT the result
+            bool needsRefresh = false;
+            bool tokenExpired = false;
+            
             if (!string.IsNullOrWhiteSpace(_accessToken))
             {
                 try
@@ -297,35 +356,70 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider, IDisp
                     var token = _tokenHandler.ReadJwtToken(_accessToken);
                     var timeUntilExpiry = token.ValidTo - DateTime.UtcNow;
                     
+                    _logger.LogInformation("[AUTH] Token expires at {ExpiresAt} (in {Minutes:F2} minutes)", 
+                        token.ValidTo, timeUntilExpiry.TotalMinutes);
+                    
                     if (timeUntilExpiry.TotalSeconds <= 0)
                     {
                         _logger.LogInformation("[AUTH] Token expired, will attempt refresh");
-                        _ = Task.Run(async () => await TryRefreshTokenAsync());
+                        needsRefresh = true;
+                        tokenExpired = true;
                     }
                     else if (timeUntilExpiry.TotalMinutes < TokenRefreshThresholdMinutes)
                     {
                         _logger.LogInformation("[AUTH] Token expiring soon, will refresh proactively");
-                        _ = Task.Run(async () => await TryRefreshTokenAsync());
+                        needsRefresh = true;
                     }
                 }
                 catch (Exception ex)
                 {
                     _logger.LogWarning(ex, "[AUTH] Failed to parse token, will attempt refresh");
-                    _ = Task.Run(async () => await TryRefreshTokenAsync());
+                    needsRefresh = true;
+                    tokenExpired = true;
+                }
+            }
+            else
+            {
+                // 🔥 No token in localStorage - try to refresh using HttpOnly refresh token cookie
+                _logger.LogInformation("[AUTH] No token in localStorage, attempting refresh with cookie...");
+                needsRefresh = true;
+                tokenExpired = true;
+            }
+
+            // 🔥 CRITICAL: AWAIT the refresh attempt on initialization (not fire-and-forget)
+            if (needsRefresh)
+            {
+                _logger.LogInformation("[AUTH] 🔄 Attempting token refresh during initialization...");
+                
+                var refreshSuccess = await TryRefreshTokenAsync();
+                
+                if (refreshSuccess)
+                {
+                    _logger.LogInformation("[AUTH] ✅ Token refresh successful during initialization");
+                }
+                else
+                {
+                    _logger.LogWarning("[AUTH] ⚠️ Token refresh failed during initialization");
+                    
+                    // If token was expired or missing and refresh failed, clear everything
+                    if (tokenExpired)
+                    {
+                        _logger.LogInformation("[AUTH] Clearing expired/invalid token from localStorage");
+                        _accessToken = null;
+                        await RemoveFromLocalStorageAsync(AccessTokenStorageKey);
+                    }
                 }
             }
 
             _isInitialized = true;
             _isInitializing = false;
-            _logger.LogInformation("[AUTH] Initialization complete");
+            _logger.LogInformation("[AUTH] Initialization complete. Has valid token: {HasToken}", !string.IsNullOrWhiteSpace(_accessToken));
         }
         finally
         {
             _initializationLock.Release();
         }
     }
-
-    // ... (rest of the helper methods remain the same)
 
     private async Task<string?> GetFromLocalStorageAsync(string key)
     {
@@ -543,10 +637,22 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider, IDisp
         }
     }
 
-    // 🔥 NEW: Dispose pattern to stop timer
+    // 🔥 Dispose pattern to stop timer and release resources
     public void Dispose()
     {
         _tokenRefreshTimer?.Dispose();
-        _logger.LogInformation("[AUTH] Token refresh timer stopped");
+        _initializationLock?.Dispose();
+        _refreshLock?.Dispose();
+        _logger.LogInformation("[AUTH] Token refresh timer and resources disposed");
     }
+}
+
+/// <summary>
+/// DTO for refresh token response
+/// </summary>
+public class TokenRefreshResultDto
+{
+    public string AccessToken { get; set; } = string.Empty;
+    public int ExpiresInSeconds { get; set; }
+    public string NewRefreshToken { get; set; } = string.Empty;
 }

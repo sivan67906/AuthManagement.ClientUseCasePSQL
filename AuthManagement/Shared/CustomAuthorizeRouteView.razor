@@ -52,26 +52,43 @@ else
 
     private bool IsCheckingAccess { get; set; } = true;
     private bool HasAccess { get; set; } = false;
+    
+    // 🔥 Track last checked URL to avoid unnecessary re-checks
+    private string? _lastCheckedUrl;
+    private bool _lastCheckResult;
 
     protected override async Task OnParametersSetAsync()
     {
-        await CheckPageAccessAsync();
+        var currentUrl = new Uri(NavigationManager.Uri).LocalPath;
+        
+        // 🔥 OPTIMIZATION: Only re-check access if URL actually changed
+        // This prevents unnecessary access checks when auth state changes but URL is the same
+        if (_lastCheckedUrl == currentUrl && _lastCheckResult)
+        {
+            // Same URL and we had access before - no need to re-check
+            HasAccess = true;
+            IsCheckingAccess = false;
+            await base.OnParametersSetAsync();
+            return;
+        }
+        
+        await CheckPageAccessAsync(currentUrl);
         await base.OnParametersSetAsync();
     }
 
-    private async Task CheckPageAccessAsync()
+    private async Task CheckPageAccessAsync(string currentUrl)
     {
         IsCheckingAccess = true;
         HasAccess = false;
-
-        // Get current URL
-        var currentUrl = new Uri(NavigationManager.Uri).LocalPath;
 
         // Check page access
         var result = await PageAccessService.HasAccessToPageAsync(currentUrl);
 
         if (!result.HasAccess)
         {
+            _lastCheckedUrl = currentUrl;
+            _lastCheckResult = false;
+            
             if (result.RequiresAuthentication)
             {
                 // User not authenticated, redirect to login
@@ -86,7 +103,20 @@ else
             }
         }
 
+        // 🔥 Cache successful access check
+        _lastCheckedUrl = currentUrl;
+        _lastCheckResult = true;
+        
         HasAccess = true;
         IsCheckingAccess = false;
+    }
+    
+    // 🔥 Method to force re-check (can be called if permissions might have changed)
+    public async Task ForceAccessCheckAsync()
+    {
+        _lastCheckedUrl = null;
+        _lastCheckResult = false;
+        var currentUrl = new Uri(NavigationManager.Uri).LocalPath;
+        await CheckPageAccessAsync(currentUrl);
     }
 }

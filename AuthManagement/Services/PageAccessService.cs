@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.Extensions.Logging;
 using AuthManagement.Models;
 using AuthManagement.Constants;
 
@@ -13,9 +14,10 @@ public class PageAccessService
     private readonly RBACService _rbacService;
     private readonly AuthenticationStateProvider _authStateProvider;
     private readonly NavigationManager _navigationManager;
+    private readonly ILogger<PageAccessService> _logger;
     private UserAccessDto? _userAccess;
     private DateTime? _lastLoaded;
-    private readonly TimeSpan _cacheExpiration = TimeSpan.FromMinutes(5);
+    private readonly TimeSpan _cacheExpiration = TimeSpan.FromMinutes(10); // 🔥 Increased from 5 to 10 minutes
 
     // Public pages that don't require authorization
     private readonly HashSet<string> _publicPages = new(StringComparer.OrdinalIgnoreCase)
@@ -34,18 +36,23 @@ public class PageAccessService
     public PageAccessService(
         RBACService rbacService,
         AuthenticationStateProvider authStateProvider,
-        NavigationManager navigationManager)
+        NavigationManager navigationManager,
+        ILogger<PageAccessService> logger)
     {
         _rbacService = rbacService;
         _authStateProvider = authStateProvider;
         _navigationManager = navigationManager;
+        _logger = logger;
     }
 
     private async Task<UserAccessDto?> GetUserAccessAsync(bool forceRefresh = false)
     {
+        // 🔥 Return cached data if still valid
         if (!forceRefresh && _userAccess != null && _lastLoaded.HasValue &&
             DateTime.UtcNow - _lastLoaded.Value < _cacheExpiration)
         {
+            _logger.LogDebug("[PAGE_ACCESS] Using cached user access (age: {Age}s)", 
+                (DateTime.UtcNow - _lastLoaded.Value).TotalSeconds);
             return _userAccess;
         }
 
@@ -54,21 +61,54 @@ public class PageAccessService
 
         if (user?.Identity?.IsAuthenticated != true)
         {
+            _logger.LogDebug("[PAGE_ACCESS] User not authenticated");
             return null;
         }
 
         var email = user.FindFirst("email")?.Value;
         if (string.IsNullOrEmpty(email))
         {
+            _logger.LogWarning("[PAGE_ACCESS] No email claim in token");
             return null;
         }
 
-        var response = await _rbacService.GetUserAccessByEmailAsync(email);
-        if (response.Success && response.Data != null)
+        _logger.LogDebug("[PAGE_ACCESS] Fetching user access for {Email} from API...", email);
+        
+        try
         {
-            _userAccess = response.Data;
-            _lastLoaded = DateTime.UtcNow;
-            return _userAccess;
+            var response = await _rbacService.GetUserAccessByEmailAsync(email);
+            
+            if (response.Success && response.Data != null)
+            {
+                _userAccess = response.Data;
+                _lastLoaded = DateTime.UtcNow;
+                _logger.LogInformation("[PAGE_ACCESS] ✅ Successfully loaded user access for {Email}", email);
+                return _userAccess;
+            }
+            else
+            {
+                _logger.LogWarning("[PAGE_ACCESS] ⚠️ API returned failure: {Message}", response.Message);
+                
+                // 🔥 CRITICAL FIX: If API fails but we have cached data, use it as fallback
+                // This prevents "Access Denied" due to temporary API failures
+                if (_userAccess != null)
+                {
+                    _logger.LogWarning("[PAGE_ACCESS] Using stale cached data as fallback (last loaded: {LastLoaded})", 
+                        _lastLoaded);
+                    return _userAccess;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[PAGE_ACCESS] ❌ Exception while fetching user access");
+            
+            // 🔥 CRITICAL FIX: Fall back to cached data on exception
+            if (_userAccess != null)
+            {
+                _logger.LogWarning("[PAGE_ACCESS] Using stale cached data as fallback after exception");
+                return _userAccess;
+            }
         }
 
         return null;
@@ -82,14 +122,17 @@ public class PageAccessService
         // Normalize the URL
         if (string.IsNullOrWhiteSpace(pageUrl))
         {
+            _logger.LogWarning("[PAGE_ACCESS] Invalid page URL provided");
             return new PageAccessResult { HasAccess = false, Reason = "Invalid page URL" };
         }
 
         pageUrl = NormalizeUrl(pageUrl);
+        _logger.LogDebug("[PAGE_ACCESS] Checking access to: {PageUrl}", pageUrl);
 
         // Check if it's a public page
         if (_publicPages.Contains(pageUrl))
         {
+            _logger.LogDebug("[PAGE_ACCESS] {PageUrl} is a public page", pageUrl);
             return new PageAccessResult { HasAccess = true, IsPublicPage = true };
         }
 
@@ -97,6 +140,7 @@ public class PageAccessService
         var authState = await _authStateProvider.GetAuthenticationStateAsync();
         if (authState.User?.Identity?.IsAuthenticated != true)
         {
+            _logger.LogDebug("[PAGE_ACCESS] User not authenticated for {PageUrl}", pageUrl);
             return new PageAccessResult 
             { 
                 HasAccess = false, 
@@ -109,6 +153,7 @@ public class PageAccessService
         var userAccess = await GetUserAccessAsync();
         if (userAccess == null)
         {
+            _logger.LogWarning("[PAGE_ACCESS] ⚠️ Unable to retrieve user access for {PageUrl} - this should not happen with fallback!", pageUrl);
             return new PageAccessResult 
             { 
                 HasAccess = false, 
@@ -119,6 +164,7 @@ public class PageAccessService
         // SuperAdmin has access to all pages
         if (userAccess.Roles.Contains(SystemRoles.SuperAdmin))
         {
+            _logger.LogDebug("[PAGE_ACCESS] ✅ SuperAdmin access granted for {PageUrl}", pageUrl);
             return new PageAccessResult { HasAccess = true, IsSuperAdmin = true };
         }
 

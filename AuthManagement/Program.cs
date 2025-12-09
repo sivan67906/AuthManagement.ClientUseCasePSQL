@@ -53,8 +53,8 @@ builder.Services.AddScoped<SweetAlertService>();
 //  CRITICAL FIX: Register AuthenticationMessageHandler as Transient
 builder.Services.AddScoped<AuthenticationMessageHandler>();
 
-//  CORRECT: Use AddHttpClient with message handler for proper DelegatingHandler chain
-builder.Services.AddHttpClient("AuthAPI", client =>
+//  CRITICAL FIX: Use "AuthApi" (case-sensitive) consistently
+builder.Services.AddHttpClient("AuthApi", client =>
 {
     client.BaseAddress = new Uri(gatewayUrl);
 })
@@ -62,7 +62,7 @@ builder.Services.AddHttpClient("AuthAPI", client =>
 
 //  CORRECT: Register default HttpClient using IHttpClientFactory
 builder.Services.AddScoped(sp =>
-    sp.GetRequiredService<IHttpClientFactory>().CreateClient("AuthAPI"));
+    sp.GetRequiredService<IHttpClientFactory>().CreateClient("AuthApi"));
 
 Console.WriteLine("Cookie support: Browser-managed (automatic)");
 
