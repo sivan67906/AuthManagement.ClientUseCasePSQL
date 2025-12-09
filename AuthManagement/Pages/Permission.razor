@@ -621,7 +621,7 @@ Permission Details
     private PermissionDto? _selectedPermission;
     private PermissionFormDialog.PermissionFormModel _permissionModel = new();
     private bool _isLoading = true, _isSaving = false, _hasError = false, _isDialogOpen = false, _isOffcanvasOpen = false, _isEditMode = false;
-    private string _errorMessage = string.Empty, _searchString = string.Empty, _sortColumn = "name", _sortDirection = "asc";
+    private string _errorMessage = string.Empty, _searchString = string.Empty, _sortColumn = "", _sortDirection = "";
     private int _currentPage = 1, _pageSize = 10, _totalItems = 0, _totalPages = 1;
     private bool _canView, _canAdd, _canEdit, _canDelete;
 

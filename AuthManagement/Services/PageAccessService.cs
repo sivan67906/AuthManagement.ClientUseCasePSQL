@@ -30,7 +30,20 @@ public class PageAccessService
         "/confirm-email",
         "/verify-mail",
         "/send-confirmation-email",
-        "/two-factor-login"
+        "/two-factor-login",
+        "/access-denied"  // Access denied page must be accessible
+    };
+
+    // Pages that any authenticated user can access (regardless of role mappings)
+    private readonly HashSet<string> _authenticatedUserPages = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "/dashboard",
+        "/profile",
+        "/access-denied",
+        "/change-password",
+        "/logout",
+        "/notification",
+        "/billingplan"
     };
 
     public PageAccessService(
@@ -147,6 +160,13 @@ public class PageAccessService
                 Reason = "User not authenticated",
                 RequiresAuthentication = true
             };
+        }
+
+        // Check if it's a page that any authenticated user can access
+        if (_authenticatedUserPages.Contains(pageUrl))
+        {
+            _logger.LogDebug("[PAGE_ACCESS] {PageUrl} is accessible to all authenticated users", pageUrl);
+            return new PageAccessResult { HasAccess = true, IsPublicPage = false };
         }
 
         // Get user access information

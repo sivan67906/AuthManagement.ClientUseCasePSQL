@@ -131,7 +131,8 @@ namespace AuthManagement.Services
                 return Task.FromResult(new ApiResponse<List<TestProductDto>>
                 {
                     Success = true,
-                    Data = _products.OrderBy(p => p.Name).ToList(),
+                    Data = _products
+                    .OrderByDescending(x => x.UpdatedAt ?? x.CreatedAt).ToList(),
                     Message = "Products retrieved successfully"
                 });
             }
@@ -321,7 +322,9 @@ namespace AuthManagement.Services
                 return Task.FromResult(new ApiResponse<List<TestCategoryDto>>
                 {
                     Success = true,
-                    Data = _categories.OrderBy(c => c.DisplayOrder).ToList(),
+                    Data = _categories
+                    .OrderByDescending(x => x.UpdatedAt ?? x.CreatedAt)
+                    .ToList(),
                     Message = "Categories retrieved successfully"
                 });
             }

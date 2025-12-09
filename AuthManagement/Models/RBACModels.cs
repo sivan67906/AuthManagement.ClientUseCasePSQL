@@ -126,6 +126,7 @@ public class PageDto
     public string Url { get; set; } = string.Empty;
     public string? Description { get; set; }
     public int DisplayOrder { get; set; }
+    public string? MenuContext { get; set; }
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }
     public string? CreatedBy { get; set; }
@@ -148,6 +149,8 @@ public class UpdatePageRequest
     public string Url { get; set; } = string.Empty;
     public string? Description { get; set; }
     public int DisplayOrder { get; set; }
+    public string? MenuContext { get; set; }
+    public bool IsActive { get; set; } = true;
 }
 
 // Mapping Models

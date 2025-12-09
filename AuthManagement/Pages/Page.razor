@@ -497,7 +497,7 @@ Roles Details
     private PageDto? _selectedPage;
     private PageFormDialog.PageFormModel _pageModel = new();
     private bool _isLoading = true, _isSaving = false, _hasError = false, _isDialogOpen = false, _isOffcanvasOpen = false, _isEditMode = false;
-    private string _errorMessage = string.Empty, _searchString = string.Empty, _sortColumn = "name", _sortDirection = "asc";
+    private string _errorMessage = string.Empty, _searchString = string.Empty, _sortColumn = "", _sortDirection = "";
     private int _currentPage = 1, _pageSize = 10, _totalItems = 0, _totalPages = 1;
     private bool _canView, _canAdd, _canEdit, _canDelete;
 
@@ -603,7 +603,7 @@ Roles Details
     private int GetEndPage() => Math.Min(_totalPages, _currentPage + 2);
     private void GoToPage(int page) { if (page >= 1 && page <= _totalPages) { _currentPage = page; UpdateFilteredPages(); StateHasChanged(); } }
     private void OpenAddDialog() { _selectedPage = null; _isEditMode = false; _pageModel = new PageFormDialog.PageFormModel(); _isDialogOpen = true; }
-    private void OpenEditDialog(PageDto page) { _selectedPage = page; _isEditMode = true; _pageModel = new PageFormDialog.PageFormModel { Name = page.Name, Url = page.Url, Description = page.Description, DisplayOrder = page.DisplayOrder }; _isDialogOpen = true; }
+    private void OpenEditDialog(PageDto page) { _selectedPage = page; _isEditMode = true; _pageModel = new PageFormDialog.PageFormModel { Name = page.Name, Url = page.Url, Description = page.Description, DisplayOrder = page.DisplayOrder, MenuContext = page.MenuContext, IsActive = page.IsActive }; _isDialogOpen = true; }
     private void OpenViewDialog(PageDto page) { _selectedPage = page; _isOffcanvasOpen = true; }
     private void CloseDialog() { _isDialogOpen = false; _selectedPage = null; _pageModel = new PageFormDialog.PageFormModel(); _isEditMode = false; }
     private void CloseOffcanvas() { _isOffcanvasOpen = false; _selectedPage = null; }
@@ -615,7 +615,7 @@ Roles Details
         {
             if (_isEditMode && _selectedPage != null)
             {
-                var updateRequest = new UpdatePageRequest { Id = _selectedPage.Id, Name = model.Name, Url = model.Url, Description = model.Description, DisplayOrder = model.DisplayOrder };
+                var updateRequest = new UpdatePageRequest { Id = _selectedPage.Id, Name = model.Name, Url = model.Url, Description = model.Description, DisplayOrder = model.DisplayOrder, MenuContext = model.MenuContext, IsActive = model.IsActive };
                 var response = await RBACService.UpdatePageAsync(_selectedPage.Id, updateRequest);
                 if (response.Success) { await JS.InvokeVoidAsync("showToast", "success", "Page updated successfully", Severity.Success); await LoadPages(); CloseDialog(); }
                 else await JS.InvokeVoidAsync("showToast", "error", response.Message ?? "Failed to update page", Severity.Error);
