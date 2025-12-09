@@ -10,7 +10,7 @@ namespace AuthManagement.Services;
 /// <summary>
 /// HTTP message handler that automatically attaches JWT bearer token to outgoing requests.
 /// Automatically refreshes the access token when it expires (401 response).
-/// 🔥 CRITICAL: Includes browser credentials for cross-origin cookie support.
+///  CRITICAL: Includes browser credentials for cross-origin cookie support.
 /// </summary>
 public class AuthenticationMessageHandler : DelegatingHandler
 {
@@ -19,7 +19,7 @@ public class AuthenticationMessageHandler : DelegatingHandler
     private static readonly SemaphoreSlim _refreshLock = new(1, 1);
     private static bool _isRefreshing = false;
     
-    // 🔥 Rate limiting for refresh attempts
+    //  Rate limiting for refresh attempts
     private static DateTime _lastRefreshAttempt = DateTime.MinValue;
     private static readonly TimeSpan _minRefreshInterval = TimeSpan.FromSeconds(30);
 
@@ -41,7 +41,7 @@ public class AuthenticationMessageHandler : DelegatingHandler
                              path.Contains("/auth/register") || 
                              path.Contains("/auth/refresh-token");
         
-        // 🔥 CRITICAL: Set browser credentials for ALL requests to send cookies cross-origin
+        //  CRITICAL: Set browser credentials for ALL requests to send cookies cross-origin
         request.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
         request.SetBrowserRequestMode(BrowserRequestMode.Cors);
         
@@ -66,7 +66,7 @@ public class AuthenticationMessageHandler : DelegatingHandler
                 // Clone the original request (can't reuse the same request)
                 var newRequest = await CloneHttpRequestMessageAsync(request);
                 
-                // 🔥 CRITICAL: Set browser credentials on cloned request too
+                //  CRITICAL: Set browser credentials on cloned request too
                 newRequest.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
                 newRequest.SetBrowserRequestMode(BrowserRequestMode.Cors);
                 
@@ -111,7 +111,7 @@ public class AuthenticationMessageHandler : DelegatingHandler
 
     private async Task<bool> TryRefreshTokenAsync(CancellationToken cancellationToken)
     {
-        // 🔥 Rate limiting - prevent refresh storms
+        //  Rate limiting - prevent refresh storms
         var timeSinceLastRefresh = DateTime.UtcNow - _lastRefreshAttempt;
         if (timeSinceLastRefresh < _minRefreshInterval)
         {
@@ -151,7 +151,7 @@ public class AuthenticationMessageHandler : DelegatingHandler
             
             _logger.LogInformation("[AuthHandler] Calling refresh-token endpoint...");
             
-            // 🔥 CRITICAL: Create request with browser credentials for cross-origin cookies
+            //  CRITICAL: Create request with browser credentials for cross-origin cookies
             var refreshRequest = new HttpRequestMessage(HttpMethod.Post, "/auth/refresh-token");
             refreshRequest.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
             refreshRequest.SetBrowserRequestMode(BrowserRequestMode.Cors);
@@ -171,7 +171,7 @@ public class AuthenticationMessageHandler : DelegatingHandler
                     if (_authenticationStateProvider is JwtAuthenticationStateProvider jwtProvider)
                     {
                         await jwtProvider.SetAuthenticationAsync(result.Data.AccessToken);
-                        _logger.LogInformation("[AuthHandler] ✅ Token refreshed and auth state updated. New token expires in {Seconds}s", result.Data.ExpiresInSeconds);
+                        _logger.LogInformation("[AuthHandler]  Token refreshed and auth state updated. New token expires in {Seconds}s", result.Data.ExpiresInSeconds);
                         return true;
                     }
                 }

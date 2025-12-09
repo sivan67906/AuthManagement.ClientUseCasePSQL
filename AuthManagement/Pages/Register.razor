@@ -8,88 +8,95 @@
 @implements IAsyncDisposable
 
 <div class="authentication-wrapper authentication-basic container-p-y">
-    <div class="authentication-inner py-6">
+    <div class="authentication-inner py-3">
         <!-- Register Card -->
-        <div class="card">
-            <div class="card-body">
-                <!-- Logo -->
-                <div class="app-brand justify-content-center mb-6">
-                    <a href="/" class="app-brand-link">
-                        <span class="app-brand-logo demo">
-                            <span class="text-primary">
-                                <!-- logo svg -->
-                            </span>
-                        </span>
-                        <span class="app-brand-text demo text-heading fw-bold">Vuexy</span>
+        <div class="card register-card">
+            <div class="card-body px-4 py-4">
+                <!-- Compact Header -->
+                <div class="text-center mb-3">
+                    <a href="/" class="app-brand-link d-inline-block">
+                        <span class="app-brand-text demo text-heading fw-bold fs-4">Vuexy</span>
                     </a>
+                    <h5 class="mb-1 mt-2">Adventure starts here 🚀</h5>
+                    <p class="mb-0 text-muted small">Make your app management easy and fun!</p>
                 </div>
-                <!-- /Logo -->
 
-                <h4 class="mb-1">Adventure starts here 🚀</h4>
-                <p class="mb-6">Make your app management easy and fun!</p>
-
-                <EditForm Model="registerModel" OnValidSubmit="HandleRegister" class="mb-6">
-                    <div class="mb-6 form-control-validation">
-                        <label for="firstname" class="form-label">First Name</label>
-                        <input type="text" class="form-control" id="firstname" oninput="this.value = this.value.replace(/[^A-Za-z ]/g, '')"
-                               @bind="registerModel.FirstName" placeholder="Enter your first name" autofocus>
-                    </div>
-                    <div class="mb-6 form-control-validation">
-                        <label for="lastname" class="form-label">Last Name</label>
-                        <input type="text" class="form-control" id="lastname" oninput="this.value = this.value.replace(/[^A-Za-z ]/g, '')"
-                               @bind="registerModel.LastName" placeholder="Enter your last name">
-                    </div>
-                    <div class="mb-6 form-control-validation">
-                        <label for="email" class="form-label">Email</label>
-
-                        <input type="email"
-                               class="form-control"
-                               id="email"
-                               @bind="registerModel.Email"
-                               placeholder="Enter your email"
-                               autocomplete="email"
-                               required>
-
+                <EditForm Model="registerModel" OnValidSubmit="HandleRegister" autocomplete="off">
+                    <div class="mb-2">
+                        <label for="firstname" class="form-label small mb-1">First Name</label>
+                        <input type="text" class="form-control form-control-sm" id="firstname"
+                               oninput="this.value = this.value.replace(/[^A-Za-z ]/g, '')"
+                               @bind="registerModel.FirstName" placeholder="Enter your first name"
+                               autocomplete="given-name" autofocus>
                     </div>
 
-                    @* <div class="mb-6 form-control-validation">
-                        <label for="phone" class="form-label">Phone Number</label>
-                        <input type="tel" class="form-control" id="phone" @bind="registerModel.PhoneNumber" placeholder="Enter your phone number (e.g., +1234567890)">
-                    </div> *@
+                    <div class="mb-2">
+                        <label for="lastname" class="form-label small mb-1">Last Name</label>
+                        <input type="text" class="form-control form-control-sm" id="lastname"
+                               oninput="this.value = this.value.replace(/[^A-Za-z ]/g, '')"
+                               @bind="registerModel.LastName" placeholder="Enter your last name"
+                               autocomplete="family-name">
+                    </div>
 
-                    <div class="mb-6 form-control-validation">
-                        <label class="form-label">Phone Number</label>
+                    <div class="mb-2">
+                        <label for="reg-email" class="form-label small mb-1">Email</label>
+                        <input type="email" class="form-control form-control-sm" id="reg-email" name="reg-email"
+                               @bind="registerModel.Email" placeholder="Enter your email"
+                               autocomplete="new-email" required>
+                    </div>
 
-                        <div class="input-group">
+                    <div class="mb-2">
+                        <label class="form-label small mb-1">Phone Number</label>
+                        <div class="input-group input-group-sm">
                             <span class="input-group-text">+91</span>
-                            <input type="tel"
-                                   class="form-control"
-                                   placeholder="Enter phone number" maxlength="10"
-                                   @bind="registerModel.PhoneNumber" oninput="this.value = this.value.replace(/[^0-9]/g, '')"/>
-                            
+                            <input type="tel" class="form-control" placeholder="Enter phone number"
+                                   minlength="10" maxlength="10"
+                                   @bind="registerModel.PhoneNumber"
+                                   oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                                   autocomplete="tel-national" />
                         </div>
                     </div>
 
+                    <div class="mb-2 form-password-toggle">
+                        <label class="form-label small mb-1" for="reg-password">Password</label>
+                        <div class="input-group input-group-sm input-group-merge">
+                            <input type="password" id="reg-password" name="reg-password" class="form-control"
+                                   @bind="registerModel.Password"
+                                   @oninput="ValidatePassword"
+                                   placeholder="Create a password"
+                                   autocomplete="new-password"
+                                   aria-describedby="passwordHelp" />
+                            <span class="input-group-text cursor-pointer password-eye">
+                                <i class="icon-base ti tabler-eye-off"></i>
+                            </span>
+                        </div>
 
-
-                    <div class="mb-6 form-password-toggle form-control-validation">
-                        <label class="form-label" for="password">Password</label>
-                        <div class="input-group input-group-merge">
-                            <input type="password" id="password" class="form-control" @bind="registerModel.Password" placeholder="Enter your password" aria-describedby="password">
-                            <span class="input-group-text cursor-pointer password-eye"><i class="icon-base ti tabler-eye-off"></i></span>
+                        <!-- Ultra Compact Password Requirements - Single Line -->
+                        <div id="passwordHelp" class="pwd-inline mt-2">
+                            <div class="pwd-bar-wrapper">
+                                <div class="pwd-bar">
+                                    <div class="pwd-bar-fill @GetStrengthClass()"></div>
+                                </div>
+                                <span class="pwd-status @GetStrengthTextClass()">@GetStrengthLabel()</span>
+                            </div>
+                            <div class="pwd-tags">
+                                <span class="pwd-tag @(passwordHasMinLength ? "ok" : "")" title="Minimum 6 characters">6+</span>
+                                <span class="pwd-tag @(passwordHasUpper ? "ok" : "")" title="Uppercase letter">A-Z</span>
+                                <span class="pwd-tag @(passwordHasLower ? "ok" : "")" title="Lowercase letter">a-z</span>
+                                <span class="pwd-tag @(passwordHasDigit ? "ok" : "")" title="Number">0-9</span>
+                                <span class="pwd-tag @(passwordHasSpecial ? "ok" : "")" title="Special character">!@@#</span>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="my-8 form-control-validation">
-                        <div class="form-check mb-0 ms-2">
-                            <input class="form-check-input" type="checkbox" id="terms-conditions" @bind="acceptTerms">
-                            <label class="form-check-label" for="terms-conditions">
-                                I agree to privacy policy & terms
-                            </label>
-                        </div>
+                    <div class="form-check mb-3 mt-3">
+                        <input class="form-check-input" type="checkbox" id="terms-conditions" @bind="acceptTerms">
+                        <label class="form-check-label small" for="terms-conditions">
+                            I agree to <a href="#">privacy policy & terms</a>
+                        </label>
                     </div>
 
-                    <button class="btn btn-primary d-flex w-100" type="submit" disabled="@isLoading">
+                    <button class="btn btn-primary w-100" type="submit" disabled="@isLoading">
                         @if (isLoading)
                         {
                             <span class="spinner-border spinner-border-sm me-2" role="status"></span>
@@ -102,48 +109,233 @@
                     </button>
                 </EditForm>
 
-                <p class="text-center">
-                    <span>Already have an account?</span>
-                    <a href="/login">
-                        <span>Sign in instead</span>
-                    </a>
+                <p class="text-center mb-0 mt-3 small">
+                    <span class="text-muted">Already have an account?</span>
+                    <a href="/login" class="ms-1">Sign in instead</a>
                 </p>
             </div>
         </div>
-        <!-- Register Card -->
     </div>
 </div>
+
+<style>
+    /* Card */
+    .register-card {
+        max-width: 420px;
+        margin: 0 auto;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .authentication-inner.py-3 {
+        padding-top: 0.75rem !important;
+        padding-bottom: 0.75rem !important;
+    }
+
+    /* Form Controls */
+    .form-control-sm {
+        padding: 0.425rem 0.75rem;
+        font-size: 0.875rem;
+        border-radius: 0.375rem;
+    }
+
+    .input-group-sm > .form-control,
+    .input-group-sm > .input-group-text {
+        padding: 0.425rem 0.75rem;
+        font-size: 0.875rem;
+    }
+
+    .form-label.small {
+        font-size: 0.8125rem;
+        font-weight: 500;
+        color: #566a7f;
+    }
+
+    /* Ultra Compact Password Requirements */
+    .pwd-inline {
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 6px;
+        padding: 8px 10px;
+    }
+
+    .pwd-bar-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 6px;
+    }
+
+    .pwd-bar {
+        flex: 1;
+        height: 3px;
+        background: #e2e8f0;
+        border-radius: 2px;
+        overflow: hidden;
+    }
+
+    .pwd-bar-fill {
+        height: 100%;
+        border-radius: 2px;
+        transition: all 0.3s ease;
+    }
+
+    .strength-0 {
+        width: 0%;
+        background: #e2e8f0;
+    }
+
+    .strength-20 {
+        width: 20%;
+        background: #ef4444;
+    }
+
+    .strength-40 {
+        width: 40%;
+        background: #f97316;
+    }
+
+    .strength-60 {
+        width: 60%;
+        background: #eab308;
+    }
+
+    .strength-80 {
+        width: 80%;
+        background: #84cc16;
+    }
+
+    .strength-100 {
+        width: 100%;
+        background: #22c55e;
+    }
+
+    .pwd-status {
+        font-size: 10px;
+        font-weight: 600;
+        min-width: 50px;
+        text-align: right;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+
+    .strength-text-0 {
+        color: #94a3b8;
+    }
+
+    .strength-text-20 {
+        color: #ef4444;
+    }
+
+    .strength-text-40 {
+        color: #f97316;
+    }
+
+    .strength-text-60 {
+        color: #eab308;
+    }
+
+    .strength-text-80 {
+        color: #84cc16;
+    }
+
+    .strength-text-100 {
+        color: #22c55e;
+    }
+
+    /* Password Tags */
+    .pwd-tags {
+        display: flex;
+        gap: 4px;
+    }
+
+    .pwd-tag {
+        flex: 1;
+        text-align: center;
+        padding: 3px 0;
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 4px;
+        font-size: 10px;
+        font-weight: 500;
+        color: #a1a1aa;
+        transition: all 0.2s ease;
+    }
+
+        .pwd-tag.ok {
+            background: #dcfce7;
+            border-color: #86efac;
+            color: #166534;
+        }
+
+    /* Button */
+    .btn-primary {
+        padding: 0.5rem 1rem;
+        font-weight: 500;
+        font-size: 0.9rem;
+    }
+
+    /* Links */
+    .card-body a {
+        text-decoration: none;
+    }
+
+        .card-body a:hover {
+            text-decoration: underline;
+        }
+</style>
 
 @code {
     private RegisterModel registerModel = new();
     private string? message;
     private bool isLoading;
     private bool acceptTerms;
-    // private string PhonePrefix = "";
-    // private void OnCountryChanged(ChangeEventArgs e)
-    // {
-    //     var selected = e.Value?.ToString();
 
-    //     switch (selected)
-    //     {
-    //         case "India":
-    //             PhonePrefix = "+91";
-    //             break;
+    private bool passwordHasMinLength;
+    private bool passwordHasUpper;
+    private bool passwordHasLower;
+    private bool passwordHasDigit;
+    private bool passwordHasSpecial;
 
-    //         case "USA":
-    //             PhonePrefix = "+1";
-    //             break;
+    private void ValidatePassword(ChangeEventArgs e)
+    {
+        var password = e.Value?.ToString() ?? string.Empty;
 
-    //         case "UK":
-    //             PhonePrefix = "+44";
-    //             break;
+        passwordHasMinLength = password.Length >= 6;
+        passwordHasUpper = password.Any(char.IsUpper);
+        passwordHasLower = password.Any(char.IsLower);
+        passwordHasDigit = password.Any(char.IsDigit);
+        passwordHasSpecial = password.Any(ch => !char.IsLetterOrDigit(ch));
+    }
 
-    //         default:
-    //             PhonePrefix = "";
-    //             break;
-    //     }
-    // }
+    private int GetStrengthPercentage()
+    {
+        int count = 0;
+        if (passwordHasMinLength) count++;
+        if (passwordHasUpper) count++;
+        if (passwordHasLower) count++;
+        if (passwordHasDigit) count++;
+        if (passwordHasSpecial) count++;
+        return count * 20;
+    }
 
+    private string GetStrengthClass() => $"strength-{GetStrengthPercentage()}";
+
+    private string GetStrengthTextClass() => $"strength-text-{GetStrengthPercentage()}";
+
+    private string GetStrengthLabel()
+    {
+        var percentage = GetStrengthPercentage();
+        return percentage switch
+        {
+            0 => "None",
+            20 => "Weak",
+            40 => "Fair",
+            60 => "Good",
+            80 => "Strong",
+            100 => "Secure",
+            _ => ""
+        };
+    }
 
     public bool ValidateEmail(string email)
     {
@@ -154,14 +346,26 @@
         return System.Text.RegularExpressions.Regex.IsMatch(email, pattern);
     }
 
-
-
     private class RegisterModel
     {
+        [Required(ErrorMessage = "First name is required.")]
+        [MaxLength(25, ErrorMessage = "First name cannot exceed 25 characters.")]
         public string FirstName { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Last name is required.")]
+        [MaxLength(25, ErrorMessage = "Last name cannot exceed 25 characters.")]
         public string LastName { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Email is required.")]
+        [EmailAddress(ErrorMessage = "Invalid email format.")]
         public string Email { get; set; } = string.Empty;
-        public string PhoneNumber { get; set; } = string.Empty; //  Added
+
+        [Required(ErrorMessage = "Phone number is required.")]
+        [RegularExpression(@"^\d{10}$", ErrorMessage = "Phone number must be exactly 10 digits.")]
+        public string PhoneNumber { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Password is required.")]
+        [MinLength(6, ErrorMessage = "Password must be at least 6 characters.")]
         public string Password { get; set; } = string.Empty;
     }
 
@@ -184,14 +388,12 @@
         await JS.InvokeVoidAsync("eval", "window.destroyPagesAuth && window.destroyPagesAuth();");
     }
 
-    private async Task HandleRegister(EditContext editContext) //  Correct signature
+    private async Task HandleRegister(EditContext editContext)
     {
-
         if (!ValidateEmail(registerModel.Email))
         {
             message = "Invalid email format";
             await JS.InvokeVoidAsync("showToast", "error", message);
-
             return;
         }
 

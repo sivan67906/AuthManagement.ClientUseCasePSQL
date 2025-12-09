@@ -24,12 +24,12 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider, IDisp
     private readonly SemaphoreSlim _initializationLock = new(1, 1);
     private readonly SemaphoreSlim _refreshLock = new(1, 1);
 
-    // 🔥 Background token refresh timer
+    //  Background token refresh timer
     private System.Threading.Timer? _tokenRefreshTimer;
     private const int TokenRefreshCheckIntervalSeconds = 60; // Check every 60 seconds
     private const int TokenRefreshThresholdMinutes = 3; // Refresh when <3 minutes remaining (increased from 2)
 
-    // 🔥 Rate limiting for refresh attempts
+    //  Rate limiting for refresh attempts
     private DateTime _lastRefreshAttempt = DateTime.MinValue;
     private readonly TimeSpan _minRefreshInterval = TimeSpan.FromSeconds(30);
 
@@ -53,12 +53,12 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider, IDisp
         _httpClientFactory = httpClientFactory;
         _logger = logger;
 
-        // 🔥 Start background token refresh timer
+        //  Start background token refresh timer
         StartTokenRefreshTimer();
     }
 
     /// <summary>
-    /// 🔥 Starts a background timer that periodically checks and refreshes expired tokens
+    ///  Starts a background timer that periodically checks and refreshes expired tokens
     /// </summary>
     private void StartTokenRefreshTimer()
     {
@@ -74,7 +74,7 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider, IDisp
     }
 
     /// <summary>
-    /// 🔥 Safe wrapper for async timer callback with error handling
+    ///  Safe wrapper for async timer callback with error handling
     /// </summary>
     private async Task SafeCheckAndRefreshTokenAsync()
     {
@@ -89,7 +89,7 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider, IDisp
     }
 
     /// <summary>
-    /// 🔥 Proactively checks token expiry and refreshes if needed
+    ///  Proactively checks token expiry and refreshes if needed
     /// This runs in the background every minute to prevent expired tokens
     /// </summary>
     private async Task CheckAndRefreshTokenAsync()
@@ -120,7 +120,7 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider, IDisp
 
             _logger.LogDebug("[AUTH] Background check - token expires in {Minutes:F2} minutes", timeUntilExpiry.TotalMinutes);
 
-            // 🔥 Refresh token if it expires in less than threshold minutes
+            //  Refresh token if it expires in less than threshold minutes
             if (timeUntilExpiry.TotalMinutes < TokenRefreshThresholdMinutes && timeUntilExpiry.TotalSeconds > 0)
             {
                 _logger.LogInformation("[AUTH] Token expires in {Minutes:F2} minutes (threshold={Threshold}m), proactively refreshing...", 
@@ -130,7 +130,7 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider, IDisp
                 
                 if (refreshed)
                 {
-                    _logger.LogInformation("[AUTH] ✅ Proactive token refresh successful at {Time}", DateTime.Now.ToString("HH:mm:ss"));
+                    _logger.LogInformation("[AUTH]  Proactive token refresh successful at {Time}", DateTime.Now.ToString("HH:mm:ss"));
                 }
                 else
                 {
@@ -158,11 +158,11 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider, IDisp
     }
 
     /// <summary>
-    /// 🔥 Centralized token refresh logic with proper browser credentials
+    ///  Centralized token refresh logic with proper browser credentials
     /// </summary>
     private async Task<bool> TryRefreshTokenAsync()
     {
-        // 🔥 Rate limiting - prevent refresh storms
+        //  Rate limiting - prevent refresh storms
         var timeSinceLastRefresh = DateTime.UtcNow - _lastRefreshAttempt;
         if (timeSinceLastRefresh < _minRefreshInterval)
         {
@@ -185,10 +185,10 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider, IDisp
 
             var httpClient = _httpClientFactory.CreateClient("AuthApi");
             
-            // 🔥 CRITICAL FIX: Create request with browser credentials for cross-origin cookies
+            //  CRITICAL FIX: Create request with browser credentials for cross-origin cookies
             var request = new HttpRequestMessage(HttpMethod.Post, "/auth/refresh-token");
             
-            // 🔥 CRITICAL: This is required for Blazor WASM to send HttpOnly cookies cross-origin
+            //  CRITICAL: This is required for Blazor WASM to send HttpOnly cookies cross-origin
             request.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
             request.SetBrowserRequestMode(BrowserRequestMode.Cors);
             
@@ -205,7 +205,7 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider, IDisp
                     // Update access token
                     await SetAuthenticationAsync(result.Data.AccessToken);
                     
-                    _logger.LogInformation("[AUTH] ✅ Token refresh successful, new token expires in {Seconds}s ({Minutes:F1}m)", 
+                    _logger.LogInformation("[AUTH]  Token refresh successful, new token expires in {Seconds}s ({Minutes:F1}m)", 
                         result.Data.ExpiresInSeconds, result.Data.ExpiresInSeconds / 60.0);
                     
                     return true;
@@ -236,7 +236,7 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider, IDisp
     }
 
     /// <summary>
-    /// 🔥 Public method to force a token refresh (can be called from UI)
+    ///  Public method to force a token refresh (can be called from UI)
     /// </summary>
     public async Task<bool> ForceRefreshAsync()
     {
@@ -247,7 +247,7 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider, IDisp
 
     public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
-        // 🔥 CRITICAL FIX: Always call InitializeFromStorageAsync if not initialized
+        //  CRITICAL FIX: Always call InitializeFromStorageAsync if not initialized
         // The method has internal locking - concurrent callers will WAIT (not skip)
         // This fixes the race condition where Call B would skip init and return unauthenticated
         if (!_isInitialized)
@@ -345,7 +345,7 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider, IDisp
 
             _logger.LogInformation("[AUTH] Token from localStorage: {HasToken}", !string.IsNullOrWhiteSpace(_accessToken));
 
-            // 🔥 CRITICAL FIX: Determine if we need to refresh and AWAIT the result
+            //  CRITICAL FIX: Determine if we need to refresh and AWAIT the result
             bool needsRefresh = false;
             bool tokenExpired = false;
             
@@ -380,13 +380,13 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider, IDisp
             }
             else
             {
-                // 🔥 No token in localStorage - try to refresh using HttpOnly refresh token cookie
+                //  No token in localStorage - try to refresh using HttpOnly refresh token cookie
                 _logger.LogInformation("[AUTH] No token in localStorage, attempting refresh with cookie...");
                 needsRefresh = true;
                 tokenExpired = true;
             }
 
-            // 🔥 CRITICAL: AWAIT the refresh attempt on initialization (not fire-and-forget)
+            //  CRITICAL: AWAIT the refresh attempt on initialization (not fire-and-forget)
             if (needsRefresh)
             {
                 _logger.LogInformation("[AUTH] 🔄 Attempting token refresh during initialization...");
@@ -395,7 +395,7 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider, IDisp
                 
                 if (refreshSuccess)
                 {
-                    _logger.LogInformation("[AUTH] ✅ Token refresh successful during initialization");
+                    _logger.LogInformation("[AUTH]  Token refresh successful during initialization");
                 }
                 else
                 {
@@ -637,7 +637,7 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider, IDisp
         }
     }
 
-    // 🔥 Dispose pattern to stop timer and release resources
+    //  Dispose pattern to stop timer and release resources
     public void Dispose()
     {
         _tokenRefreshTimer?.Dispose();

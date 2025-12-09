@@ -44,10 +44,10 @@
                             <label class="form-label">Display Order<span class="text-danger">*</span></label>
                             <InputNumber @bind-Value="FormModel.DisplayOrder" class="form-control" min="0" disabled="@IsSaving" />
                             <ValidationMessage For="@(() => FormModel.DisplayOrder)" class="text-danger" />
-                            @if (FormModel.DisplayOrder < 0)
+                           @*  @if (FormModel.DisplayOrder < 0)
                             {
                                 <span class="text-danger">Display order cannot be negative</span>
-                            }
+                            } *@
                         </div>
                         
                         <div class="mb-3">

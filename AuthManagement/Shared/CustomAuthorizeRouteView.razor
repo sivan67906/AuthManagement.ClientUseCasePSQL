@@ -9,9 +9,9 @@
 @if (IsCheckingAccess)
 {
     <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
-        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+       @*  <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
             <span class="visually-hidden">Loading...</span>
-        </div>
+        </div> *@
         <div class="mt-3">Checking access...</div>
     </div>
 }
@@ -53,7 +53,7 @@ else
     private bool IsCheckingAccess { get; set; } = true;
     private bool HasAccess { get; set; } = false;
     
-    // 🔥 Track last checked URL to avoid unnecessary re-checks
+    //  Track last checked URL to avoid unnecessary re-checks
     private string? _lastCheckedUrl;
     private bool _lastCheckResult;
 
@@ -61,7 +61,7 @@ else
     {
         var currentUrl = new Uri(NavigationManager.Uri).LocalPath;
         
-        // 🔥 OPTIMIZATION: Only re-check access if URL actually changed
+        //  OPTIMIZATION: Only re-check access if URL actually changed
         // This prevents unnecessary access checks when auth state changes but URL is the same
         if (_lastCheckedUrl == currentUrl && _lastCheckResult)
         {
@@ -103,7 +103,7 @@ else
             }
         }
 
-        // 🔥 Cache successful access check
+        //  Cache successful access check
         _lastCheckedUrl = currentUrl;
         _lastCheckResult = true;
         
@@ -111,7 +111,7 @@ else
         IsCheckingAccess = false;
     }
     
-    // 🔥 Method to force re-check (can be called if permissions might have changed)
+    //  Method to force re-check (can be called if permissions might have changed)
     public async Task ForceAccessCheckAsync()
     {
         _lastCheckedUrl = null;

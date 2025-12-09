@@ -17,7 +17,7 @@ public class PageAccessService
     private readonly ILogger<PageAccessService> _logger;
     private UserAccessDto? _userAccess;
     private DateTime? _lastLoaded;
-    private readonly TimeSpan _cacheExpiration = TimeSpan.FromMinutes(10); // 🔥 Increased from 5 to 10 minutes
+    private readonly TimeSpan _cacheExpiration = TimeSpan.FromMinutes(10); //  Increased from 5 to 10 minutes
 
     // Public pages that don't require authorization
     private readonly HashSet<string> _publicPages = new(StringComparer.OrdinalIgnoreCase)
@@ -47,7 +47,7 @@ public class PageAccessService
 
     private async Task<UserAccessDto?> GetUserAccessAsync(bool forceRefresh = false)
     {
-        // 🔥 Return cached data if still valid
+        //  Return cached data if still valid
         if (!forceRefresh && _userAccess != null && _lastLoaded.HasValue &&
             DateTime.UtcNow - _lastLoaded.Value < _cacheExpiration)
         {
@@ -82,14 +82,14 @@ public class PageAccessService
             {
                 _userAccess = response.Data;
                 _lastLoaded = DateTime.UtcNow;
-                _logger.LogInformation("[PAGE_ACCESS] ✅ Successfully loaded user access for {Email}", email);
+                _logger.LogInformation("[PAGE_ACCESS]  Successfully loaded user access for {Email}", email);
                 return _userAccess;
             }
             else
             {
                 _logger.LogWarning("[PAGE_ACCESS] ⚠️ API returned failure: {Message}", response.Message);
                 
-                // 🔥 CRITICAL FIX: If API fails but we have cached data, use it as fallback
+                //  CRITICAL FIX: If API fails but we have cached data, use it as fallback
                 // This prevents "Access Denied" due to temporary API failures
                 if (_userAccess != null)
                 {
@@ -103,7 +103,7 @@ public class PageAccessService
         {
             _logger.LogError(ex, "[PAGE_ACCESS] ❌ Exception while fetching user access");
             
-            // 🔥 CRITICAL FIX: Fall back to cached data on exception
+            //  CRITICAL FIX: Fall back to cached data on exception
             if (_userAccess != null)
             {
                 _logger.LogWarning("[PAGE_ACCESS] Using stale cached data as fallback after exception");
@@ -164,7 +164,7 @@ public class PageAccessService
         // SuperAdmin has access to all pages
         if (userAccess.Roles.Contains(SystemRoles.SuperAdmin))
         {
-            _logger.LogDebug("[PAGE_ACCESS] ✅ SuperAdmin access granted for {PageUrl}", pageUrl);
+            _logger.LogDebug("[PAGE_ACCESS]  SuperAdmin access granted for {PageUrl}", pageUrl);
             return new PageAccessResult { HasAccess = true, IsSuperAdmin = true };
         }
 
