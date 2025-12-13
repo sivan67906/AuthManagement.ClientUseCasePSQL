@@ -80,16 +80,16 @@
 
     .search-input {
         width: 100%;
-        padding: 8px 12px 8px 36px;
+        padding: 8px 36px 8px 12px;
         border: 1px solid #d9d9e3;
         font-size: 14px;
-        padding-left: 39px;
         border-radius: 0.25rem;
         padding-top: 5px;
         padding-bottom: 7px;
     }
     .search-input:focus { outline: none; border-color: #7c3aed; box-shadow: 0 0 0 0.2rem rgba(124, 58, 237, 0.1); }
-    .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #999; font-size: 18px; }
+    /* Issue #3 FIX: Search icon on RIGHT side */
+    .search-icon { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: #999; font-size: 18px; }
 
     .add-button {
         background-color: var(--bs-primary) !important;
@@ -261,6 +261,35 @@
             font-weight: 700;
             background: var(--bs-primary);
         }
+
+
+        /* Issue #4: Text Truncation */
+        .page-table td.page-name {
+            max-width: 250px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .page-table td.description-text {
+            max-width: 350px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    
+    /* Issue #6: Offcanvas full text display */
+    .offcanvas-title {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        white-space: normal;
+        max-width: 100%;
+    }
+    
+    .offcanvas-body p, .offcanvas-body div {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        white-space: pre-wrap;
+    }
 </style>
 
 <div class="flex-grow-1">
@@ -294,14 +323,21 @@
             </div>
             <div class="toolbar-right">
                 <div class="search-box">
-                    <i class="ti tabler-search search-icon"></i>
                     <input type="text" class="search-input" placeholder="Search pages..."
-                           @bind-value="_searchString" @bind-value:event="oninput"
-                           @onkeyup="@(() => OnSearchChanged(_searchString))" />
+                           value="@_searchString"
+                           @oninput="@((ChangeEventArgs e) => OnSearchChanged(e.Value?.ToString() ?? string.Empty))" />
+                    @if (string.IsNullOrEmpty(_searchString))
+                    {
+                        <i class="ti tabler-search search-icon"></i>
+                    }
+                    else
+                    {
+                        <i class="ti tabler-x clear-icon" @onclick="ClearSearch"></i>
+                    }
                 </div>
                 @if (_canAdd)
                 {
-                    <button class="add-button" @onclick="OpenAddDialog">
+                    <button class="add-button" @onclick="OpenAddDialog" disabled="@_isSaving">
                         <i class="ti tabler-plus"></i><span>Add Page</span>
                     </button>
                 }
@@ -355,9 +391,9 @@
                                 </td>
 
                             <td class="serial-number">@GetGlobalSerialNumber(pageItem)</td>
-                            <td class="page-name">@pageItem.Name</td>
+                            <td class="page-name" title="@pageItem.Name">@pageItem.Name</td>
                             <td>@pageItem.Url</td>
-                            <td>@TruncateDescription(pageItem.Description)</td>
+                            <td>@pageItem.Description</td>
                             <td class="text-center">
                                     <span class="badge @(pageItem.IsActive ? "bg-purple-gradient" : "bg-orange-gradient")">
                                     @(pageItem.IsActive ? "Active" : "Inactive")
@@ -451,7 +487,10 @@
         }
         else
         {
-            <div class="alert alert-info m-3" role="alert"><i class="ti tabler-info-circle me-2"></i>No pages found.</div>
+            @* Issue #3: Show NoResultsFound component when no pages match *@
+            <NoResultsFound Message="No pages found" 
+                           IconClass="ti ti-file-off"
+                           SearchTerm="@_searchString" />
         }
     </div>
 }
@@ -491,6 +530,7 @@ Roles Details
 
 
 @code {
+
     private List<PageDto> _pages = new();
     private List<PageDto> _filteredPages = new();
     private List<PageDto> _pagedPages = new();
@@ -498,7 +538,7 @@ Roles Details
     private PageFormDialog.PageFormModel _pageModel = new();
     private bool _isLoading = true, _isSaving = false, _hasError = false, _isDialogOpen = false, _isOffcanvasOpen = false, _isEditMode = false;
     private string _errorMessage = string.Empty, _searchString = string.Empty, _sortColumn = "", _sortDirection = "";
-    private int _currentPage = 1, _pageSize = 10, _totalItems = 0, _totalPages = 1;
+    private int _currentPage = 1, _pageSize = 9, _totalItems = 0, _totalPages = 1;
     private bool _canView, _canAdd, _canEdit, _canDelete;
 
 
@@ -593,6 +633,9 @@ Roles Details
     }
 
     private void OnSearchChanged(string value) { _searchString = value; _currentPage = 1; UpdateFilteredPages(); StateHasChanged(); }
+    
+    // Issue #3: Clear search method for X icon
+    private void ClearSearch() { _searchString = string.Empty; _currentPage = 1; UpdateFilteredPages(); StateHasChanged(); }
     private void ToggleSort(string column) { if (_sortColumn == column) _sortDirection = _sortDirection == "asc" ? "desc" : "asc"; else { _sortColumn = column; _sortDirection = "asc"; } UpdateFilteredPages(); StateHasChanged(); }
     private bool FilterFunc(PageDto page) => string.IsNullOrWhiteSpace(_searchString) || page.Name.ToLower().Contains(_searchString.ToLower()) || page.Url.ToLower().Contains(_searchString.ToLower()) || (page.Description?.ToLower().Contains(_searchString.ToLower()) ?? false);
     private int GetGlobalSerialNumber(PageDto page) => _filteredPages.IndexOf(page) + 1;

@@ -1,5 +1,7 @@
 ﻿@page "/confirm-email"
+@using AuthManagement.Shared
 @inject HttpClient Http
+@inject IJSRuntime JS
 @inject NavigationManager Nav
 @layout AuthLayout
 
@@ -25,7 +27,7 @@
                                 </svg>
                             </span>
                         </span>
-                        <span class="app-brand-text demo text-heading fw-bold">Vuexy</span>
+                        <span class="app-brand-text demo text-heading fw-bold">Gishur</span>
                     </a>
                 </div>
                 <!-- /Logo -->
@@ -52,6 +54,16 @@
 
 
 @code {
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Initialize input sanitization and search clear buttons
+            await JS.InvokeVoidAsync("InputSanitizer.initializeAllInputs");
+            await JS.InvokeVoidAsync("InputSanitizer.initializeAllSearchBoxes");
+        }
+    }
     private bool isBusy = true;
     private string? message;
 

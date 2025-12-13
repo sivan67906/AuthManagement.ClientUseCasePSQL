@@ -1,0 +1,120 @@
+/* Text Truncation Utilities - Issue #4 Fix */
+
+/* Truncate with ellipsis - Single line */
+.truncate-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: block;
+}
+
+/* Table cell truncation - different max widths */
+.truncate-table-name {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.truncate-table-description {
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.truncate-table-department {
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* Card text truncation */
+.truncate-card-title {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: block;
+}
+
+.truncate-card-subtitle {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: block;
+}
+
+.truncate-card-description {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    white-space: normal;
+}
+
+/* Ensure table cells don't expand beyond their max-width */
+table td {
+    overflow: hidden;
+}
+
+/* Apply truncation to specific table cells */
+.role-table td:nth-child(3), /* Role Name column */
+.department-table td:nth-child(2), /* Department Name column */
+.permission-table td:nth-child(2), /* Permission Name column */
+.feature-table td:nth-child(2), /* Feature Name column */
+.page-table td:nth-child(2) /* Page Name column */
+{
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.role-table td:nth-child(4), /* Description column */
+.department-table td:nth-child(3), /* Description column */
+.permission-table td:nth-child(3), /* Description column */
+.feature-table td:nth-child(3), /* Description column */
+.page-table td:nth-child(3) /* Description column */
+{
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Prevent cards from expanding */
+.card {
+    overflow: hidden;
+}
+
+.card-body {
+    overflow: hidden;
+}
+
+/* Specific fix for department cards */
+.card-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+}
+
+.card-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    white-space: normal;
+}

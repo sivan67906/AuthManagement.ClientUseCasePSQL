@@ -1,4 +1,5 @@
 @page "/login"
+@using AuthManagement.Shared
 @using AuthManagement.Models
 @using AuthManagement.Services
 @using System.Net.Http.Json
@@ -36,7 +37,7 @@
 								</svg>
 							</span>
 						</span>
-						<span class="app-brand-text demo text-heading fw-bold">Vuexy</span>
+						<span class="app-brand-text demo text-heading fw-bold">Gishur</span>
 					</a>
 				</div>
 				<!-- /Logo -->
@@ -45,11 +46,15 @@
 
 				<EditForm Model="loginModel" OnValidSubmit="HandleLogin" class="mb-4">
 					<div class="mb-6 form-control-validation">
-						<label for="email" class="form-label">Email</label>
-						<input type="text" class="form-control" id="email" @bind="loginModel.Email" placeholder="Enter your email" autofocus>
+						<label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+						<input type="text" class="form-control" 
+							   id="email" 
+							   @bind="loginModel.Email"
+							   placeholder="Enter your email" 
+							   autofocus data-input-type="email">
 					</div>
 					<div class="mb-6 form-password-toggle form-control-validation">
-						<label class="form-label" for="password">Password</label>
+						<label class="form-label" for="password">Password <span class="text-danger">*</span></label>
 						<div class="input-group input-group-merge">
 							<input type="password" id="password" class="form-control" @bind="loginModel.Password" placeholder="············" aria-describedby="password">
 							<span class="input-group-text cursor-pointer password-eye"><i class="icon-base ti tabler-eye-off"></i></span>
@@ -91,6 +96,7 @@
 </div>
 
 @code {
+
 	private LoginModel loginModel = new();
 	private string? message;
 	private bool isLoading;
@@ -137,11 +143,25 @@
 
 	private async Task HandleLogin()
 	{
+		// Individual field validation
+		bool emailMissing = string.IsNullOrWhiteSpace(loginModel.Email);
+		bool passwordMissing = string.IsNullOrWhiteSpace(loginModel.Password);
 
-		if (string.IsNullOrWhiteSpace(loginModel.Email) ||
-		  string.IsNullOrWhiteSpace(loginModel.Password))
+		if (emailMissing && passwordMissing)
 		{
 			await JS.InvokeVoidAsync("showToast", "error", "Email and password are required.");
+			return;
+		}
+
+		if (emailMissing)
+		{
+			await JS.InvokeVoidAsync("showToast", "error", "Email is required.");
+			return;
+		}
+
+		if (passwordMissing)
+		{
+			await JS.InvokeVoidAsync("showToast", "error", "Password is required.");
 			return;
 		}
 

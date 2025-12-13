@@ -1,4 +1,5 @@
 @using AuthManagement.Models
+@using AuthManagement.Helpers
 @using System.ComponentModel.DataAnnotations
 
 @if (IsOpen)
@@ -19,23 +20,40 @@
                         <DataAnnotationsValidator />
                         <div class="mb-3">
                             <label class="form-label">Permission Name<span class="text-danger">*</span></label>
-                            <InputText @bind-Value="FormModel.Name" class="form-control" placeholder="Enter permission name" disabled="@IsSaving" />
+                            <input type="text" 
+                                   class="form-control @(nameValidationError != null ? "is-invalid" : "")" 
+                                   placeholder="Enter permission name"
+                                   value="@FormModel.Name"
+                                   @oninput="OnNameInput"
+                                   disabled="@IsSaving" />
+                            @if (nameValidationError != null)
+                            {
+                                <div class="invalid-feedback d-block">@nameValidationError</div>
+                            }
                             <ValidationMessage For="@(() => FormModel.Name)" class="text-danger" />
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Description</label>
-                            <InputTextArea @bind-Value="FormModel.Description" class="form-control" placeholder="Enter description" rows="4" disabled="@IsSaving" />
+                            <textarea class="form-control @(descriptionValidationError != null ? "is-invalid" : "")" 
+                                      placeholder="Enter description" 
+                                      rows="4"
+                                      @oninput="OnDescriptionInput"
+                                      disabled="@IsSaving">@FormModel.Description</textarea>
+                            @if (descriptionValidationError != null)
+                            {
+                                <div class="invalid-feedback d-block">@descriptionValidationError</div>
+                            }
                             <ValidationMessage For="@(() => FormModel.Description)" class="text-danger" />
                         </div>
                         <div class="d-flex justify-content-end gap-2 mt-4">
                             <button type="button" class="btn btn-label-secondary" @onclick="HandleCancel" disabled="@IsSaving">Cancel</button>
-                            <button type="submit" class="btn btn-primary" disabled="@IsSaving">
+                            <button type="submit" class="btn btn-primary" disabled="@(IsSaving || HasValidationErrors())">
                                 @if (IsSaving) { <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span><span>Saving...</span> }
                                 else
                                 {
                                     <i class="ti tabler-check me-1"></i>
                                     <span>@(IsEditMode ? "Update" : "Create")</span>
-     }
+                                }
                             </button>
                         </div>
                     </EditForm>
@@ -57,6 +75,8 @@
     .form-control { border: 1px solid #d9d9e3; border-radius: 6px; padding: 10px 12px; font-size: 14px; }
     .form-control:focus { border-color: #7c3aed; box-shadow: 0 0 0 0.2rem rgba(124, 58, 237, 0.1); outline: none; }
     .form-control:disabled { background-color: #f5f5f5; opacity: 0.7; }
+    .form-control.is-invalid { border-color: #dc3545; }
+    .invalid-feedback { color: #dc3545; font-size: 12px; margin-top: 4px; }
     .btn-primary { background-color: #7c3aed; border-color: #7c3aed; color: white; padding: 8px 20px; font-size: 14px; font-weight: 500; border-radius: 6px; }
     .btn-primary:hover:not(:disabled) { background-color: #6d28d9; border-color: #6d28d9; }
     .btn-primary:disabled { opacity: 0.7; cursor: not-allowed; }
@@ -75,15 +95,49 @@
     [Parameter] public EventCallback OnCancel { get; set; }
     [Parameter] public EventCallback<PermissionFormModel> OnSubmit { get; set; }
 
-    private async Task HandleCancel() { if (!IsSaving) await OnCancel.InvokeAsync(); }
-    private async Task HandleValidSubmit() => await OnSubmit.InvokeAsync(FormModel);
+    // Issue #2: Validation error messages
+    private string? nameValidationError;
+    private string? descriptionValidationError;
+
+    private void OnNameInput(ChangeEventArgs e)
+    {
+        var rawValue = e.Value?.ToString() ?? string.Empty;
+        var (isValid, errorMessage) = InputValidationHelper.ValidateInput(rawValue, InputTypeEnum.Name, required: true);
+        if (!isValid) { nameValidationError = errorMessage; FormModel.Name = InputValidationHelper.FilterInput(rawValue, InputTypeEnum.Name); }
+        else { nameValidationError = null; FormModel.Name = rawValue; }
+    }
+
+    private void OnDescriptionInput(ChangeEventArgs e)
+    {
+        var rawValue = e.Value?.ToString() ?? string.Empty;
+        var (isValid, errorMessage) = InputValidationHelper.ValidateInput(rawValue, InputTypeEnum.Description, required: false);
+        if (!isValid) { descriptionValidationError = errorMessage; FormModel.Description = InputValidationHelper.FilterInput(rawValue, InputTypeEnum.Description); }
+        else { descriptionValidationError = null; FormModel.Description = rawValue; }
+    }
+
+    private bool HasValidationErrors() => nameValidationError != null || descriptionValidationError != null;
+
+    private async Task HandleCancel() 
+    { 
+        if (!IsSaving) { nameValidationError = null; descriptionValidationError = null; await OnCancel.InvokeAsync(); }
+    }
+    
+    private async Task HandleValidSubmit()
+    {
+        var (nameValid, nameError) = InputValidationHelper.ValidateInput(FormModel.Name, InputTypeEnum.Name, required: true);
+        var (descValid, descError) = InputValidationHelper.ValidateInput(FormModel.Description, InputTypeEnum.Description, required: false);
+        nameValidationError = nameError; descriptionValidationError = descError;
+        if (!nameValid || !descValid) return;
+        FormModel.Name = InputValidationHelper.Sanitize(FormModel.Name);
+        FormModel.Description = InputValidationHelper.SanitizeText(FormModel.Description);
+        await OnSubmit.InvokeAsync(FormModel);
+    }
 
     public class PermissionFormModel
     {
         [Required(ErrorMessage = "Name is required")]
         [StringLength(100, ErrorMessage = "Name cannot exceed 100 characters")]
         public string Name { get; set; } = string.Empty;
-
         [StringLength(500, ErrorMessage = "Description cannot exceed 500 characters")]
         public string? Description { get; set; }
     }

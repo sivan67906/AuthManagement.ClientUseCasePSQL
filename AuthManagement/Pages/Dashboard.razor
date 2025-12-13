@@ -354,4 +354,15 @@
 
 @code {
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Initialize input sanitization and search clear buttons
+            await JS.InvokeVoidAsync("InputSanitizer.initializeAllInputs");
+            await JS.InvokeVoidAsync("InputSanitizer.initializeAllSearchBoxes");
+        }
+    }
+
+
 }

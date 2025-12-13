@@ -1,0 +1,260 @@
+/* OFFCANVAS LAYOUT FIXES - Issue #6 */
+/* Prevents text overflow, unwanted vertical space, and layout breaking */
+
+/* Global offcanvas styling - prevent horizontal overflow */
+.offcanvas,
+[class*="offcanvas"],
+.drawer,
+[class*="drawer"],
+.side-panel,
+[class*="side-panel"] {
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    overflow-x: hidden !important;
+    max-width: 100% !important;
+}
+
+/* Offcanvas header - prevent text overflow */
+.offcanvas-header,
+.offcanvas .header,
+[class*="offcanvas"] [class*="header"] {
+    padding: 20px !important;
+    min-height: auto !important;
+    overflow: hidden !important;
+    max-width: 100% !important;
+}
+
+/* Header title - truncate with ellipsis for long names */
+.offcanvas-title,
+.offcanvas .title,
+[class*="offcanvas"] [class*="title"],
+.offcanvas-header h1,
+.offcanvas-header h2,
+.offcanvas-header h3,
+.offcanvas-header h4,
+.offcanvas-header h5,
+.offcanvas-header .fw-bold,
+.offcanvas-header [class*="title"] {
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    max-width: calc(100% - 50px) !important; /* Leave space for close button */
+    display: block !important;
+    line-height: 1.4 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Department/Entity name in header - specific for Vuexy style offcanvas */
+.offcanvas-header .d-flex.align-items-center,
+.offcanvas-header .header-content {
+    overflow: hidden !important;
+    max-width: calc(100% - 40px) !important;
+}
+
+.offcanvas-header .d-flex.align-items-center > div,
+.offcanvas-header .header-content > div {
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    max-width: 100% !important;
+}
+
+/* Offcanvas body - proper text wrapping */
+.offcanvas-body,
+.offcanvas .body,
+[class*="offcanvas"] [class*="body"] {
+    padding: 20px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    max-width: 100% !important;
+}
+
+.offcanvas-body p,
+.offcanvas-body div,
+.offcanvas-body span,
+.offcanvas-body label {
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    word-break: break-word !important;
+    white-space: normal !important;
+    max-width: 100% !important;
+    line-height: 1.5 !important;
+}
+
+/* Remove excessive vertical spacing */
+.offcanvas-body > *:first-child {
+    margin-top: 0 !important;
+}
+
+.offcanvas-body > *:last-child {
+    margin-bottom: 0 !important;
+}
+
+/* Information sections */
+.offcanvas-body .info-section,
+.offcanvas-body [class*="information"],
+.offcanvas-body [class*="INFORMATION"] {
+    margin-bottom: 20px !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    word-break: break-word !important;
+}
+
+.offcanvas-body .info-row,
+.offcanvas-body .detail-row {
+    margin-bottom: 10px !important;
+    line-height: 1.5 !important;
+}
+
+/* Text in info rows */
+.offcanvas-body .info-label,
+.offcanvas-body .detail-label {
+    word-wrap: break-word !important;
+    white-space: normal !important;
+}
+
+.offcanvas-body .info-value,
+.offcanvas-body .detail-value {
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    word-break: break-word !important;
+    white-space: normal !important;
+    max-width: 100% !important;
+}
+
+/* Prevent long text from creating vertical gaps */
+.offcanvas p {
+    margin-top: 0 !important;
+    margin-bottom: 10px !important;
+    word-break: break-word !important;
+}
+
+/* MudBlazor Drawer specific fixes */
+.mud-drawer,
+.mud-drawer-content {
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    overflow-x: hidden !important;
+}
+
+.mud-drawer-header {
+    padding: 16px !important;
+    overflow: hidden !important;
+}
+
+.mud-drawer-header * {
+    word-wrap: break-word !important;
+    white-space: normal !important;
+}
+
+/* Bootstrap offcanvas specific fixes */
+.offcanvas-start,
+.offcanvas-end,
+.offcanvas-top,
+.offcanvas-bottom {
+    word-wrap: break-word !important;
+    overflow-x: hidden !important;
+}
+
+/* Card header in offcanvas */
+.offcanvas .card-header,
+.offcanvas .card-title {
+    word-wrap: break-word !important;
+    white-space: normal !important;
+    line-height: 1.4 !important;
+}
+
+/* Details section spacing */
+.offcanvas .details-section {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+
+/* Status badges in offcanvas */
+.offcanvas .badge,
+.offcanvas .status {
+    display: inline-block !important;
+    max-width: 100% !important;
+    white-space: normal !important;
+    word-wrap: break-word !important;
+}
+
+/* ===========================================
+   OFFCANVAS HEADER STYLING - Vuexy Theme
+   Specifically for department/role/feature view panels
+   =========================================== */
+
+/* Primary colored header section */
+.offcanvas .bg-primary,
+.offcanvas [class*="bg-primary"],
+.offcanvas-header.bg-primary {
+    overflow: hidden !important;
+    max-width: 100% !important;
+}
+
+/* Title text inside colored header */
+.offcanvas .bg-primary h5,
+.offcanvas .bg-primary h4,
+.offcanvas .bg-primary .title,
+.offcanvas .bg-primary .fw-bold,
+.offcanvas .bg-primary [class*="title"] {
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    max-width: 100% !important;
+    display: block !important;
+}
+
+/* Subtitle in header */
+.offcanvas .bg-primary small,
+.offcanvas .bg-primary .text-muted,
+.offcanvas .bg-primary .subtitle {
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    max-width: 100% !important;
+    display: block !important;
+}
+
+/* Content wrapper in header */
+.offcanvas .bg-primary .ms-3,
+.offcanvas .bg-primary .ms-2 {
+    overflow: hidden !important;
+    max-width: calc(100% - 80px) !important; /* Space for icon and close button */
+    flex: 1 !important;
+    min-width: 0 !important; /* Important for text-overflow to work in flex */
+}
+
+/* Icon container - don't let it shrink */
+.offcanvas .bg-primary .rounded,
+.offcanvas .bg-primary .icon-container {
+    flex-shrink: 0 !important;
+}
+
+/* ===========================================
+   DEPARTMENT/ENTITY INFORMATION SECTION
+   For the content area showing department details
+   =========================================== */
+
+/* Section title like "DEPARTMENT INFORMATION" */
+.offcanvas-body h6,
+.offcanvas-body .section-title,
+.offcanvas-body .text-uppercase {
+    margin-bottom: 12px !important;
+    word-break: normal !important;
+}
+
+/* Information paragraph content */
+.offcanvas-body .info-content,
+.offcanvas-body p:not(.section-title) {
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    word-break: break-word !important;
+    hyphens: auto !important;
+    white-space: normal !important;
+    line-height: 1.6 !important;
+    max-width: 100% !important;
+}

@@ -9,8 +9,8 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-// Configuration
-var gatewayUrl = "https://localhost:25650";
+// Configuration - Read from appsettings.json or use default
+var gatewayUrl = builder.Configuration["GatewayUrl"] ?? "https://localhost:27705";
 Console.WriteLine("Application starting - Blazor WebAssembly Auth Management System");
 Console.WriteLine($"Gateway URL: {gatewayUrl}");
 

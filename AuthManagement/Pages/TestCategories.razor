@@ -476,6 +476,20 @@
             padding: 8px;
         }
     }
+
+    /* Issue #6: Offcanvas full text display */
+    .offcanvas-title {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        white-space: normal;
+        max-width: 100%;
+    }
+    
+    .offcanvas-body p, .offcanvas-body div {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        white-space: pre-wrap;
+    }
 </style>
 
 @* <div class="page-header" style="margin-bottom: 24px;">
@@ -538,10 +552,22 @@ else
                 <h5 class="test-label">Categories List</h5>
             </div>
             <div class="toolbar-right">
-                <input type="text" class="search-input" placeholder="Search categories..." @bind="_searchString" @bind:event="oninput" @onkeyup="@(() => OnSearchChanged(_searchString))" />
+                <div class="search-box" style="position: relative; min-width: 280px;">
+                    <input type="text" class="search-input" placeholder="Search categories..." style="padding-right: 36px;"
+                           value="@_searchString"
+                           @oninput="@((ChangeEventArgs e) => OnSearchChanged(e.Value?.ToString() ?? string.Empty))" />
+                    @if (string.IsNullOrEmpty(_searchString))
+                    {
+                        <i class="ti tabler-search search-icon" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: #999;"></i>
+                    }
+                    else
+                    {
+                        <i class="ti tabler-x clear-icon" @onclick="ClearSearch"></i>
+                    }
+                </div>
                 @if (_canAdd)
                 {
-                    <button class="add-button" @onclick="OpenAddDialog">
+                    <button class="add-button" @onclick="OpenAddDialog" disabled="@_isSaving">
                         <i class="ti tabler-plus"></i>
                         Add Category
                     </button>
@@ -615,7 +641,7 @@ else
                                     }
                                     @category.Name
                                 </td>
-                                <td class="description-text">@TruncateDescription(category.Description)</td>
+                                <td class="description-text">@category.Description</td>
                                 <td class="order-text">@category.DisplayOrder</td>
                                 <td>
                                     @if (category.IsActive)
@@ -659,12 +685,7 @@ else
                     }
                     else
                     {
-                        <tr>
-                            <td colspan="6" style="text-align: center; padding: 40px; color: #999;">
-                                <i class="ti tabler-inbox" style="font-size: 48px; display: block; margin-bottom: 16px;"></i>
-                                No categories found
-                            </td>
-                        </tr>
+                        <tr><td colspan="10" style="border: none; padding: 0;"><NoResultsFound Message="No categories found" SearchTerm="@_searchString" /></td></tr>
                     }
                 </tbody>
             </table>
@@ -796,6 +817,7 @@ TestCategories Details
                               OnClose="CloseOffcanvas" />
 
 @code {
+
     private List<TestCategoryDto> _categories = new();
     private List<TestCategoryDto> _filteredCategories = new();
     private List<TestCategoryDto> _pagedCategories = new();
@@ -803,7 +825,7 @@ TestCategories Details
     private TestCategoryFormDialog.CategoryFormModel _categoryModel = new();
     private bool _isLoading = true, _isSaving = false, _hasError = false, _isDialogOpen = false, _isOffcanvasOpen = false, _isEditMode = false;
     private string _errorMessage = string.Empty, _searchString = string.Empty, _sortColumn = "order", _sortDirection = "asc";
-    private int _currentPage = 1, _pageSize = 10, _totalItems = 0, _totalPages = 1;
+    private int _currentPage = 1, _pageSize = 9, _totalItems = 0, _totalPages = 1;
     private bool _canView, _canAdd, _canEdit, _canDelete;
     bool showPopup = false;
 
@@ -939,6 +961,15 @@ TestCategories Details
     private void OnSearchChanged(string value)
     {
         _searchString = value;
+        _currentPage = 1;
+        UpdateFilteredCategories();
+        StateHasChanged();
+    }
+
+    // Issue #3: Clear search method for X icon
+    private void ClearSearch()
+    {
+        _searchString = string.Empty;
         _currentPage = 1;
         UpdateFilteredCategories();
         StateHasChanged();

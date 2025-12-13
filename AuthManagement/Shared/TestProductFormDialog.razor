@@ -1,4 +1,5 @@
 @using AuthManagement.Models
+@using AuthManagement.Helpers
 
 @if (IsOpen)
 {
@@ -18,7 +19,17 @@
                     <div class="modal-body">
                         <div class="mb-3">
                             <label class="form-label">Product Name <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" @bind="Model.Name" required placeholder="Enter product name" disabled="@IsSaving" />
+                            <input type="text" 
+                                   class="form-control @(nameValidationError != null ? "is-invalid" : "")" 
+                                   value="@Model.Name"
+                                   @oninput="OnNameInput"
+                                   required 
+                                   placeholder="Enter product name" 
+                                   disabled="@IsSaving" />
+                            @if (nameValidationError != null)
+                            {
+                                <div class="invalid-feedback d-block">@nameValidationError</div>
+                            }
                         </div>
 
                         <div class="mb-3">
@@ -179,8 +190,24 @@
     [Parameter] public EventCallback<ProductFormModel> OnSubmit { get; set; }
     [Parameter] public EventCallback OnCancel { get; set; }
 
+    // Issue #2: Validation
+    private string? nameValidationError;
+
+    private void OnNameInput(ChangeEventArgs e)
+    {
+        var rawValue = e.Value?.ToString() ?? string.Empty;
+        var (isValid, errorMessage) = InputValidationHelper.ValidateInput(rawValue, InputTypeEnum.Name, required: true);
+        if (!isValid) { nameValidationError = errorMessage; Model.Name = InputValidationHelper.FilterInput(rawValue, InputTypeEnum.Name); }
+        else { nameValidationError = null; Model.Name = rawValue; }
+    }
+
     private async Task HandleSubmit()
     {
+        var (nameValid, nameError) = InputValidationHelper.ValidateInput(Model.Name, InputTypeEnum.Name, required: true);
+        nameValidationError = nameError;
+        if (!nameValid) return;
+        Model.Name = InputValidationHelper.Sanitize(Model.Name);
+        Model.Description = InputValidationHelper.SanitizeText(Model.Description);
         await OnSubmit.InvokeAsync(Model);
     }
 
@@ -188,6 +215,7 @@
     {
         if (!IsSaving)
         {
+            nameValidationError = null;
             await OnCancel.InvokeAsync();
         }
     }

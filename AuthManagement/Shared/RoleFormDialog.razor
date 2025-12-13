@@ -1,4 +1,5 @@
 @using AuthManagement.Models
+@using AuthManagement.Helpers
 @using System.ComponentModel.DataAnnotations
 
 @if (IsOpen)
@@ -38,20 +39,30 @@
                             <label class="form-label">
                                 Role Name<span class="text-danger">*</span>
                             </label>
-                            <InputText @bind-Value="FormModel.Name" 
-                                       class="form-control" 
-                                       placeholder="Enter role name"
-                                       disabled="@IsSaving" />
+                            <input type="text" 
+                                   class="form-control @(nameValidationError != null ? "is-invalid" : "")" 
+                                   placeholder="Enter role name"
+                                   value="@FormModel.Name"
+                                   @oninput="OnNameInput"
+                                   disabled="@IsSaving" />
+                            @if (nameValidationError != null)
+                            {
+                                <div class="invalid-feedback d-block">@nameValidationError</div>
+                            }
                             <ValidationMessage For="@(() => FormModel.Name)" class="text-danger" />
                         </div>
                         
                         <div class="mb-3">
                             <label class="form-label">Description</label>
-                            <InputTextArea @bind-Value="FormModel.Description" 
-                                          class="form-control" 
-                                          placeholder="Enter description"
-                                          rows="4"
-                                          disabled="@IsSaving" />
+                            <textarea class="form-control @(descriptionValidationError != null ? "is-invalid" : "")" 
+                                      placeholder="Enter description"
+                                      rows="4"
+                                      @oninput="OnDescriptionInput"
+                                      disabled="@IsSaving">@FormModel.Description</textarea>
+                            @if (descriptionValidationError != null)
+                            {
+                                <div class="invalid-feedback d-block">@descriptionValidationError</div>
+                            }
                             <ValidationMessage For="@(() => FormModel.Description)" class="text-danger" />
                         </div>
                         
@@ -64,7 +75,7 @@
                             </button>
                             <button type="submit" 
                                     class="btn btn-primary" 
-                                    disabled="@IsSaving">
+                                    disabled="@(IsSaving || HasValidationErrors())">
                                 @if (IsSaving)
                                 {
                                     <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
@@ -243,16 +254,79 @@
     [Parameter]
     public EventCallback<RoleFormModel> OnSubmit { get; set; }
 
+    // Issue #2: Validation error messages
+    private string? nameValidationError;
+    private string? descriptionValidationError;
+
+    // Issue #2: Real-time input validation for Name field
+    private void OnNameInput(ChangeEventArgs e)
+    {
+        var rawValue = e.Value?.ToString() ?? string.Empty;
+        var (isValid, errorMessage) = InputValidationHelper.ValidateInput(rawValue, InputTypeEnum.Name, required: true);
+        
+        if (!isValid)
+        {
+            nameValidationError = errorMessage;
+            FormModel.Name = InputValidationHelper.FilterInput(rawValue, InputTypeEnum.Name);
+        }
+        else
+        {
+            nameValidationError = null;
+            FormModel.Name = rawValue;
+        }
+    }
+
+    // Issue #2: Real-time input validation for Description field
+    private void OnDescriptionInput(ChangeEventArgs e)
+    {
+        var rawValue = e.Value?.ToString() ?? string.Empty;
+        var (isValid, errorMessage) = InputValidationHelper.ValidateInput(rawValue, InputTypeEnum.Description, required: false);
+        
+        if (!isValid)
+        {
+            descriptionValidationError = errorMessage;
+            FormModel.Description = InputValidationHelper.FilterInput(rawValue, InputTypeEnum.Description);
+        }
+        else
+        {
+            descriptionValidationError = null;
+            FormModel.Description = rawValue;
+        }
+    }
+
+    private bool HasValidationErrors()
+    {
+        return nameValidationError != null || descriptionValidationError != null;
+    }
+
     private async Task HandleCancel()
     {
         if (!IsSaving)
         {
+            nameValidationError = null;
+            descriptionValidationError = null;
             await OnCancel.InvokeAsync();
         }
     }
 
     private async Task HandleValidSubmit()
     {
+        // Issue #2: Final validation before submit
+        var (nameValid, nameError) = InputValidationHelper.ValidateInput(FormModel.Name, InputTypeEnum.Name, required: true);
+        var (descValid, descError) = InputValidationHelper.ValidateInput(FormModel.Description, InputTypeEnum.Description, required: false);
+        
+        nameValidationError = nameError;
+        descriptionValidationError = descError;
+        
+        if (!nameValid || !descValid)
+        {
+            return;
+        }
+        
+        // Sanitize before submit
+        FormModel.Name = InputValidationHelper.Sanitize(FormModel.Name);
+        FormModel.Description = InputValidationHelper.SanitizeText(FormModel.Description);
+        
         await OnSubmit.InvokeAsync(FormModel);
     }
 

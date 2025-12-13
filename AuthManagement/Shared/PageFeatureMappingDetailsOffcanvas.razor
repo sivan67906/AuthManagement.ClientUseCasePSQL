@@ -6,11 +6,11 @@
     
     <div class="offcanvas offcanvas-end @(IsOpen ? "show" : "")" tabindex="-1" @onclick:stopPropagation="true">
         <div class="offcanvas-header">
-            <div style="display: flex; align-items: center; gap: 16px; width: 100%;">
+            <div style="display: flex; align-items: center; gap: 16px; width: calc(100% - 40px); min-width: 0;">
                 <div class="avatar-container">
                     <i class="ti tabler-puzzle" style="font-size: 32px; color: white;"></i>
                 </div>
-                <div style="flex: 1;">
+                <div style="flex: 1; min-width: 0; overflow: hidden;">
                     <h5 style="margin: 0; font-weight: 600; font-size: 20px;">@Mapping?.PageName</h5>
                     <p style="margin: 4px 0 0 0; opacity: 0.9; font-size: 14px;">
                         Page Feature Mapping Details
@@ -147,6 +147,7 @@
         box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
         transition: right 0.3s ease-in-out;
         overflow-y: auto;
+        overflow-x: hidden;
     }
 
     .offcanvas.show {
@@ -217,6 +218,7 @@
     }
 
     .detail-content {
+        min-width: 0;
         flex: 1;
     }
 
@@ -227,6 +229,9 @@
     }
 
     .detail-value {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        white-space: normal;
         font-size: 14px;
         color: #333;
         font-weight: 500;

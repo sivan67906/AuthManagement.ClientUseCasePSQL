@@ -1,4 +1,5 @@
 @page "/two-factor-login"
+@using AuthManagement.Shared
 @using AuthManagement.Models
 @using AuthManagement.Services
 @using System.Net.Http.Json
@@ -175,6 +176,7 @@
 </style>
 
 @code {
+
     private string? message;
     private bool isLoading;
     private bool isResending;
@@ -471,11 +473,19 @@
             };
 
             var response = await Http.PostAsJsonAsync("/auth/resend-2fa-login", request);
-            var result = await response.Content.ReadFromJsonAsync<ApiResponse<string>>();
+            var result = await response.Content.ReadFromJsonAsync<ApiResponse<ResendTwoFactorCodeResultDto>>();
 
-            if (response.IsSuccessStatusCode && result?.Success == true)
+            if (response.IsSuccessStatusCode && result?.Success == true && result.Data != null)
             {
-                message = "Code resent successfully! Check your email.";
+                // Issue #1 FIX: Update the pending token with the new one
+                // This ensures only the latest code will work
+                pendingToken = result.Data.NewTwoFactorToken;
+                await AuthProvider.SetPendingTwoFactorAsync(pendingEmail, pendingToken, twoFactorType!);
+                
+                // Clear the digit inputs for new code entry
+                ClearDigits();
+                
+                message = "New code sent! Check your email.";
                 await JS.InvokeVoidAsync("showToast", "success", message);
             }
             else
@@ -495,6 +505,13 @@
             isResending = false;
             StateHasChanged(); // Force UI update to restore button
         }
+    }
+
+    // DTO for resend response
+    private class ResendTwoFactorCodeResultDto
+    {
+        public string NewTwoFactorToken { get; set; } = string.Empty;
+        public string Message { get; set; } = string.Empty;
     }
 
     private class ResendTwoFactorRequest

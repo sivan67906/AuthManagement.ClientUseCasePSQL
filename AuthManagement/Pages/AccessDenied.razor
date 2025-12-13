@@ -1,256 +1,342 @@
 @page "/access-denied"
+@using AuthManagement.Shared
 @using Microsoft.AspNetCore.Components.Authorization
 @using AuthManagement.Services
 @inject AuthenticationStateProvider AuthStateProvider
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
 
-<PageTitle>Access Denied</PageTitle>
+<PageTitle>Access Denied - Gishur</PageTitle>
 
 <style>
-    .access-denied-wrapper {
+    /* Full-screen centered layout */
+    .access-denied-container {
+        min-height: 100vh;
         display: flex;
         align-items: center;
         justify-content: center;
-        min-height: 100vh;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         padding: 20px;
+        position: relative;
+        overflow: hidden;
     }
 
+    /* Animated background elements */
+    .bg-decoration {
+        position: absolute;
+        opacity: 0.1;
+    }
+
+    .bg-circle-1 {
+        width: 300px;
+        height: 300px;
+        border-radius: 50%;
+        background: white;
+        top: -100px;
+        right: -100px;
+    }
+
+    .bg-circle-2 {
+        width: 200px;
+        height: 200px;
+        border-radius: 50%;
+        background: white;
+        bottom: -50px;
+        left: -50px;
+    }
+
+    /* Main card */
     .access-denied-card {
         background: white;
-        border-radius: 20px;
-        padding: 50px;
+        border-radius: 16px;
+        padding: 60px 50px;
         box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        max-width: 600px;
+        max-width: 550px;
         width: 100%;
         text-align: center;
+        position: relative;
+        z-index: 1;
+        animation: slideUp 0.5s ease-out;
     }
 
+    @@keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Icon */
     .access-denied-icon {
-        width: 120px;
-        height: 120px;
+        width: 100px;
+        height: 100px;
         margin: 0 auto 30px;
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        animation: pulse 2s infinite;
+        position: relative;
+        animation: iconPulse 2s ease-in-out infinite;
     }
 
-    @@keyframes pulse {
+    @@keyframes iconPulse {
         0%, 100% {
-            transform: scale(1);
+            box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.7);
         }
         50% {
-            transform: scale(1.05);
+            box-shadow: 0 0 0 20px rgba(102, 126, 234, 0);
         }
     }
 
     .access-denied-icon i {
-        font-size: 60px;
+        font-size: 50px;
         color: white;
     }
 
+    /* Typography */
     .access-denied-title {
-        font-size: 32px;
+        font-size: 28px;
         font-weight: 700;
         color: #2d3748;
-        margin-bottom: 15px;
+        margin-bottom: 12px;
+        font-family: 'Open Sans', sans-serif;
     }
 
-    .access-denied-message {
-        font-size: 18px;
+    .access-denied-subtitle {
+        font-size: 16px;
         color: #718096;
-        margin-bottom: 10px;
-        line-height: 1.6;
+        margin-bottom: 25px;
+        line-height: 1.5;
     }
 
-    .access-denied-details {
+    /* Info box */
+    .access-info-box {
         background: #f7fafc;
-        border-radius: 10px;
+        border-left: 4px solid #667eea;
+        border-radius: 8px;
         padding: 20px;
-        margin: 25px 0;
+        margin: 30px 0;
         text-align: left;
     }
 
-    .detail-row {
+    .info-row {
         display: flex;
         justify-content: space-between;
-        padding: 8px 0;
+        padding: 10px 0;
         border-bottom: 1px solid #e2e8f0;
     }
 
-    .detail-row:last-child {
+    .info-row:last-child {
         border-bottom: none;
+        padding-bottom: 0;
     }
 
-    .detail-label {
+    .info-label {
         font-weight: 600;
         color: #4a5568;
+        font-size: 14px;
     }
 
-    .detail-value {
-        color: #718096;
+    .info-value {
+        color: #667eea;
+        font-weight: 600;
         text-align: right;
-        word-break: break-all;
+        font-size: 14px;
+        max-width: 200px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
-    .btn-group {
+    /* Buttons */
+    .button-group {
         display: flex;
-        gap: 15px;
+        gap: 12px;
         justify-content: center;
         margin-top: 30px;
-    }
-
-    .btn-custom {
-        padding: 12px 30px;
-        border-radius: 8px;
-        font-weight: 600;
-        text-decoration: none;
-        transition: all 0.3s ease;
-        border: none;
-        cursor: pointer;
-        font-size: 16px;
+        flex-wrap: wrap;
     }
 
     .btn-primary-custom {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 15px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
     }
 
     .btn-primary-custom:hover {
         transform: translateY(-2px);
-        box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
     }
 
     .btn-secondary-custom {
         background: white;
         color: #667eea;
         border: 2px solid #667eea;
+        padding: 12px 30px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 15px;
+        cursor: pointer;
+        transition: all 0.3s ease;
     }
 
     .btn-secondary-custom:hover {
-        background: #667eea;
-        color: white;
+        background: #f7fafc;
         transform: translateY(-2px);
-        box-shadow: 0 10px 20px rgba(102, 126, 234, 0.2);
     }
 
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .access-denied-card {
+            padding: 40px 30px;
+        }
+
+        .access-denied-title {
+            font-size: 24px;
+        }
+
+        .access-denied-subtitle {
+            font-size: 14px;
+        }
+
+        .button-group {
+            flex-direction: column;
+        }
+
+        .btn-primary-custom,
+        .btn-secondary-custom {
+            width: 100%;
+        }
+    }
+
+    /* Help text */
     .help-text {
-        font-size: 14px;
-        color: #a0aec0;
         margin-top: 20px;
+        font-size: 13px;
+        color: #a0aec0;
+    }
+
+    .help-text a {
+        color: #667eea;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .help-text a:hover {
+        text-decoration: underline;
     }
 </style>
 
-<div class="access-denied-wrapper">
+<div class="access-denied-container">
+    <!-- Background decoration -->
+    <div class="bg-decoration bg-circle-1"></div>
+    <div class="bg-decoration bg-circle-2"></div>
+
+    <!-- Main card -->
     <div class="access-denied-card">
+        <!-- Icon -->
         <div class="access-denied-icon">
-            <i class="bx bx-lock-alt"></i>
+            <i class="ti ti-lock"></i>
         </div>
-        
+
+        <!-- Title and message -->
         <h1 class="access-denied-title">Access Denied</h1>
-        
-        <p class="access-denied-message">
-            You don't have permission to access this page.
+        <p class="access-denied-subtitle">
+            You don't have permission to access this page or resource.
+            Please contact your administrator if you believe this is an error.
         </p>
 
-        @if (isAuthenticated)
-        {
-            <div class="access-denied-details">
-                <div class="detail-row">
-                    <span class="detail-label">Your Email:</span>
-                    <span class="detail-value">@userEmail</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">Your Roles:</span>
-                    <span class="detail-value">@string.Join(", ", userRoles)</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">Requested Page:</span>
-                    <span class="detail-value">@requestedPage</span>
-                </div>
+        <!-- Information box -->
+        <div class="access-info-box">
+            <div class="info-row">
+                <span class="info-label">Current User</span>
+                <span class="info-value" title="@_userEmail">@(_userEmail ?? "Not authenticated")</span>
             </div>
-
-            <p class="access-denied-message" style="font-size: 16px;">
-                This page is restricted to users with specific role permissions. 
-                Contact your administrator if you believe you should have access.
-            </p>
-        }
-        else
-        {
-            <p class="access-denied-message" style="font-size: 16px;">
-                You need to be logged in to access this page.
-            </p>
-        }
-
-        <div class="btn-group">
-            @if (isAuthenticated)
-            {
-                <button class="btn-custom btn-secondary-custom" @onclick="GoBack">
-                    <i class="bx bx-arrow-back"></i> Go Back
-                </button>
-                <a href="/dashboard" class="btn-custom btn-primary-custom">
-                    <i class="bx bx-home"></i> Go to Dashboard
-                </a>
-            }
-            else
-            {
-                <a href="/login" class="btn-custom btn-primary-custom">
-                    <i class="bx bx-log-in"></i> Login
-                </a>
-            }
+            <div class="info-row">
+                <span class="info-label">Requested Page</span>
+                <span class="info-value" title="@_requestedUrl">@_requestedUrl</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Timestamp</span>
+                <span class="info-value">@DateTime.Now.ToString("MMM dd, yyyy HH:mm")</span>
+            </div>
         </div>
 
+        <!-- Action buttons -->
+        <div class="button-group">
+            <button class="btn-primary-custom" @onclick="NavigateToDashboard">
+                <i class="ti ti-home me-2"></i>
+                Go to Dashboard
+            </button>
+            <button class="btn-secondary-custom" @onclick="GoBack">
+                <i class="ti ti-arrow-left me-2"></i>
+                Go Back
+            </button>
+        </div>
+
+        <!-- Help text -->
         <p class="help-text">
-            <i class="bx bx-info-circle"></i> 
-            If you continue to experience issues, please contact support.
+            Need help? <a href="mailto:support@gishur.com">Contact Support</a>
         </p>
     </div>
 </div>
 
 @code {
-    private bool isAuthenticated = false;
-    private string userEmail = "Not logged in";
-    private List<string> userRoles = new();
-    private string requestedPage = "";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Initialize input sanitization and search clear buttons
+            await JSRuntime.InvokeVoidAsync("InputSanitizer.initializeAllInputs");
+            await JSRuntime.InvokeVoidAsync("InputSanitizer.initializeAllSearchBoxes");
+        }
+    }
+    private string? _userEmail;
+    private string _requestedUrl = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
-
-        isAuthenticated = user?.Identity?.IsAuthenticated ?? false;
-
-        if (isAuthenticated)
+        
+        if (user.Identity?.IsAuthenticated == true)
         {
-            userEmail = user!.FindFirst("email")?.Value ?? "Unknown";
-            userRoles = user.Claims
-                .Where(c => c.Type == "role")
-                .Select(c => c.Value)
-                .ToList();
+            _userEmail = user.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value 
+                ?? user.Identity.Name;
         }
 
-        // Get the page they tried to access from navigation history
-        requestedPage = await JSRuntime.InvokeAsync<string>("eval", "document.referrer") ?? "Unknown";
-        if (!string.IsNullOrEmpty(requestedPage))
+        _requestedUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/");
+        
+        // Get the return URL from query string if available
+        var uri = new Uri(NavigationManager.Uri);
+        var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+        var returnUrl = query["returnUrl"];
+        if (!string.IsNullOrEmpty(returnUrl))
         {
-            try
-            {
-                var uri = new Uri(requestedPage);
-                requestedPage = uri.LocalPath;
-            }
-            catch
-            {
-                requestedPage = "Unknown";
-            }
+            _requestedUrl = returnUrl;
         }
     }
 
-    private async Task GoBack()
+    private void NavigateToDashboard()
     {
-        await JSRuntime.InvokeVoidAsync("history.back");
+        NavigationManager.NavigateTo("/dashboard", true);
+    }
+
+    private void GoBack()
+    {
+        NavigationManager.NavigateTo("/", true);
     }
 }

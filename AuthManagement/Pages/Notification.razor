@@ -1,5 +1,6 @@
 ﻿@page "/Notification"
 
+@using AuthManagement.Shared
 @using AuthManagement.Models
 @using System.Net.Http.Headers
 @using System.Net.Http.Json
@@ -7,6 +8,7 @@
 @using Microsoft.AspNetCore.Authorization
 @attribute [Authorize]
 @inject HttpClient Http
+@inject IJSRuntime JS
 @inject JwtAuthenticationStateProvider AuthProvider
 
 
@@ -75,6 +77,16 @@
 
 
 @code {
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Initialize input sanitization and search clear buttons
+            await JS.InvokeVoidAsync("InputSanitizer.initializeAllInputs");
+            await JS.InvokeVoidAsync("InputSanitizer.initializeAllSearchBoxes");
+        }
+    }
     private ProfileDto? profile;
     private string? message;
 

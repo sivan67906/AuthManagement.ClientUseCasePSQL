@@ -141,7 +141,7 @@
 
     .search-icon {
         position: absolute;
-        left: 12px;
+        right: 12px;
         top: 50%;
         transform: translateY(-50%);
         color: #999;
@@ -489,6 +489,20 @@
         font-size: 16px;
         color: #666;
     }
+
+    /* Issue #6: Offcanvas full text display */
+    .offcanvas-title {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        white-space: normal;
+        max-width: 100%;
+    }
+    
+    .offcanvas-body p, .offcanvas-body div {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        white-space: pre-wrap;
+    }
 </style>
 
 <div class="flex-grow-1">
@@ -525,16 +539,23 @@
                 </div>
                 <div class="toolbar-right">
                     <div class="search-box">
-                        <i class="ti tabler-search search-icon"></i>
                         <input type="text"
                                class="search-input"
                                placeholder="Search mappings..."
                                value="@_searchString"
                                @oninput="@((e) => OnSearchChanged(e.Value?.ToString() ?? string.Empty))" />
+                        @if (string.IsNullOrEmpty(_searchString))
+                        {
+                            <i class="ti tabler-search search-icon"></i>
+                        }
+                        else
+                        {
+                            <i class="ti tabler-x clear-icon" @onclick="ClearSearch"></i>
+                        }
                     </div>
                     @if (_canCreate)
                     {
-                        <button class="add-button" @onclick="OpenAddDialog">
+                        <button class="add-button" @onclick="OpenAddDialog" disabled="@_isSaving">
                             <i class="ti tabler-plus"></i>
                             <span>Add Mapping</span>
                         </button>
@@ -718,12 +739,10 @@
             }
             else
             {
-                <div class="no-data-container">
-                    <div class="no-data-icon">
-                        <i class="ti tabler-database-off"></i>
-                    </div>
-                    <p class="no-data-text">No role feature mappings found</p>
-                </div>
+                @* Issue #3: Show NoResultsFound component when no mappings match *@
+                <NoResultsFound Message="No role feature mappings found" 
+                               IconClass="ti ti-database-off"
+                               SearchTerm="@_searchString" />
             }
         </div>
     }
@@ -773,6 +792,7 @@
 
 
 @code {
+
     private List<RoleFeatureMappingDto> _mappings = new();
     private List<DisplayRoleFeatureMapping> _displayMappings = new();
     private List<DisplayRoleFeatureMapping> _filteredMappings = new();
@@ -796,7 +816,7 @@
     private string _sortColumn = "";
     private string _sortDirection = "";
     private int _currentPage = 1;
-    private int _pageSize = 10;
+    private int _pageSize = 9;
     private int _totalItems = 0;
     private int _totalPages = 1;
 
@@ -1010,6 +1030,15 @@
     private void OnSearchChanged(string value)
     {
         _searchString = value;
+        _currentPage = 1;
+        UpdateFilteredMappings();
+        StateHasChanged();
+    }
+
+    // Issue #3: Clear search method for X icon
+    private void ClearSearch()
+    {
+        _searchString = string.Empty;
         _currentPage = 1;
         UpdateFilteredMappings();
         StateHasChanged();

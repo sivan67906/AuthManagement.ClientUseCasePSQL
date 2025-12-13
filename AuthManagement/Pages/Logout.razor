@@ -1,8 +1,10 @@
 @page "/logout"
+@using AuthManagement.Shared
 @using AuthManagement.Services
 @using Microsoft.AspNetCore.Authorization
 @attribute [Authorize]
 @inject JwtAuthenticationStateProvider AuthProvider
+@inject IJSRuntime JS
 @inject HttpClient Http
 @inject NavigationManager Nav
 
@@ -16,6 +18,16 @@
 </div>
 
 @code {
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Initialize input sanitization and search clear buttons
+            await JS.InvokeVoidAsync("InputSanitizer.initializeAllInputs");
+            await JS.InvokeVoidAsync("InputSanitizer.initializeAllSearchBoxes");
+        }
+    }
     protected override async Task OnInitializedAsync()
     {
         var token = await AuthProvider.GetTokenAsync();

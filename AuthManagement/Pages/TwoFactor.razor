@@ -1,4 +1,5 @@
 @page "/two-factor"
+@using AuthManagement.Shared
 @using AuthManagement.Services
 @using AuthManagement.Models
 @using Microsoft.AspNetCore.Authorization
@@ -207,6 +208,7 @@
 </style>
 
 @code {
+
     private bool isLoading = true;
     private bool isBusy;
     private string twoFactorType = "None";

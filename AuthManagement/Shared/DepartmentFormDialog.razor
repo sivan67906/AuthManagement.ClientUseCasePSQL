@@ -1,4 +1,5 @@
 @using AuthManagement.Models
+@using AuthManagement.Helpers
 @using System.ComponentModel.DataAnnotations
 
 @if (IsOpen)
@@ -23,20 +24,30 @@
                             <label class="form-label">
                                 Department Name<span class="text-danger">*</span>
                             </label>
-                            <InputText @bind-Value="FormModel.Name" 
-                                       class="form-control" 
-                                       placeholder="Enter department name"
-                                       disabled="@IsSaving" />
+                            <input type="text" 
+                                   class="form-control @(nameValidationError != null ? "is-invalid" : "")" 
+                                   placeholder="Enter department name"
+                                   value="@FormModel.Name"
+                                   @oninput="OnNameInput"
+                                   disabled="@IsSaving" />
+                            @if (nameValidationError != null)
+                            {
+                                <div class="invalid-feedback d-block">@nameValidationError</div>
+                            }
                             <ValidationMessage For="@(() => FormModel.Name)" class="text-danger" />
                         </div>
                         
                         <div class="mb-3">
                             <label class="form-label">Description</label>
-                            <InputTextArea @bind-Value="FormModel.Description" 
-                                          class="form-control" 
-                                          placeholder="Enter description"
-                                          rows="4"
-                                          disabled="@IsSaving" />
+                            <textarea class="form-control @(descriptionValidationError != null ? "is-invalid" : "")" 
+                                      placeholder="Enter description"
+                                      rows="4"
+                                      @oninput="OnDescriptionInput"
+                                      disabled="@IsSaving">@FormModel.Description</textarea>
+                            @if (descriptionValidationError != null)
+                            {
+                                <div class="invalid-feedback d-block">@descriptionValidationError</div>
+                            }
                             <ValidationMessage For="@(() => FormModel.Description)" class="text-danger" />
                         </div>
                         
@@ -49,7 +60,7 @@
                             </button>
                             <button type="submit" 
                                     class="btn btn-primary" 
-                                    disabled="@IsSaving">
+                                    disabled="@(IsSaving || HasValidationErrors())">
                                 @if (IsSaving)
                                 {
                                     <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
@@ -124,32 +135,6 @@
     .btn-close {
         border-radius: 1rem !important;
     }
-   /*  .btn-close {
-        background: transparent url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23666'%3e%3cpath d='M.293.293a1 1 0 011.414 0L8 6.586 14.293.293a1 1 0 111.414 1.414L9.414 8l6.293 6.293a1 1 0 01-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 01-1.414-1.414L6.586 8 .293 1.707a1 1 0 010-1.414z'/%3e%3c/svg%3e") center/0.75em auto no-repeat;
-        border: 0;
-        width: 2rem;
-        height: 2rem;
-        padding: 0;
-        opacity: 1;
-        cursor: pointer;
-        position: absolute;
-        top: 20px;
-        right: 24px;
-        flex-shrink: 0;
-        border-radius: 4px;
-        transition: all 0.2s ease;
-    }
-
-    .btn-close:hover:not(:disabled) {
-        background-color: #f5f5f5;
-        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23333'%3e%3cpath d='M.293.293a1 1 0 011.414 0L8 6.586 14.293.293a1 1 0 111.414 1.414L9.414 8l6.293 6.293a1 1 0 01-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 01-1.414-1.414L6.586 8 .293 1.707a1 1 0 010-1.414z'/%3e%3c/svg%3e");
-        opacity: 1;
-    }
-
-    .btn-close:disabled {
-        opacity: 0.4;
-        cursor: not-allowed;
-    } */
 
     .form-label {
         font-weight: 500;
@@ -174,6 +159,16 @@
     .form-control:disabled {
         background-color: #f5f5f5;
         opacity: 0.7;
+    }
+    
+    .form-control.is-invalid {
+        border-color: #dc3545;
+    }
+    
+    .invalid-feedback {
+        color: #dc3545;
+        font-size: 12px;
+        margin-top: 4px;
     }
 
     .btn-primary {
@@ -251,16 +246,82 @@
     [Parameter]
     public EventCallback<DepartmentFormModel> OnSubmit { get; set; }
 
+    // Issue #2: Validation error messages
+    private string? nameValidationError;
+    private string? descriptionValidationError;
+
+    // Issue #2: Real-time input validation for Name field
+    private void OnNameInput(ChangeEventArgs e)
+    {
+        var rawValue = e.Value?.ToString() ?? string.Empty;
+        var (isValid, errorMessage) = InputValidationHelper.ValidateInput(rawValue, InputTypeEnum.Name, required: true);
+        
+        if (!isValid)
+        {
+            nameValidationError = errorMessage;
+            // Filter out invalid characters
+            FormModel.Name = InputValidationHelper.FilterInput(rawValue, InputTypeEnum.Name);
+        }
+        else
+        {
+            nameValidationError = null;
+            FormModel.Name = rawValue;
+        }
+    }
+
+    // Issue #2: Real-time input validation for Description field
+    private void OnDescriptionInput(ChangeEventArgs e)
+    {
+        var rawValue = e.Value?.ToString() ?? string.Empty;
+        var (isValid, errorMessage) = InputValidationHelper.ValidateInput(rawValue, InputTypeEnum.Description, required: false);
+        
+        if (!isValid)
+        {
+            descriptionValidationError = errorMessage;
+            // Filter out invalid characters
+            FormModel.Description = InputValidationHelper.FilterInput(rawValue, InputTypeEnum.Description);
+        }
+        else
+        {
+            descriptionValidationError = null;
+            FormModel.Description = rawValue;
+        }
+    }
+
+    private bool HasValidationErrors()
+    {
+        return nameValidationError != null || descriptionValidationError != null;
+    }
+
     private async Task HandleCancel()
     {
         if (!IsSaving)
         {
+            // Reset validation errors
+            nameValidationError = null;
+            descriptionValidationError = null;
             await OnCancel.InvokeAsync();
         }
     }
 
     private async Task HandleValidSubmit()
     {
+        // Final validation before submit
+        var (nameValid, nameError) = InputValidationHelper.ValidateInput(FormModel.Name, InputTypeEnum.Name, required: true);
+        var (descValid, descError) = InputValidationHelper.ValidateInput(FormModel.Description, InputTypeEnum.Description, required: false);
+        
+        nameValidationError = nameError;
+        descriptionValidationError = descError;
+        
+        if (!nameValid || !descValid)
+        {
+            return;
+        }
+        
+        // Sanitize before submit
+        FormModel.Name = InputValidationHelper.Sanitize(FormModel.Name);
+        FormModel.Description = InputValidationHelper.SanitizeText(FormModel.Description);
+        
         await OnSubmit.InvokeAsync(FormModel);
     }
 

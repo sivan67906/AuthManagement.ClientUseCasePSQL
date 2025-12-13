@@ -15,7 +15,6 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider, IDisp
     private readonly ILogger<JwtAuthenticationStateProvider> _logger;
     private string? _accessToken;
     private bool _isInitialized;
-    private bool _isInitializing;
 
     private AuthenticationState? _cachedAuthState;
     private DateTime _cacheTimestamp = DateTime.MinValue;
@@ -332,7 +331,6 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider, IDisp
                 return;
             }
 
-            _isInitializing = true;
             _logger.LogInformation("[AUTH] Initializing authentication state from storage...");
 
             // Load access token from localStorage
@@ -412,7 +410,6 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider, IDisp
             }
 
             _isInitialized = true;
-            _isInitializing = false;
             _logger.LogInformation("[AUTH] Initialization complete. Has valid token: {HasToken}", !string.IsNullOrWhiteSpace(_accessToken));
         }
         finally

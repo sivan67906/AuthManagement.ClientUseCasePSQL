@@ -124,13 +124,10 @@
 
     .search-input {
         width: 100%;
-        padding: 8px 12px 8px 36px;
+        padding: 8px 36px 8px 12px;
         border: 1px solid #d9d9e3;
         font-size: 14px;
-        padding-left: 39px;
         border-radius: 0.25rem;
-        padding-top: 5px;
-        padding-bottom: 7px;
     }
 
         .search-input:focus {
@@ -141,11 +138,25 @@
 
     .search-icon {
         position: absolute;
-        left: 12px;
+        right: 12px;
         top: 50%;
         transform: translateY(-50%);
         color: #999;
         font-size: 18px;
+    }
+    
+    .clear-icon {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #999;
+        font-size: 18px;
+        cursor: pointer;
+    }
+    
+    .clear-icon:hover {
+        color: #666;
     }
 
     .add-button {
@@ -219,6 +230,22 @@
             padding: 5px 16px;
             font-size: 14px;
             color: #333;
+        }
+        
+        /* Issue #4: Truncate Role Name column */
+        .role-table td.role-name {
+            max-width: 250px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        /* Issue #4: Truncate Description column */
+        .role-table td.description-text {
+            max-width: 350px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .role-table tbody tr:last-child {
@@ -392,6 +419,20 @@
         padding: 0 8px;
         color: #999;
     }
+
+    /* Issue #6: Offcanvas full text display */
+    .offcanvas-title {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        white-space: normal;
+        max-width: 100%;
+    }
+    
+    .offcanvas-body p, .offcanvas-body div {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        white-space: pre-wrap;
+    }
 </style>
 
 <div class="flex-grow-1">
@@ -430,14 +471,21 @@
             </div>
             <div class="toolbar-right">
                 <div class="search-box">
-                    <i class="ti tabler-search search-icon"></i>
                     <input type="text" class="search-input" placeholder="Search roles..."
-                           @bind-value="_searchString" @bind-value:event="oninput"
-                           @onkeyup="@(() => OnSearchChanged(_searchString))" />
+                           value="@_searchString"
+                           @oninput="@((ChangeEventArgs e) => OnSearchChanged(e.Value?.ToString() ?? string.Empty))" />
+                    @if (string.IsNullOrEmpty(_searchString))
+                    {
+                        <i class="ti tabler-search search-icon"></i>
+                    }
+                    else
+                    {
+                        <i class="ti tabler-x clear-icon" @onclick="ClearSearch"></i>
+                    }
                 </div>
                 @if (_canAdd)
                 {
-                    <button class="add-button" @onclick="OpenAddDialog">
+                    <button class="add-button" @onclick="OpenAddDialog" disabled="@_isSaving">
                         <i class="ti tabler-plus"></i>
                         <span>Add Role</span>
                     </button>
@@ -508,8 +556,8 @@
                                     <span class="badge bg-secondary">Global</span>
                                 }
                             </td>
-                            <td class="role-name">@role.Name</td>
-                            <td class="description-text">@TruncateDescription(role.Description)</td>
+                            <td class="role-name" title="@role.Name">@role.Name</td>
+                            <td class="description-text" title="@role.Description">@role.Description</td>
                             <td>
                                 <div class="action-buttons">
                                     @if (_canView)
@@ -605,9 +653,10 @@
         }
         else
         {
-            <div class="alert alert-info m-3" role="alert">
-                <i class="ti tabler-info-circle me-2"></i>No roles found.
-            </div>
+            @* Issue #3: Show NoResultsFound component when no roles match *@
+            <NoResultsFound Message="No roles found" 
+                           IconClass="ti ti-user-off"
+                           SearchTerm="@_searchString" />
         }
     </div>
     }
@@ -657,6 +706,7 @@ Role Details
 
 
 @code {
+
     private List<RoleDto> _roles = new();
     private List<RoleDto> _filteredRoles = new();
     private List<RoleDto> _pagedRoles = new();
@@ -680,7 +730,7 @@ Role Details
     // Search and Pagination
     private string _searchString = string.Empty;
     private int _currentPage = 1;
-    private int _pageSize = 10;
+    private int _pageSize = 9;
     private int _totalItems = 0;
     private int _totalPages = 1;
 
@@ -873,6 +923,15 @@ Role Details
         StateHasChanged();
     }
 
+    // Issue #3: Clear search method for X icon
+    private void ClearSearch()
+    {
+        _searchString = string.Empty;
+        _currentPage = 1;
+        UpdateFilteredRoles();
+        StateHasChanged();
+    }
+
     private void ToggleSort(string column)
     {
         if (_sortColumn == column)
@@ -992,6 +1051,21 @@ Role Details
         _isSaving = true;
         try
         {
+            // Issue #10: Check if department is not selected (System Role)
+            if (!_isEditMode && (model.DepartmentId == null || model.DepartmentId == Guid.Empty))
+            {
+                var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", 
+                    "You are trying to add System Roles. Do you want to continue?");
+                
+                if (!confirmed)
+                {
+                    await JS.InvokeVoidAsync("showToast", "warning", 
+                        "Please select a department from the dropdown.", Severity.Warning);
+                    _isSaving = false;
+                    return;
+                }
+            }
+
             if (_isEditMode && _selectedRole != null)
             {
                 var updateRequest = new UpdateRoleRequest

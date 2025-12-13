@@ -140,7 +140,7 @@
 
     .search-icon {
         position: absolute;
-        left: 12px;
+        right: 12px;
         top: 50%;
         transform: translateY(-50%);
         color: #999;
@@ -439,13 +439,19 @@
         </div>
         <div class="toolbar-right">
             <div class="search-box">
-                <i class="ti tabler-search search-icon"></i>
                 <input type="text"
                        class="search-input"
                        placeholder="Search by email or name..."
-                       @bind-value="_searchString"
-                       @bind-value:event="oninput"
-                       @onchange="@(() => OnSearchChanged(_searchString))" />
+                       value="@_searchString"
+                       @oninput="@((ChangeEventArgs e) => OnSearchChanged(e.Value?.ToString() ?? string.Empty))" />
+                @if (string.IsNullOrEmpty(_searchString))
+                {
+                    <i class="ti tabler-search search-icon"></i>
+                }
+                else
+                {
+                    <i class="ti tabler-x clear-icon" @onclick="ClearSearch"></i>
+                }
             </div>
         </div>
     </div>
@@ -535,7 +541,8 @@
                                 {
                                     <button class="action-btn btn-assign"
                                             title="Assign Role"
-                                            @onclick="@(() => OpenAssignRoleDialog(user))">
+                                            @onclick="@(() => OpenAssignRoleDialog(user))"
+                                            disabled="@_isSaving">
                                         <i class="ti tabler-user-plus"></i>
                                     </button>
                                 }
@@ -613,11 +620,19 @@
     }
     else
     {
-        <div class="empty-state">
-            <i class="ti tabler-users-group"></i>
-            <h5>No Users Without Roles</h5>
-            <p>All active users have been assigned roles.</p>
-        </div>
+        @* Issue #3: Show NoResultsFound component when no users match *@
+        @if (!string.IsNullOrEmpty(_searchString))
+        {
+            <NoResultsFound Message="No users found matching your search" 
+                           IconClass="ti ti-user-search"
+                           SearchTerm="@_searchString" />
+        }
+        else
+        {
+            <NoResultsFound Message="No users without roles. All active users have been assigned roles." 
+                           IconClass="ti ti-users-group"
+                           SearchTerm="" />
+        }
     }
 </div>
 }
@@ -666,6 +681,7 @@
                            OnDepartmentChanged="OnDepartmentChanged" />
 
 @code {
+
     private List<UserWithoutRoleDto> _usersWithoutRoles = new();
     private List<UserWithoutRoleDto> _filteredUsers = new();
     private List<UserWithoutRoleDto> _pagedUsers = new();
@@ -692,7 +708,7 @@
     private string _sortColumn = "email";
     private string _sortDirection = "asc";
     private int _currentPage = 1;
-    private int _pageSize = 10;
+    private int _pageSize = 9;
     private int _totalItems = 0;
     private int _totalPages = 1;
 
@@ -878,6 +894,15 @@
     private void OnSearchChanged(string value)
     {
         _searchString = value;
+        _currentPage = 1;
+        UpdateFilteredUsers();
+        StateHasChanged();
+    }
+
+    // Issue #3: Clear search method for X icon
+    private void ClearSearch()
+    {
+        _searchString = string.Empty;
         _currentPage = 1;
         UpdateFilteredUsers();
         StateHasChanged();
