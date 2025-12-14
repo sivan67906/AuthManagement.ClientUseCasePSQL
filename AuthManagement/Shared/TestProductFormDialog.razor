@@ -23,6 +23,7 @@
                                    class="form-control @(nameValidationError != null ? "is-invalid" : "")" 
                                    value="@Model.Name"
                                    @oninput="OnNameInput"
+                                   data-input-type="name"
                                    required 
                                    placeholder="Enter product name" 
                                    disabled="@IsSaving" />

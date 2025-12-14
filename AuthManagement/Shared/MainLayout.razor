@@ -17,9 +17,6 @@
 <ConfirmDialog />
 
 
-
-
-
 <div class="layout-wrapper layout-content-navbar">
 	<div class="layout-container">
 		<!-- Left Sidebar Navigation Menu -->
@@ -39,9 +36,9 @@
 				</div>
 
 				<div class="navbar-nav-right d-flex align-items-center justify-content-end" id="navbar-collapse">
-					<ul class="navbar-nav flex-row align-items-center ms-md-auto gap-6">
+					<ul class="navbar-nav flex-row align-items-center ms-md-auto gap-2">
 						<!-- Theme Toggle -->
-						<li class="nav-item dropdown">
+						<li class="nav-item dropdown me-2">
 							<a href="javascript:void(0);" class="header-link layout-setting" @onclick="ToggleTheme">
 								<span class="light-layout" style="@LightStyle">
 									<i class="bi bi-moon header-link-icon" style="font-size: 18px;"></i>
@@ -255,8 +252,6 @@
 		await JS.InvokeVoidAsync("document.documentElement.setAttribute", "data-bs-theme", theme);
 	}
 
-
-
 	private async Task SetHeaderHeightAsync()
 	{
 		var height = await JS.InvokeAsync<int>("getElementHeight", HeaderRef);
@@ -291,6 +286,7 @@
 				await JS.InvokeVoidAsync("initThemeToggle");
 				await JS.InvokeVoidAsync("initMenuToggle");
 				await JS.InvokeVoidAsync("fullscreen");
+				   await JS.InvokeVoidAsync("loadScriptAndTrigger", "assets/js/main.js", true);
 
 
 			}

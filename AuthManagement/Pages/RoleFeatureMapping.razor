@@ -548,10 +548,10 @@
                         {
                             <i class="ti tabler-search search-icon"></i>
                         }
-                        else
+                        @* else
                         {
                             <i class="ti tabler-x clear-icon" @onclick="ClearSearch"></i>
-                        }
+                        } *@
                     </div>
                     @if (_canCreate)
                     {
@@ -741,7 +741,7 @@
             {
                 @* Issue #3: Show NoResultsFound component when no mappings match *@
                 <NoResultsFound Message="No role feature mappings found" 
-                               IconClass="ti ti-database-off"
+                               IconClass="ti tabler-database-off"
                                SearchTerm="@_searchString" />
             }
         </div>

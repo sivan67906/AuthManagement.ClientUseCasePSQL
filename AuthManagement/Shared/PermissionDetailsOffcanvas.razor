@@ -9,14 +9,19 @@
                 <div class="avatar-container">
                     <i class="ti tabler-lock" style="font-size: 32px; color: white;"></i>
                 </div>
-                <div style="flex: 1; min-width: 0; overflow: hidden;">
-                    <h5 class="header-title" title="@Permission?.Name">@Permission?.Name</h5>
+                <div style="width: 219px;">
+                    <h5 class="header-title" title="@Permission?.Name"
+                        style="    white-space: normal !important;
+                    word-wrap: break-word !important;    max-width: 100% !important;">
+                        @Permission?.Name
+                    </h5>
                     <p class="header-subtitle">
                         @(Permission?.IsActive == true ? "Active" : "Inactive") Permission
                     </p>
                 </div>
+                <button type="button" class="btn-close btn-close-white" @onclick="Close"></button>
+
             </div>
-            <button type="button" class="btn-close btn-close-white" @onclick="Close"></button>
         </div>
         <div class="offcanvas-body">
             <div class="info-section">
@@ -63,13 +68,13 @@
                             </div>
                         </div>
                     }
-                    <div class="detail-item">
+                    @* <div class="detail-item">
                         <div class="detail-icon"><i class="ti tabler-circle-check" style="color: @(Permission?.IsActive == true ? "#10b981" : "#ef4444");"></i></div>
                         <div class="detail-content">
                             <div class="detail-label">Status</div>
                             <div><span class="status-badge @(Permission?.IsActive == true ? "status-active" : "status-inactive")">@(Permission?.IsActive == true ? "Active" : "Inactive")</span></div>
                         </div>
-                    </div>
+                    </div> *@
                 </div>
             </div>
         </div>
@@ -77,9 +82,9 @@
 }
 
 <style>
-    .offcanvas-backdrop { position: fixed; top: 0; left: 0; z-index: 11000; width: 100vw; height: 100vh; background-color: rgba(0, 0, 0, 0.5); opacity: 0; transition: opacity 0.3s ease-in-out; }
+    .offcanvas-backdrop { position: fixed; top: 0; left: 0; z-index: 11111; width: 100vw; height: 100vh; background-color: rgba(0, 0, 0, 0.5); opacity: 0; transition: opacity 0.3s ease-in-out; }
     .offcanvas-backdrop.show { opacity: 1; }
-    .offcanvas { position: fixed; top: 0; right: -450px; z-index: 11001; width: 450px; height: 100vh; background-color: white; box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1); transition: right 0.3s ease-in-out; overflow-y: auto; overflow-x: hidden; }
+    .offcanvas { position: fixed; top: 0; right: -450px; z-index: 111111; width: 450px; height: 100vh; background-color: white; box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1); transition: right 0.3s ease-in-out; overflow-y: auto; overflow-x: hidden; }
     .offcanvas.show { right: 0; }
     .offcanvas-header { position: relative; display: flex; align-items: flex-start; justify-content: space-between; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 24px; }
     .header-title { margin: 0; font-weight: 600; font-size: 20px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; } .header-subtitle { margin: 4px 0 0 0; opacity: 0.9; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }

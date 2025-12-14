@@ -44,6 +44,7 @@
                                    placeholder="Enter role name"
                                    value="@FormModel.Name"
                                    @oninput="OnNameInput"
+                                   data-input-type="name"
                                    disabled="@IsSaving" />
                             @if (nameValidationError != null)
                             {
@@ -100,14 +101,14 @@
         position: fixed;
         top: 0;
         left: 0;
-        z-index: 11000;
+        z-index: 11111;
         width: 100vw;
         height: 100vh;
         background-color: rgba(0, 0, 0, 0.5);
     }
 
     .modal {
-        z-index: 11001;
+        z-index: 11111;
     }
 
     .modal-dialog-centered {

@@ -28,6 +28,7 @@
                                    class="form-control @(nameValidationError != null ? "is-invalid" : "")" 
                                    placeholder="Enter department name"
                                    value="@FormModel.Name"
+                                   data-input-type="name"
                                    @oninput="OnNameInput"
                                    disabled="@IsSaving" />
                             @if (nameValidationError != null)
@@ -85,14 +86,14 @@
         position: fixed;
         top: 0;
         left: 0;
-        z-index: 11000;
+        z-index: 111111;
         width: 100vw;
         height: 100vh;
         background-color: rgba(0, 0, 0, 0.5);
     }
 
     .modal {
-        z-index: 11001;
+        z-index: 11111111;
     }
 
     .modal-dialog-centered {

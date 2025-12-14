@@ -1,4 +1,4 @@
-@page "/authenticator-setup"
+﻿@page "/authenticator-setup"
 @using AuthManagement.Shared
 @using AuthManagement.Services
 @using AuthManagement.Models
@@ -6,6 +6,7 @@
 @using System.Net.Http.Headers
 @using System.Net.Http.Json
 @using System.Web
+@using System.Text.RegularExpressions
 @attribute [Authorize]
 @inject HttpClient Http
 @inject JwtAuthenticationStateProvider AuthProvider
@@ -147,15 +148,15 @@
                                 Enter the 6-digit code from your authenticator app to complete setup:
                             </p>
                             <div class="d-flex gap-2 mb-3 justify-content-center">
-                                <input @ref="box1" type="text" inputmode="numeric" maxlength="1"
+                                <input @ref="box1" type="number" inputmode="numeric" maxlength="1"
                                        class="form-control text-center digit-input"
                                        style="width: 50px; height: 50px; font-size: 1.5rem;"
                                        value="@digit1" pattern="[0-9]*"
                                        onkeypress="return event.charCode >= 48 && event.charCode <= 57"
                                        @oninput="(e) => OnDigitInput(e, 1)"
-                                       @onkeydown="(e) => OnKeyDown(e, 1)" />
+                                       @onkeydown="(e) => OnKeyDown(e, 1)" @onpaste="OnPaste" />
 
-                                <input @ref="box2" type="text" inputmode="numeric" maxlength="1"
+                                <input @ref="box2" type="number" inputmode="numeric" maxlength="1"
                                        class="form-control text-center digit-input"
                                        style="width: 50px; height: 50px; font-size: 1.5rem;"
                                        value="@digit2" pattern="[0-9]*"
@@ -163,7 +164,7 @@
                                        @oninput="(e) => OnDigitInput(e, 2)"
                                        @onkeydown="(e) => OnKeyDown(e, 2)" />
 
-                                <input @ref="box3" type="text" inputmode="numeric" maxlength="1"
+                                <input @ref="box3" type="number" inputmode="numeric" maxlength="1"
                                        class="form-control text-center digit-input"
                                        style="width: 50px; height: 50px; font-size: 1.5rem;"
                                        value="@digit3" pattern="[0-9]*"
@@ -171,7 +172,7 @@
                                        @oninput="(e) => OnDigitInput(e, 3)"
                                        @onkeydown="(e) => OnKeyDown(e, 3)" />
 
-                                <input @ref="box4" type="text" inputmode="numeric" maxlength="1"
+                                <input @ref="box4" type="number" inputmode="numeric" maxlength="1"
                                        class="form-control text-center digit-input"
                                        style="width: 50px; height: 50px; font-size: 1.5rem;"
                                        value="@digit4" pattern="[0-9]*"
@@ -179,7 +180,7 @@
                                        @oninput="(e) => OnDigitInput(e, 4)"
                                        @onkeydown="(e) => OnKeyDown(e, 4)" />
 
-                                <input @ref="box5" type="text" inputmode="numeric" maxlength="1"
+                                <input @ref="box5" type="number" inputmode="numeric" maxlength="1"
                                        class="form-control text-center digit-input"
                                        style="width: 50px; height: 50px; font-size: 1.5rem;"
                                        value="@digit5" pattern="[0-9]*"
@@ -187,7 +188,7 @@
                                        @oninput="(e) => OnDigitInput(e, 5)"
                                        @onkeydown="(e) => OnKeyDown(e, 5)" />
 
-                                <input @ref="box6" type="text" inputmode="numeric" maxlength="1"
+                                <input @ref="box6" type="number" inputmode="numeric" maxlength="1"
                                        class="form-control text-center digit-input"
                                        style="width: 50px; height: 50px; font-size: 1.5rem;"
                                        value="@digit6" pattern="[0-9]*"
@@ -243,6 +244,7 @@
             box-shadow: 0 0 0 0.2rem rgba(115, 103, 240, 0.25);
         }
 </style>
+<script src="js/Otp.js"></script>
 
 @code {
 
@@ -270,6 +272,27 @@
     private string digit6 = "";
 
     private ElementReference box1, box2, box3, box4, box5, box6;
+
+
+    async Task OnPaste(ClipboardEventArgs e)
+    {
+        var pastedText = await JS.InvokeAsync<string>("getClipboardText");
+        if (string.IsNullOrWhiteSpace(pastedText) ||
+            !Regex.IsMatch(pastedText, @"^\d+$"))
+            return;
+
+        var digits = pastedText.Take(6).ToArray();
+
+        digit1 = digits.Length > 0 ? digits[0].ToString() : "";
+        digit2 = digits.Length > 1 ? digits[1].ToString() : "";
+        digit3 = digits.Length > 2 ? digits[2].ToString() : "";
+        digit4 = digits.Length > 3 ? digits[3].ToString() : "";
+        digit5 = digits.Length > 4 ? digits[4].ToString() : "";
+        digit6 = digits.Length > 5 ? digits[5].ToString() : "";
+
+        StateHasChanged();
+    }
+
 
     private class VerificationModel
     {

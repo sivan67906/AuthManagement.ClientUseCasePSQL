@@ -124,7 +124,7 @@
 
     .search-input {
         width: 100%;
-        padding: 8px 36px 8px 12px;
+        padding: 5px 36px 5px 12px;
         border: 1px solid #d9d9e3;
         font-size: 14px;
         border-radius: 0.25rem;
@@ -478,10 +478,10 @@
                     {
                         <i class="ti tabler-search search-icon"></i>
                     }
-                    else
+                    @* else
                     {
                         <i class="ti tabler-x clear-icon" @onclick="ClearSearch"></i>
-                    }
+                    } *@
                 </div>
                 @if (_canAdd)
                 {
@@ -655,7 +655,7 @@
         {
             @* Issue #3: Show NoResultsFound component when no roles match *@
             <NoResultsFound Message="No roles found" 
-                           IconClass="ti ti-user-off"
+                           IconClass="ti tabler-user-off"
                            SearchTerm="@_searchString" />
         }
     </div>

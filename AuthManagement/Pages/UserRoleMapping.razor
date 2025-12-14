@@ -123,13 +123,12 @@
 
     .search-input {
         width: 100%;
-        padding: 8px 12px 8px 36px;
+        padding: 5px 36px 5px 12px;
         border: 1px solid #d9d9e3;
         font-size: 14px;
-        padding-left: 39px;
         border-radius: 0.25rem;
         padding-top: 5px;
-        padding-bottom: 7px;
+        /* padding-bottom: 7px; */
     }
 
         .search-input:focus {
@@ -448,10 +447,10 @@
                 {
                     <i class="ti tabler-search search-icon"></i>
                 }
-                else
+                @* else
                 {
                     <i class="ti tabler-x clear-icon" @onclick="ClearSearch"></i>
-                }
+                } *@
             </div>
         </div>
     </div>
@@ -624,13 +623,13 @@
         @if (!string.IsNullOrEmpty(_searchString))
         {
             <NoResultsFound Message="No users found matching your search" 
-                           IconClass="ti ti-user-search"
+                           IconClass="ti tabler-user-search"
                            SearchTerm="@_searchString" />
         }
         else
         {
             <NoResultsFound Message="No users without roles. All active users have been assigned roles." 
-                           IconClass="ti ti-users-group"
+                           IconClass="ti tabler-users-group"
                            SearchTerm="" />
         }
     }

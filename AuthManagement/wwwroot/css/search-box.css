@@ -14,7 +14,7 @@
 /* Search input - clean styling without extra left padding */
 .search-input {
     width: 100%;
-    padding: 8px 36px 8px 12px !important; /* right padding for icon, normal left padding */
+    /*padding: 8px 36px 8px 12px !important;*/ /* right padding for icon, normal left padding */
     border: 1px solid #d9d9e3;
     font-size: 14px;
     border-radius: 0.375rem;

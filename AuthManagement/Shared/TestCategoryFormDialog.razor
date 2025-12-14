@@ -23,6 +23,7 @@
                                    class="form-control @(nameValidationError != null ? "is-invalid" : "")" 
                                    value="@Model.Name"
                                    @oninput="OnNameInput"
+                                   data-input-type="name"
                                    required 
                                    placeholder="Enter category name" 
                                    disabled="@IsSaving" />
@@ -40,7 +41,7 @@
                         <div class="row">
                             <div class="col-md-8 mb-3">
                                 <label class="form-label">Icon (Tabler Icon Class)</label>
-                                <input type="text" class="form-control" @bind="Model.Icon" placeholder="ti tabler-category" disabled="@IsSaving" />
+                                <input type="text" class="form-control" @bind="Model.Icon" data-input-type="name" placeholder="ti tabler-category" disabled="@IsSaving" />
                                 <small class="text-muted">Example: ti tabler-device-laptop, ti tabler-box, ti tabler-tag</small>
                             </div>
 

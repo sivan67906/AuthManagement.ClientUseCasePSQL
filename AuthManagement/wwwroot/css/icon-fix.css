@@ -301,7 +301,7 @@
 /* Ensure icons work in dark mode */
 [data-bs-theme="dark"] .ti,
 [data-bs-theme="dark"] .icon-base {
-    color: inherit;
+/*    color: inherit;*/
 }
 
 /* High contrast mode support */

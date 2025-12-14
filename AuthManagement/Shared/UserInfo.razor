@@ -13,7 +13,7 @@
                     <div class="avatar-initial rounded-circle bg-label-primary">@AvatarInitials</div>
                 </div>
 
-                <div style="display: flex;align-items: flex-start;flex-direction: column;">
+                @* <div style="display: flex;align-items: flex-start;flex-direction: column;">
                     <h2 style="font-size: 15px;margin-bottom: 0;line-height: 1;">
                         @DisplayName
                     </h2>
@@ -22,7 +22,7 @@
                         title="@(Roles.Count > 1 ? $"Roles: {AllRolesDisplay}" : PrimaryRole)">
                         @PrimaryRole@(Roles.Count > 1 ? $" +{Roles.Count - 1}" : "")
                     </h6>
-                </div>
+                </div> *@
 
             </a>
             <ul class="dropdown-menu dropdown-menu-end">

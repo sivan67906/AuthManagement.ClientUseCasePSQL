@@ -570,7 +570,7 @@
             .card-text {
                 color: var(--bs-primary) !important;
                 /* Issue #4: Truncate card text */
-                max-width: 180px;
+                max-width: 116px;
                 overflow: hidden;
                 text-overflow: ellipsis;
                 white-space: nowrap;
@@ -579,7 +579,7 @@
             
             .card-title {
                 /* Issue #4: Truncate card description */
-                max-width: 180px;
+                max-width: 116px;
                 overflow: hidden;
                 text-overflow: ellipsis;
                 white-space: nowrap;
@@ -621,10 +621,10 @@
                         {
                             <i class="ti tabler-search search-icon"></i>
                         }
-                        else
+                        @* else
                         {
                             <i class="ti tabler-x clear-icon" @onclick="ClearSearch"></i>
-                        }
+                        } *@
                     </div>
                     @if (_canAdd)
                     {
@@ -716,7 +716,7 @@
                             @* Issue #3: Show NoResultsFound component when no departments match *@
                             <div class="col-12">
                                 <NoResultsFound Message="No departments found" 
-                                               IconClass="ti ti-building-off"
+                                               IconClass="ti tabler-building-off"
                                                SearchTerm="@_searchString" />
                             </div>
                         }

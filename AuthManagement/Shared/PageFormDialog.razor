@@ -25,6 +25,7 @@
                                    placeholder="Enter page name"
                                    value="@FormModel.Name"
                                    @oninput="OnNameInput"
+                                   data-input-type="name"
                                    disabled="@IsSaving" />
                             @if (nameValidationError != null)
                             {
@@ -39,6 +40,7 @@
                                    placeholder="/example"
                                    value="@FormModel.Url"
                                    @oninput="OnUrlInput"
+                                   data-input-type="url"
                                    disabled="@IsSaving" />
                             @if (urlValidationError != null)
                             {
@@ -58,21 +60,21 @@
                                 <div class="invalid-feedback d-block">@descriptionValidationError</div>
                             }
                         </div>
-                        <div class="mb-3">
+                       @*  <div class="mb-3">
                             <label class="form-label">Menu Context</label>
                             <InputText @bind-Value="FormModel.MenuContext" class="form-control" placeholder="Enter menu context (optional)" disabled="@IsSaving" />
-                        </div>
+                        </div> *@
                         <div class="mb-3">
                             <label class="form-label">Display Order<span class="text-danger">*</span></label>
                             <InputNumber @bind-Value="FormModel.DisplayOrder" class="form-control" disabled="@IsSaving" Min="0" />
                             <ValidationMessage For="@(() => FormModel.DisplayOrder)" class="text-danger" />
                         </div>
-                        <div class="mb-3">
+                        @* <div class="mb-3">
                             <div class="form-check form-switch">
                                 <InputCheckbox @bind-Value="FormModel.IsActive" class="form-check-input" id="pageIsActive" disabled="@IsSaving" />
                                 <label class="form-check-label" for="pageIsActive">Active</label>
                             </div>
-                        </div>
+                        </div> *@
                         <div class="d-flex justify-content-end gap-2 mt-4">
                             <button type="button" class="btn btn-label-secondary" @onclick="HandleCancel" disabled="@IsSaving">Cancel</button>
                             <button type="submit" class="btn btn-primary" disabled="@(IsSaving || HasValidationErrors())">
@@ -92,8 +94,8 @@
 }
 
 <style>
-    .modal-backdrop { position: fixed; top: 0; left: 0; z-index: 11000; width: 100vw; height: 100vh; background-color: rgba(0, 0, 0, 0.5); }
-    .modal { z-index: 11001; }
+    .modal-backdrop { position: fixed; top: 0; left: 0; z-index: 11111; width: 100vw; height: 100vh; background-color: rgba(0, 0, 0, 0.5); }
+    .modal { z-index: 111111; }
     .modal-dialog-centered { min-height: calc(100% - 3.5rem); display: flex; align-items: center; margin: 1.75rem auto; max-width: 540px; width: 100%; padding: 0 15px; }
     .modal-content { border-radius: 8px; border: none; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15); }
     .modal-header { padding: 20px 24px; border-bottom: 1px solid #e9ecef; }
