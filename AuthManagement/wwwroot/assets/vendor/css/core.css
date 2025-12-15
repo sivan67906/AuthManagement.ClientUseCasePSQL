@@ -16690,12 +16690,15 @@ li:not(:first-child) .dropdown-item,
     box-shadow: var(--bs-offcanvas-box-shadow)
 }
 
-.offcanvas .offcanvas-header .btn-close {
-    padding: .44rem;
-    background-size: .875rem;
-    margin-block: -0.75rem -0.75rem;
-    margin-inline: auto .2505rem
-}
+    .offcanvas .offcanvas-header .btn-close {
+        padding: .44rem;
+        background-size: .875rem;
+        margin-block: -0.75rem -0.75rem;
+        margin-inline: auto .2505rem;
+        position: fixed;
+        right: 7px;
+        top: 29px;
+    }
 
 .offcanvas.offcanvas-start {
     inset-inline: 0 auto
@@ -31254,4 +31257,24 @@ input[type=number]::-webkit-outer-spin-button {
 }
 input[type=number] {
     -moz-appearance: textfield;
+}
+
+
+/* 🔒 Unpinned + Hover → Always show normal circle */
+body:not(.layout-menu-pinned)
+#layout-menu .menu-item:hover i,
+body:not(.layout-menu-pinned)
+#layout-menu .menu-item i {
+    content: none !important;
+}
+
+/* 🔒 Force ti-circle only */
+body:not(.layout-menu-pinned)
+#layout-menu .ti-circle-dot-filled {
+    display: none !important;
+}
+
+body:not(.layout-menu-pinned)
+#layout-menu .ti-circle {
+    display: inline-block !important;
 }

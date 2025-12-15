@@ -155,7 +155,6 @@
     <script src="assets/vendor/libs/sweetalert2/sweetalert2.js"></script>
 
     <!-- Main JS -->
-    <!--<script src="assets/js/main.js"></script>-->
     <script src="js/site.js"></script>
     <!--<script src="js/toast.js"></script>-->
 
@@ -193,75 +192,65 @@
         let isMenuPinned = localStorage.getItem('menuPinned') === 'true';
 
         // Initialize menu on load
+        // Toggle pin/unpin
+        window.toggleMenuPin = function () {
+            let isMenuPinned = localStorage.getItem('menuPinned') === 'true';
+            isMenuPinned = !isMenuPinned;
+
+            localStorage.setItem('menuPinned', isMenuPinned);
+            window.initMenuToggle(); // re-init
+        };
+
+        // Initialize menu
         window.initMenuToggle = function () {
             const body = document.body;
             const layoutMenu = document.getElementById('layout-menu');
-            const toggleIcon = document.querySelector('#menu-toggle-icon .menu-toggle-icon');
+            const toggleIcon = document.getElementById('menuPinIcon');
 
-            // Apply initial state
+            const isMenuPinned = localStorage.getItem('menuPinned') === 'true';
+
+            // ===== MENU STATE =====
             if (isMenuPinned) {
-                body.classList.remove('layout-menu-collapsed');
                 body.classList.add('layout-menu-pinned');
-                if (toggleIcon) {
-                    toggleIcon.classList.remove('ti-circle');
-                    toggleIcon.classList.add('ti-circle-dot-filled');
-                }
+                body.classList.remove('layout-menu-collapsed', 'layout-menu-hover');
             } else {
                 body.classList.add('layout-menu-collapsed');
-                body.classList.remove('layout-menu-pinned');
-                if (toggleIcon) {
-                    toggleIcon.classList.remove('ti-circle-dot-filled');
-                    toggleIcon.classList.add('ti-circle');
+                body.classList.remove('layout-menu-pinned', 'layout-menu-hover');
+            }
+
+            // ===== ICON STATE (ONLY BASED ON PIN) =====
+            if (toggleIcon) {
+                toggleIcon.classList.remove('ti-circle','ti-circle-dot-filled');
+
+                if (isMenuPinned) {
+                    toggleIcon.classList.add('ti-circle'); // ✅ pinned only
+                } else {
+                    toggleIcon.classList.add('ti-circle'); // ✅ unpinned
                 }
             }
 
-            // Hover functionality
+            // ===== HOVER FUNCTIONALITY (NO ICON CHANGE) =====
             if (layoutMenu) {
-                layoutMenu.addEventListener('mouseenter', function () {
+                layoutMenu.onmouseenter = function () {
                     if (!isMenuPinned) {
                         body.classList.add('layout-menu-hover');
                         body.classList.remove('layout-menu-collapsed');
                     }
-                });
+                };
 
-                layoutMenu.addEventListener('mouseleave', function () {
+                layoutMenu.onmouseleave = function () {
                     if (!isMenuPinned) {
                         body.classList.remove('layout-menu-hover');
                         body.classList.add('layout-menu-collapsed');
                     }
-                });
+                };
             }
         };
 
-        // Toggle menu pin
-        window.toggleMenuPin = function () {
-            const body = document.body;
-            const toggleIcon = document.querySelector('#menu-toggle-icon .menu-toggle-icon');
 
-            isMenuPinned = !isMenuPinned;
-            localStorage.setItem('menuPinned', isMenuPinned);
 
-            if (isMenuPinned) {
-                // Pin the menu
-                body.classList.remove('layout-menu-collapsed');
-                body.classList.remove('layout-menu-hover');
-                body.classList.add('layout-menu-pinned');
-                if (toggleIcon) {
-                    toggleIcon.classList.remove('ti-circle');
-                    toggleIcon.classList.add('ti-circle-dot-filled');
-                }
-            } else {
-                // Unpin the menu
-                body.classList.add('layout-menu-collapsed');
-                body.classList.remove('layout-menu-pinned');
-                body.classList.remove('layout-menu-hover');
-                if (toggleIcon) {
-                    toggleIcon.classList.remove('ti-circle-dot-filled');
-                    toggleIcon.classList.add('ti-circle');
-                }
-            }
-        };
 
+        
         // Toggle mobile menu
         window.toggleMobileMenu = function () {
             const body = document.body;

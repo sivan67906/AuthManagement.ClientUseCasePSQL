@@ -15,6 +15,7 @@
 
 <ToastContainer />
 <ConfirmDialog />
+@* <script src="assets/js/main.js"></script> *@
 
 
 <div class="layout-wrapper layout-content-navbar">
@@ -279,6 +280,7 @@
 		{
 			try
 			{
+
 				await SetHeaderHeightAsync();   // ← REQUIRED
 												// Listen to resize events
 				await JS.InvokeVoidAsync("window.addEventListener", "resize",
@@ -286,7 +288,7 @@
 				await JS.InvokeVoidAsync("initThemeToggle");
 				await JS.InvokeVoidAsync("initMenuToggle");
 				await JS.InvokeVoidAsync("fullscreen");
-				   await JS.InvokeVoidAsync("loadScriptAndTrigger", "assets/js/main.js", true);
+				   // await JS.InvokeVoidAsync("loadScriptAndTrigger", "assets/js/main.js", true);
 
 
 			}
