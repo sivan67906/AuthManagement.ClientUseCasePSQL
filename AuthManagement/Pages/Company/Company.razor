@@ -1,0 +1,921 @@
+@page "/company"
+@using AuthManagement.Models
+@using AuthManagement.Services
+@using AuthManagement.Shared
+@using System.Text.Json
+@inject CompanyService CompanyService
+@inject PermissionService PermissionService
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthStateProvider
+@inject ILogger<Company> Logger
+@inject ISnackbar Snackbar
+@attribute [Authorize]
+@inject IJSRuntime JS
+
+<PageTitle>Company Management</PageTitle>
+
+<style>
+    /* Page Header */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 0;
+    }
+
+    .page-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #333;
+        margin: 0;
+    }
+
+    .breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 15px;
+        color: #666;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .breadcrumb-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .breadcrumb-separator {
+        color: #999;
+    }
+
+    .breadcrumb-link {
+        color: #7c3aed;
+        text-decoration: none;
+    }
+
+    .breadcrumb-link:hover {
+        text-decoration: underline;
+    }
+
+    .breadcrumb-current {
+        color: #666;
+    }
+
+    /* Container */
+    .company-container {
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    /* Toolbar */
+    .toolbar-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 20px;
+        background: white;
+        border-bottom: 1px solid #f0f0f0;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .toolbar-left {
+        display: flex;
+        align-items: center;
+    }
+
+    .toolbar-left::before {
+        content: "";
+        height: 21px;
+        width: 0.2rem;
+        inset-block-start: 0.15rem;
+        inset-inline-start: -0.65rem;
+        background: linear-gradient(to bottom, #26bf9491 50%, #97959e8a 50%);
+        border-radius: 0.5rem;
+    }
+
+    .list-label {
+        font-size: 14px;
+        font-weight: 600;
+        color: #333;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding-left: 7px;
+    }
+
+    .toolbar-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-left: auto;
+    }
+
+    .search-box {
+        position: relative;
+        min-width: 280px;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 6px 36px 6px 12px;
+        border: 1px solid #d9d9e3;
+        border-radius: 6px;
+        font-size: 13px;
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: #7c3aed;
+        box-shadow: 0 0 0 0.2rem rgba(124, 58, 237, 0.1);
+    }
+
+    .search-icon {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #999;
+        font-size: 18px;
+    }
+
+    .add-button {
+        background-color: var(--bs-primary);
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: background-color 0.2s;
+        white-space: nowrap;
+    }
+
+    .add-button:hover {
+        background-color: white;
+        color: var(--bs-primary);
+    }
+
+    .add-button i {
+        font-size: 18px;
+    }
+
+    /* Company Cards */
+    .card-me {
+        position: relative;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .card-me:hover {
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        transform: translateY(-2px);
+    }
+
+    .contact-hover-buttons {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        background: rgb(0 0 0 / 21%);
+        opacity: 0;
+        visibility: hidden;
+        transform: scale(1.05);
+        transition: all 0.25s ease-in-out;
+        border-radius: 8px;
+    }
+
+    .card-me:hover .contact-hover-buttons {
+        opacity: 1;
+        visibility: visible;
+        transform: scale(1);
+    }
+
+    .company-card-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    .company-avatar {
+        width: 56px;
+        height: 56px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        font-weight: 700;
+        color: white;
+    }
+
+    .company-info h6 {
+        margin: 0;
+        font-size: 15px;
+        font-weight: 600;
+        color: #333;
+        max-width: 180px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .company-code {
+        font-size: 12px;
+        color: #7c3aed;
+        font-weight: 500;
+    }
+
+    .company-details {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        font-size: 13px;
+        color: #666;
+    }
+
+    .company-details .detail-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .company-details .detail-row i {
+        color: #999;
+        font-size: 14px;
+        width: 16px;
+    }
+
+    .status-badge {
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .status-draft {
+        background-color: #fef3cd;
+        color: #856404;
+    }
+
+    .status-active {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .status-inactive {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+
+    /* Action Buttons */
+    .action-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 16px;
+    }
+
+    .view-btn {
+        background: #e3f2fd;
+        color: #1976d2;
+    }
+
+    .view-btn:hover {
+        background: #1976d2;
+        color: white;
+    }
+
+    .edit-btn {
+        background: #fff3e0;
+        color: #f57c00;
+    }
+
+    .edit-btn:hover {
+        background: #f57c00;
+        color: white;
+    }
+
+    .delete-btn {
+        background: #ffebee;
+        color: #d32f2f;
+    }
+
+    .delete-btn:hover {
+        background: #d32f2f;
+        color: white;
+    }
+
+    /* Pagination */
+    .pagination-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 20px;
+        border-top: 1px solid #f0f0f0;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .page-info {
+        font-size: 14px;
+        color: #666;
+    }
+
+    .pagination-buttons {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .page-btn {
+        min-width: 40px;
+        height: 40px;
+        padding: 0 8px;
+        border: 1px solid #d9d9e373;
+        border-radius: 50%;
+        font-size: 18px;
+        cursor: pointer;
+        transition: all 0.2s;
+        color: #333;
+        background: white;
+    }
+
+    .page-btn:hover:not(:disabled) {
+        background: #f5f5f5;
+        border-color: var(--bs-primary);
+        color: var(--bs-primary);
+    }
+
+    .page-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .page-btn.active {
+        color: white;
+        border-color: var(--bs-primary);
+        font-weight: 700;
+        background: var(--bs-primary);
+    }
+
+    /* No Data */
+    .no-data {
+        text-align: center;
+        padding: 60px 20px;
+        color: #999;
+    }
+
+    .no-data i {
+        font-size: 48px;
+        opacity: 0.3;
+    }
+
+    /* Offcanvas Styles */
+    .offcanvas-title {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        white-space: normal;
+        max-width: 100%;
+    }
+
+    .offcanvas-body p, .offcanvas-body div {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        white-space: pre-wrap;
+    }
+
+    .detail-section {
+        margin-bottom: 20px;
+    }
+
+    .detail-section-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: #7c3aed;
+        margin-bottom: 12px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .detail-item {
+        display: flex;
+        margin-bottom: 8px;
+    }
+
+    .detail-label {
+        font-weight: 500;
+        color: #666;
+        min-width: 140px;
+        font-size: 13px;
+    }
+
+    .detail-value {
+        color: #333;
+        font-size: 13px;
+    }
+
+    @@media (max-width: 768px) {
+        .toolbar-container {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .toolbar-left, .toolbar-right {
+            width: 100%;
+            justify-content: space-between;
+        }
+
+        .search-box {
+            min-width: 100%;
+        }
+    }
+</style>
+
+<div class="flex-grow-1">
+    @if (_isLoading)
+    {
+        <LoadingSpinner FullPage="true" />
+    }
+    else if (_hasError)
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Filled">
+            @_errorMessage
+        </MudAlert>
+    }
+    else
+    {
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 class="page-title">Company List</h1>
+            <nav>
+                <ul class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="#" class="breadcrumb-link">
+                            <i class="ti tabler-home"></i>Home
+                        </a>
+                        <span class="breadcrumb-separator">></span>
+                    </li>
+                    <li>
+                        <span class="breadcrumb-current">Company List</span>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+
+        <!-- Data Grid -->
+        <div class="company-container">
+            <!-- Toolbar -->
+            <div class="toolbar-container">
+                <div class="toolbar-left">
+                    <span class="list-label">COMPANY LIST</span>
+                </div>
+
+                <div class="toolbar-right">
+                    <div class="search-box">
+                        <input type="text"
+                               class="search-input"
+                               placeholder="Search by Code, Name, or Country"
+                               value="@_searchString"
+                               @oninput="@((ChangeEventArgs e) => OnSearchChanged(e.Value?.ToString() ?? string.Empty))" />
+                        <i class="ti tabler-search search-icon"></i>
+                    </div>
+                    @if (_canAdd)
+                    {
+                        <button class="add-button" @onclick="OpenAddDialog" disabled="@_isSaving">
+                            <i class="ti tabler-plus"></i>
+                            <span>Add Company</span>
+                        </button>
+                    }
+                </div>
+            </div>
+
+            <!-- Company Cards -->
+            <div class="card-body" style="margin-bottom: 28px; padding-top: 28px; padding-left: 22px; padding-right: 22px;">
+                <div class="row g-3">
+                    @if (_pagedCompanies.Any())
+                    {
+                        @foreach (var company in _pagedCompanies)
+                        {
+                            string borderColor = GetStatusColor(company.Status);
+                            string avatarBg = GenerateAvatarColor(company.CompanyCode);
+
+                            <div class="col-12 col-md-6 col-lg-4">
+                                <div class="card custom-card card-me" style="border-top:3px solid @borderColor !important; height: 100%;">
+                                    <div class="card-body contact-action">
+                                        <div class="contact-hover-buttons">
+                                            <button type="button" class="action-btn view-btn" @onclick="@(() => OpenViewDialog(company))"
+                                                    title="View" disabled="@_isDeleting">
+                                                <i class="ti tabler-eye"></i>
+                                            </button>
+                                            @if (_canEdit)
+                                            {
+                                                <button class="action-btn edit-btn"
+                                                        @onclick="@(() => OpenEditDialog(company))"
+                                                        title="Edit" disabled="@(_isSaving || _isDeleting)">
+                                                    <i class="ti tabler-edit"></i>
+                                                </button>
+                                            }
+                                            @if (_canDelete)
+                                            {
+                                                <button class="action-btn delete-btn"
+                                                        @onclick="@(() => ConfirmDelete(company))"
+                                                        title="Delete" disabled="@(_isSaving || _isDeleting)">
+                                                    <i class="ti tabler-trash"></i>
+                                                </button>
+                                            }
+                                        </div>
+
+                                        <div class="company-card-header">
+                                            <div class="company-avatar" style="background: @avatarBg;">
+                                                @GetInitials(company.LegalName)
+                                            </div>
+                                            <div class="company-info">
+                                                <h6 title="@company.LegalName">@company.LegalName</h6>
+                                                <span class="company-code">@company.CompanyCode</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="company-details">
+                                            <div class="detail-row">
+                                                <i class="ti tabler-building"></i>
+                                                <span>@(company.LegalStructureName ?? "N/A")</span>
+                                            </div>
+                                            <div class="detail-row">
+                                                <i class="ti tabler-map-pin"></i>
+                                                <span>@(company.AddressCountryName ?? "N/A")</span>
+                                            </div>
+                                            <div class="detail-row">
+                                                <i class="ti tabler-currency-dollar"></i>
+                                                <span>@(company.BaseCurrencyCode ?? "N/A")</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="mt-3 d-flex justify-content-between align-items-center">
+                                            <span class="status-badge @GetStatusClass(company.Status)">
+                                                @company.StatusName
+                                            </span>
+                                            @if (company.ParentCompanyName != null)
+                                            {
+                                                <small class="text-muted" title="Parent: @company.ParentCompanyName">
+                                                    <i class="ti tabler-hierarchy"></i> @TruncateText(company.ParentCompanyName, 15)
+                                                </small>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="col-12">
+                            <div class="no-data">
+                                <i class="ti tabler-building-factory-2"></i>
+                                <p>No companies found</p>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            @if (_totalItems > 0)
+            {
+                <div class="pagination-container">
+                    <div class="page-info">
+                        Showing @GetStartRecord() to @GetEndRecord() of @_totalItems entries
+                    </div>
+                    <div class="pagination-buttons">
+                        <button class="page-btn" @onclick="@(() => GoToPage(1))" disabled="@(_currentPage == 1)">
+                            <i class="ti tabler-chevrons-left"></i>
+                        </button>
+                        <button class="page-btn" @onclick="@(() => GoToPage(_currentPage - 1))" disabled="@(_currentPage == 1)">
+                            <i class="ti tabler-chevron-left"></i>
+                        </button>
+
+                        @for (int i = GetStartPage(); i <= GetEndPage(); i++)
+                        {
+                            var pageNum = i;
+                            <button class="page-btn @(pageNum == _currentPage ? "active" : "")"
+                                    @onclick="@(() => GoToPage(pageNum))">
+                                @pageNum
+                            </button>
+                        }
+
+                        <button class="page-btn" @onclick="@(() => GoToPage(_currentPage + 1))" disabled="@(_currentPage == _totalPages)">
+                            <i class="ti tabler-chevron-right"></i>
+                        </button>
+                        <button class="page-btn" @onclick="@(() => GoToPage(_totalPages))" disabled="@(_currentPage == _totalPages)">
+                            <i class="ti tabler-chevrons-right"></i>
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private List<CompanyDto> _companies = [];
+    private List<CompanyDto> _filteredCompanies = [];
+    private List<CompanyDto> _pagedCompanies = [];
+
+    private bool _isLoading = true;
+    private bool _hasError;
+    private string _errorMessage = string.Empty;
+    private bool _isSaving = false; // Reserved for future inline editing feature
+    private bool _isDeleting;
+
+    private bool _canView;
+    private bool _canAdd;
+    private bool _canEdit;
+    private bool _canDelete;
+
+    private string _searchString = string.Empty;
+    private int _currentPage = 1;
+    private int _pageSize = 9;
+    private int _totalItems;
+    private int _totalPages = 1;
+
+    private static readonly Random _random = new();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JS.InvokeVoidAsync("loadScriptAndTrigger", "assets/js/toast.js", true);
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Logger.LogInformation("Company page initializing...");
+
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            if (!authState.User.Identity?.IsAuthenticated ?? true)
+            {
+                Logger.LogWarning("User not authenticated, redirecting to login");
+                NavigationManager.NavigateTo("/login");
+                return;
+            }
+
+            var permissions = await PermissionService.GetPagePermissionsAsync("/company");
+            _canView = permissions.CanView;
+            _canAdd = permissions.CanAdd;
+            _canEdit = permissions.CanEdit;
+            _canDelete = permissions.CanDelete;
+
+            Logger.LogInformation("Permissions - View: {View}, Add: {Add}, Edit: {Edit}, Delete: {Delete}",
+                _canView, _canAdd, _canEdit, _canDelete);
+
+            await LoadCompanies();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error initializing Company page");
+            _hasError = true;
+            _errorMessage = $"Error initializing page: {ex.Message}";
+            _isLoading = false;
+        }
+    }
+
+    private async Task LoadCompanies()
+    {
+        _isLoading = true;
+        _hasError = false;
+
+        try
+        {
+            Logger.LogInformation("Loading companies...");
+            var response = await CompanyService.GetAllCompaniesAsync();
+
+            if (response.Success && response.Data != null)
+            {
+                _companies = response.Data;
+                Logger.LogInformation("Loaded {Count} companies", _companies.Count);
+                UpdateFilteredCompanies();
+            }
+            else
+            {
+                _hasError = true;
+                _errorMessage = response.Message ?? "Failed to load companies";
+                Logger.LogWarning("Failed to load companies: {Message}", _errorMessage);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error loading companies");
+            _hasError = true;
+            _errorMessage = $"Error loading companies: {ex.Message}";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private void UpdateFilteredCompanies()
+    {
+        if (string.IsNullOrWhiteSpace(_searchString))
+        {
+            _filteredCompanies = _companies.ToList();
+        }
+        else
+        {
+            var search = _searchString.ToLower();
+            _filteredCompanies = _companies
+                .Where(c => c.CompanyCode.ToLower().Contains(search) ||
+                           c.LegalName.ToLower().Contains(search) ||
+                           (c.AddressCountryName?.ToLower().Contains(search) ?? false))
+                .ToList();
+        }
+
+        _totalItems = _filteredCompanies.Count;
+        _totalPages = _totalItems > 0 ? (int)Math.Ceiling((double)_totalItems / _pageSize) : 1;
+
+        if (_currentPage > _totalPages) _currentPage = _totalPages;
+        if (_currentPage < 1) _currentPage = 1;
+
+        _pagedCompanies = _filteredCompanies
+            .Skip((_currentPage - 1) * _pageSize)
+            .Take(_pageSize)
+            .ToList();
+    }
+
+    private void OnSearchChanged(string value)
+    {
+        _searchString = value;
+        _currentPage = 1;
+        UpdateFilteredCompanies();
+        StateHasChanged();
+    }
+
+    private void GoToPage(int page)
+    {
+        if (page >= 1 && page <= _totalPages)
+        {
+            _currentPage = page;
+            UpdateFilteredCompanies();
+            StateHasChanged();
+        }
+    }
+
+    private int GetStartRecord() => _totalItems > 0 ? (_currentPage - 1) * _pageSize + 1 : 0;
+    private int GetEndRecord() => Math.Min(_currentPage * _pageSize, _totalItems);
+    private int GetStartPage() => Math.Max(1, _currentPage - 2);
+    private int GetEndPage() => Math.Min(_totalPages, _currentPage + 2);
+
+    private void OpenAddDialog()
+    {
+        NavigationManager.NavigateTo("/company/create");
+    }
+
+    private void OpenEditDialog(CompanyDto company)
+    {
+        NavigationManager.NavigateTo($"/company/edit/{company.Id}");
+    }
+
+    private void OpenViewDialog(CompanyDto company)
+    {
+        NavigationManager.NavigateTo($"/company/view/{company.Id}");
+    }
+
+    private async Task ConfirmDelete(CompanyDto company)
+    {
+        var result = await JS.InvokeAsync<JsonElement>("Swal.fire", new
+        {
+            title = "Delete Company?",
+            text = $"Are you sure you want to delete '{company.LegalName}'? This action cannot be undone.",
+            icon = "warning",
+            showCancelButton = true,
+            confirmButtonColor = "#d33",
+            cancelButtonColor = "#3085d6",
+            confirmButtonText = "Yes, delete it!",
+            cancelButtonText = "Cancel"
+        });
+
+        // Check if user confirmed (clicked "Yes, delete it!")
+        bool confirmed = result.TryGetProperty("isConfirmed", out var isConfirmedProp) && isConfirmedProp.GetBoolean();
+
+        if (confirmed)
+        {
+            await DeleteCompany(company);
+        }
+    }
+
+    private async Task DeleteCompany(CompanyDto company)
+    {
+        _isDeleting = true;
+        StateHasChanged();
+
+        try
+        {
+            var response = await CompanyService.DeleteCompanyAsync(company.Id);
+            if (response.Success)
+            {
+                await JS.InvokeVoidAsync("Swal.fire", new
+                {
+                    title = "Deleted!",
+                    text = "Company has been deleted successfully.",
+                    icon = "success",
+                    timer = 2000,
+                    showConfirmButton = false
+                });
+                await LoadCompanies();
+            }
+            else
+            {
+                await JS.InvokeVoidAsync("Swal.fire", new
+                {
+                    title = "Error",
+                    text = response.Message ?? "Failed to delete company",
+                    icon = "error"
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error deleting company");
+            await JS.InvokeVoidAsync("Swal.fire", new
+            {
+                title = "Error",
+                text = $"Error deleting company: {ex.Message}",
+                icon = "error"
+            });
+        }
+        finally
+        {
+            _isDeleting = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task OnCompanySaved()
+    {
+        await LoadCompanies();
+        StateHasChanged();
+    }
+
+    private string GetStatusColor(CompanyStatus status) => status switch
+    {
+        CompanyStatus.Draft => "#ffc107",
+        CompanyStatus.Active => "#28a745",
+        CompanyStatus.Inactive => "#dc3545",
+        _ => "#6c757d"
+    };
+
+    private string GetStatusClass(CompanyStatus status) => status switch
+    {
+        CompanyStatus.Draft => "status-draft",
+        CompanyStatus.Active => "status-active",
+        CompanyStatus.Inactive => "status-inactive",
+        _ => ""
+    };
+
+    private string GenerateAvatarColor(string code)
+    {
+        var hash = code.GetHashCode();
+        var colors = new[] { "#7c3aed", "#2196f3", "#4caf50", "#ff9800", "#e91e63", "#00bcd4", "#9c27b0", "#607d8b" };
+        return colors[Math.Abs(hash) % colors.Length];
+    }
+
+    private string GetInitials(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return "?";
+        var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length >= 2)
+            return $"{parts[0][0]}{parts[1][0]}".ToUpper();
+        return name.Length >= 2 ? name[..2].ToUpper() : name.ToUpper();
+    }
+
+    private string TruncateText(string text, int maxLength)
+    {
+        if (string.IsNullOrEmpty(text) || text.Length <= maxLength)
+            return text;
+        return text[..maxLength] + "...";
+    }
+}

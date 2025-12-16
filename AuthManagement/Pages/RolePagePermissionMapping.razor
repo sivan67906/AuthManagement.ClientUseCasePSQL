@@ -40,7 +40,6 @@
         list-style: none;
     }
 
-
     .breadcrumb-item {
         display: flex;
         align-items: center;
@@ -146,6 +145,7 @@
         transform: translateY(-50%);
         color: #999;
         font-size: 18px;
+        cursor: pointer;
     }
 
     .add-button {
@@ -267,6 +267,47 @@
         font-weight: 600;
     }
 
+    /* Permission Badges */
+    .permission-badges-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        align-items: center;
+    }
+
+    .permission-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 5px 10px;
+        border-radius: 6px;
+        min-width: 28px;
+        color: white;
+        text-transform: uppercase;
+    }
+
+    .badge-view {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .badge-create {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+
+    .badge-update {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    }
+
+    .badge-delete {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    }
+
+    .badge-default {
+        background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+    }
+
     /* Action Buttons */
     .action-buttons {
         display: flex;
@@ -274,7 +315,6 @@
         justify-content: center;
         align-items: center;
     }
-
 
     .action-btn {
         width: 32px;
@@ -334,22 +374,15 @@
                 color: white;
             }
 
-
     /* Pagination */
     .pagination-container {
         display: flex;
-        justify-content: center;
+        justify-content: space-between;
         align-items: center;
-        padding: 13px 0px;
-        background: white;
-        border-left: 1px solid #80808047;
-        margin-bottom: 1px;
-        border-right: 1px solid #80808047;
-        border-bottom: 1px solid #80808047;
+        padding: 16px 0;
+        border-top: 1px solid #f0f0f0;
+        margin-top: 16px;
     }
-
-
-
 
     .pagination-info {
         font-size: 14px;
@@ -358,83 +391,59 @@
 
     .pagination-controls {
         display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .page-size-selector {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin-right: 16px;
-    }
-
-        .page-size-selector label {
-            font-size: 14px;
-            color: #666;
-        }
-
-        .page-size-selector select {
-            padding: 4px 8px;
-            border: 1px solid #d9d9e3;
-            border-radius: 4px;
-            font-size: 14px;
-            cursor: pointer;
-        }
-
-    .pagination-buttons {
-        display: flex;
-        align-items: center;
         gap: 4px;
+        align-items: center;
     }
 
-    .page-btn {
-        min-width: 40px;
-        height: 40px;
-        padding: 0 8px;
-        border: 1px solid #d9d9e373;
-        border-radius: 50%;
-        font-size: 18px;
+    .pagination-btn {
+        width: 32px;
+        height: 32px;
+        border: 1px solid #d9d9e3;
+        background: white;
+        border-radius: 4px;
         cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         transition: all 0.2s;
-        color: #333;
+        font-size: 14px;
+        color: #666;
     }
 
-        .page-btn:hover:not(:disabled) {
+        .pagination-btn:hover:not(:disabled) {
             background: #f5f5f5;
-            border-color: var(--bs-primary);
-            color: var(--bs-primary);
+            border-color: #7c3aed;
         }
 
-        .page-btn:disabled {
+        .pagination-btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
         }
 
-        .page-btn.active {
+        .pagination-btn.active {
+            background: #7c3aed;
             color: white;
-            border-color: var(--bs-primary);
-            font-weight: 700;
-            background: var(--bs-primary);
+            border-color: #7c3aed;
         }
 
+        .pagination-btn i {
+            font-size: 16px;
+        }
 
-
-    /* Loading and Error States */
-    .loading-container {
+    /* Loading spinner */
+    .loading-spinner {
         display: flex;
-        flex-direction: column;
-        align-items: center;
         justify-content: center;
-        padding: 60px 20px;
+        align-items: center;
+        padding: 40px;
     }
 
     .spinner {
-        width: 48px;
-        height: 48px;
         border: 4px solid #f3f3f3;
         border-top: 4px solid #7c3aed;
         border-radius: 50%;
+        width: 40px;
+        height: 40px;
         animation: spin 1s linear infinite;
     }
 
@@ -448,550 +457,322 @@
         }
     }
 
-    .loading-text {
-        margin-top: 16px;
-        font-size: 14px;
-        color: #666;
+    /* Empty state */
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #999;
     }
 
-    .error-container {
-        padding: 20px;
-        background: #ffebee;
-        border: 1px solid #ef5350;
-        border-radius: 8px;
-        margin: 20px;
-    }
-
-    .error-message {
-        color: #c62828;
-        font-size: 14px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-        .error-message i {
-            font-size: 20px;
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.3;
         }
 
-    .no-data-container {
-        padding: 60px 20px;
-        text-align: center;
-    }
-
-    .no-data-icon {
-        font-size: 64px;
-        color: #e0e0e0;
-        margin-bottom: 16px;
-    }
-
-    .no-data-text {
-        font-size: 16px;
-        color: #666;
-    }
-
-    /* Issue #6: Offcanvas full text display */
-    .offcanvas-title {
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-        white-space: normal;
-        max-width: 100%;
-    }
-    
-    .offcanvas-body p, .offcanvas-body div {
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-        white-space: pre-wrap;
-    }
+        .empty-state p {
+            font-size: 16px;
+            margin: 0;
+        }
 </style>
 
-<div class="flex-grow-1">
-    @if (_isLoading)
-    {
-        <LoadingSpinner FullPage="true" />
-    }
-    else
-    {
-        <div class="page-header">
-            <h1 class="page-title">Role Page Permission Mapping</h1>
-            <nav>
-                <ul class="breadcrumb">
+<div class="container-fluid p-0 p-sm-2">
+    <!-- Page Header with Breadcrumbs -->
+    <div class="page-header mb-3">
+        <div>
+            <h4 class="page-title mb-2">Role Page Permission Mapping</h4>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
                     <li class="breadcrumb-item">
                         <a href="/" class="breadcrumb-link">
-                            <i class="ti tabler-home"></i>Home
+                            <i class="bi bi-house-door"></i> Home
                         </a>
-                        <span class="breadcrumb-separator">></span>
                     </li>
-                    <li class="">
+                    <li class="breadcrumb-item">
+                        <span class="breadcrumb-separator">›</span>
                         <span class="breadcrumb-current">Role Page Permission Mapping</span>
                     </li>
-                </ul>
+                </ol>
             </nav>
-        </div>
-
-
-        <!-- Main Content Card -->
-        <div class="mapping-container">
-            <!-- Toolbar -->
-            <div class="toolbar-container">
-                <div class="toolbar-left">
-                    <span class="mappings-list-label">Mappings List</span>
-                </div>
-                <div class="toolbar-right">
-                    <div class="search-box">
-                        <input type="text"
-                               class="search-input"
-                               placeholder="Search mappings..."
-                               value="@_searchString"
-                               @oninput="@((e) => OnSearchChanged(e.Value?.ToString() ?? string.Empty))" />
-                        @if (string.IsNullOrEmpty(_searchString))
-                        {
-                            <i class="ti tabler-search search-icon"></i>
-                        }
-                        @* else
-                        {
-                            <i class="ti tabler-x clear-icon" @onclick="ClearSearch"></i>
-                        } *@
-                    </div>
-                    @if (_canCreate)
-                    {
-                        <button class="add-button" @onclick="OpenAddDialog" disabled="@_isSaving">
-                            <i class="ti tabler-plus"></i>
-                            <span>Add Mapping</span>
-                        </button>
-                    }
-                </div>
-            </div>
-
-            <!-- Table Content -->
-            @if (_isLoading)
-            {
-                <div class="loading-container">
-                    <div class="spinner"></div>
-                    <p class="loading-text">Loading role page permission mappings...</p>
-                </div>
-            }
-            else if (_hasError)
-            {
-                <div class="error-container">
-                    <div class="error-message">
-                        <i class="ti tabler-alert-triangle"></i>
-                        <span>@_errorMessage</span>
-                    </div>
-                </div>
-            }
-            else if (_pagedMappings != null && _pagedMappings.Any())
-            {
-                <table class="mapping-table">
-                    <thead>
-                        <tr>
-                            <th class="plusHeading"></th>
-
-                            <th class="sortable" @onclick='() => ToggleSort("no")'>
-                                NO.
-                                <span class="sort-indicator">
-                                    <span class="sort-arrow up @(_sortColumn == "no" && _sortDirection == "asc" ? "active" : "")"></span>
-                                    <span class="sort-arrow down @(_sortColumn == "no" && _sortDirection == "desc" ? "active" : "")"></span>
-                                </span>
-                            </th>
-                            <th class="sortable" @onclick='() => ToggleSort("department")'>
-                                DEPARTMENT
-                                <span class="sort-indicator">
-                                    <span class="sort-arrow up @(_sortColumn == "department" && _sortDirection == "asc" ? "active" : "")"></span>
-                                    <span class="sort-arrow down @(_sortColumn == "department" && _sortDirection == "desc" ? "active" : "")"></span>
-                                </span>
-                            </th>
-                            <th class="sortable" @onclick='() => ToggleSort("role")'>
-                                ROLE NAME
-                                <span class="sort-indicator">
-                                    <span class="sort-arrow up @(_sortColumn == "role" && _sortDirection == "asc" ? "active" : "")"></span>
-                                    <span class="sort-arrow down @(_sortColumn == "role" && _sortDirection == "desc" ? "active" : "")"></span>
-                                </span>
-                            </th>
-                            <th class="sortable" @onclick='() => ToggleSort("page")'>
-                                PAGE NAME
-                                <span class="sort-indicator">
-                                    <span class="sort-arrow up @(_sortColumn == "page" && _sortDirection == "asc" ? "active" : "")"></span>
-                                    <span class="sort-arrow down @(_sortColumn == "page" && _sortDirection == "desc" ? "active" : "")"></span>
-                                </span>
-                            </th>
-                            <th class="sortable" @onclick='() => ToggleSort("permission")'>
-                                PERMISSION NAME
-                                <span class="sort-indicator">
-                                    <span class="sort-arrow up @(_sortColumn == "permission" && _sortDirection == "asc" ? "active" : "")"></span>
-                                    <span class="sort-arrow down @(_sortColumn == "permission" && _sortDirection == "desc" ? "active" : "")"></span>
-                                </span>
-                            </th>
-                            <th class="text-center">ACTIONS</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var mapping in _pagedMappings)
-                        {
-                            <tr>
-                                <td class="details-control" @onclick="@(() => ShowDetails(mapping))">
-                                    <div class="plus" style="border-radius: 50%;
-                                    display: flex;
-                                    align-items: center;
-                                    justify-content: center;
-                                    box-sizing: content-box;
-                                    border: 2px solid var(--bs-paper-bg);
-                                    background-color: var(--bs-primary);
-                                    block-size: .85rem;
-                                    box-shadow: 0 0 3px var(--bs-gray-800);
-                                    color: var(--bs-white);    width: 17px;
-                        height: 17px;">
-                                        <i class="ti tabler-plus"></i>
-                                    </div>
-                                </td>
-
-                                <td><span class="serial-number">@GetGlobalSerialNumber(mapping)</span></td>
-                                <td><span class="mapping-name">@(mapping.DepartmentName ?? "All Departments")</span></td>
-                                <td><span class="mapping-name">@mapping.RoleName</span></td>
-                                <td><span class="mapping-name">@mapping.PageName</span></td>
-                                <td><span class="mapping-name">@mapping.PermissionName</span></td>
-                                <td>
-                                    <div class="action-buttons">
-                                        @if (_canView)
-                                        {
-                                            <button class="action-btn view-btn"
-                                                    @onclick="() => OpenViewDialog(mapping)"
-                                                    title="View Details">
-                                                <i class="ti tabler-eye"></i>
-                                            </button>
-                                        }
-                                        @if (_canEdit)
-                                        {
-                                            <button class="action-btn edit-btn"
-                                                    @onclick="() => OpenEditDialog(mapping)"
-                                                    title="Edit">
-                                                <i class="ti tabler-edit"></i>
-                                            </button>
-                                        }
-                                        @if (_canDelete)
-                                        {
-                                            <button class="action-btn delete-btn"
-                                                    @onclick="() => DeleteMapping(mapping)"
-                                                    title="Delete">
-                                                <i class="ti tabler-trash"></i>
-                                            </button>
-                                        }
-                                    </div>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-
-                <div class="pagination-container">
-                    <div class="pagination-controls">
-
-                        @* mobile  screen *@
-
-                        @{
-                            var range = GetMobilePageRange();
-                        }
-
-                        <div class="pagination-buttons mobile-only">
-
-                            <button class="page-btn" @onclick="() => GoToPage(1)" disabled="@(_currentPage == 1)">
-                                <i class="bi bi-chevron-bar-left"></i>
-                            </button>
-
-                            <button class="page-btn" @onclick="() => GoToPage(_currentPage - 1)" disabled="@(_currentPage == 1)">
-                                <i class="ti tabler-chevron-left"></i>
-                            </button>
-
-                            <button class="page-btn active">
-                                @_currentPage
-                            </button>
-
-                            <button class="page-btn" @onclick="() => GoToPage(_currentPage + 1)" disabled="@(_currentPage == _totalPages)">
-                                <i class="ti tabler-chevron-right"></i>
-                            </button>
-
-                            <button class="page-btn" @onclick="() => GoToPage(_totalPages)" disabled="@(_currentPage == _totalPages)">
-                                <i class="bi bi-chevron-bar-right"></i>
-                            </button>
-
-                        </div>
-
-
-
-                        <div class="pagination-buttons web-Only">
-                            <button class="page-btn" @onclick="() => GoToPage(1)" disabled="@(_currentPage == 1)">
-                                <i class="bi bi-chevron-bar-left"></i>
-                            </button>
-                            <button class="page-btn" @onclick="() => GoToPage(_currentPage - 1)" disabled="@(_currentPage == 1)">
-                                <i class="ti tabler-chevron-left"></i>
-                            </button>
-
-                            @for (int i = GetStartPage(); i <= GetEndPage(); i++)
-                            {
-                                var pageNum = i;
-                                <button class="page-btn @(_currentPage == pageNum ? "active" : "")"
-                                        @onclick="() => GoToPage(pageNum)">
-                                    @pageNum
-                                </button>
-                            }
-
-                            <button class="page-btn" @onclick="() => GoToPage(_currentPage + 1)" disabled="@(_currentPage == _totalPages)">
-                                <i class="ti tabler-chevron-right"></i>
-                            </button>
-                            <button class="page-btn" @onclick="() => GoToPage(_totalPages)" disabled="@(_currentPage == _totalPages)">
-                                <i class="bi bi-chevron-bar-right"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            }
-            else
-            {
-                @* Issue #3: Show NoResultsFound component when no mappings match *@
-                <NoResultsFound Message="No role page permission mappings found" 
-                               IconClass="ti tabler-shield-off"
-                               SearchTerm="@_searchString" />
-            }
-        </div>
-    }
-
-</div>
-
-<!-- Add/Edit Dialog -->
-<RolePagePermissionMappingFormDialog IsOpen="@_isDialogOpen"
-                                     IsEditMode="@_isEditMode"
-                                     IsSaving="@_isSaving"
-                                     FormModel="@_mappingModel"
-                                     Roles="@_roles"
-                                     Pages="@_pages"
-                                     Permissions="@_permissions"
-                                     Departments="@_departments"
-                                     OnCancel="@CloseDialog"
-                                     OnSubmit="@HandleSubmit" />
-
-<!-- View Offcanvas -->
-<RolePagePermissionMappingDetailsOffcanvas IsOpen="@_isOffcanvasOpen"
-                                           Mapping="@_selectedMapping"
-                                           OnClose="@CloseOffcanvas" />
-@if (showPopup && selectedFeature != null)
-{
-
-    <div class="modal-backdrop show" @onclick:stopPropagation="true"></div>
-    <div class="modal show d-block" tabindex="-1" @onclick:stopPropagation="true">
-        <div class="modal-dialog modal-dialog-top">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">
-                        Role Page Permission Details
-                    </h5>
-                    <button type="button" class="btn-close" @onclick="closeSelectFeatures"></button>
-                </div>
-                <div class="modal-body" style="padding: 24px;">
-                    <p><b>Department:</b> @(selectedFeature.DepartmentName ?? "All Departments")</p>
-                    <p><b>Role Name:</b> @selectedFeature.RoleName</p>
-                    <p><b>Page Name:</b> @selectedFeature.PageName</p>
-                    <p><b>Permission Name:</b> @selectedFeature.PermissionName</p>
-                </div>
-            </div>
         </div>
     </div>
 
+    <!-- Main Container -->
+    <div class="mapping-container">
+        <!-- Toolbar -->
+        <div class="toolbar-container">
+            <div class="toolbar-left">
+                <span class="mappings-list-label">Mappings List</span>
+            </div>
+            <div class="toolbar-right">
+                <div class="search-box">
+                    <input type="text"
+                           class="search-input"
+                           placeholder="Search mappings..."
+                           value="@_searchString"
+                           @oninput="@((e) => OnSearchChanged(e.Value?.ToString() ?? string.Empty))" />
+                    @if (string.IsNullOrEmpty(_searchString))
+                    {
+                        <i class="bi bi-search search-icon"></i>
+                    }
+                    else
+                    {
+                        <i class="bi bi-x-lg search-icon" @onclick="ClearSearch" style="cursor: pointer;"></i>
+                    }
+                </div>
+                <button class="add-button" @onclick="OpenAddDialog">
+                    <i class="bi bi-plus-circle"></i>
+                    <span>Add Mapping</span>
+                </button>
+            </div>
+        </div>
 
+        <!-- Table -->
+        @if (_isLoading)
+        {
+            <div class="loading-spinner">
+                <div class="spinner"></div>
+            </div>
+        }
+        else if (_pagedMappings.Any())
+        {
+            <table class="mapping-table">
+                <thead>
+                    <tr>
+                        <th class="text-center sortable" @onclick='() => ToggleSort("no")'>
+                            NO.
+                            <div class="sort-indicator">
+                                <div class="sort-arrow up @(_sortColumn == "no" && _sortDirection == "asc" ? "active" : "")"></div>
+                                <div class="sort-arrow down @(_sortColumn == "no" && _sortDirection == "desc" ? "active" : "")"></div>
+                            </div>
+                        </th>
+                        <th class="sortable" @onclick='() => ToggleSort("department")'>
+                            DEPARTMENT
+                            <div class="sort-indicator">
+                                <div class="sort-arrow up @(_sortColumn == "department" && _sortDirection == "asc" ? "active" : "")"></div>
+                                <div class="sort-arrow down @(_sortColumn == "department" && _sortDirection == "desc" ? "active" : "")"></div>
+                            </div>
+                        </th>
+                        <th class="sortable" @onclick='() => ToggleSort("role")'>
+                            ROLE NAME
+                            <div class="sort-indicator">
+                                <div class="sort-arrow up @(_sortColumn == "role" && _sortDirection == "asc" ? "active" : "")"></div>
+                                <div class="sort-arrow down @(_sortColumn == "role" && _sortDirection == "desc" ? "active" : "")"></div>
+                            </div>
+                        </th>
+                        <th class="sortable" @onclick='() => ToggleSort("page")'>
+                            PAGE NAME
+                            <div class="sort-indicator">
+                                <div class="sort-arrow up @(_sortColumn == "page" && _sortDirection == "asc" ? "active" : "")"></div>
+                                <div class="sort-arrow down @(_sortColumn == "page" && _sortDirection == "desc" ? "active" : "")"></div>
+                            </div>
+                        </th>
+                        <th>PERMISSIONS</th>
+                        <th class="text-center">ACTIONS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var mapping in _pagedMappings)
+                    {
+                        <tr>
+                            <td class="text-center serial-number">@GetGlobalSerialNumber(mapping)</td>
+                            <td>@(mapping.DepartmentName ?? "All Departments")</td>
+                            <td class="mapping-name">@mapping.RoleName</td>
+                            <td>
+                                <div>
+                                    <div style="font-weight: 600;">@mapping.PageName</div>
+                                    <div style="font-size: 12px; color: #6b7280;">@mapping.PageUrl</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="permission-badges-container">
+                                    @foreach (var perm in mapping.Permissions.OrderBy(p => p.PermissionName))
+                                    {
+                                        <span class="permission-badge @GetBadgeClass(perm.PermissionName)"
+                                              title="@perm.PermissionName">
+                                            @GetPermissionCode(perm.PermissionName)
+                                        </span>
+                                    }
+                                </div>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="action-btn view-btn"
+                                            @onclick="() => OpenViewDialog(mapping)"
+                                            title="View Details">
+                                        <i class="ti tabler-eye"></i>
+                                    </button>
+                                    <button class="action-btn edit-btn"
+                                            @onclick="() => OpenEditDialog(mapping)"
+                                            title="Edit Mapping">
+                                        <i class="ti tabler-edit"></i>
+                                    </button>
+                                    <button class="action-btn delete-btn"
+                                            @onclick="() => DeleteMapping(mapping)"
+                                            title="Delete Mapping">
+                                        <i class="ti tabler-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <!-- Pagination -->
+            <div class="pagination-container">
+                <div class="pagination-info">
+                    Showing @GetStartRecord() to @GetEndRecord() of @_totalItems entries
+                </div>
+                <div class="pagination-controls">
+                    <button class="pagination-btn" @onclick="() => GoToPage(1)" disabled="@(_currentPage == 1)">
+                        <i class="bi bi-chevron-double-left"></i>
+                    </button>
+                    <button class="pagination-btn" @onclick="() => GoToPage(_currentPage - 1)" disabled="@(_currentPage == 1)">
+                        <i class="bi bi-chevron-left"></i>
+                    </button>
+
+                    @for (int i = GetStartPage(); i <= GetEndPage(); i++)
+                    {
+                        var pageNum = i;
+                        <button class="pagination-btn @(_currentPage == pageNum ? "active" : "")"
+                                @onclick="() => GoToPage(pageNum)">
+                            @pageNum
+                        </button>
+                    }
+
+                    <button class="pagination-btn" @onclick="() => GoToPage(_currentPage + 1)" disabled="@(_currentPage == _totalPages)">
+                        <i class="bi bi-chevron-right"></i>
+                    </button>
+                    <button class="pagination-btn" @onclick="() => GoToPage(_totalPages)" disabled="@(_currentPage == _totalPages)">
+                        <i class="bi bi-chevron-double-right"></i>
+                    </button>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="empty-state">
+                <i class="bi bi-inbox"></i>
+                <p>No mappings found. Click "Add Mapping" to create one.</p>
+            </div>
+        }
+    </div>
+</div>
+
+@* Form Dialog *@
+@if (_isDialogOpen)
+{
+    <RolePagePermissionMappingFormDialog_New
+        @ref="_formDialog"
+        IsOpen="_isDialogOpen"
+        IsEditMode="_isEditMode"
+        SelectedMapping="_selectedMapping"
+        OnSubmit="@HandleSubmit"
+        OnCancel="@CloseDialog"
+        IsSaving="_isSaving" />
 }
 
-
+@* Details Offcanvas *@
+@if (_isOffcanvasOpen)
+{
+    <RolePagePermissionMappingDetailsOffcanvas
+        @ref="_detailsOffcanvas"
+        IsOpen="_isOffcanvasOpen"
+        Mapping="_selectedMapping"
+        OnClose="CloseOffcanvas" />
+}
 
 @code {
-
-    private List<RolePagePermissionMappingDto> _mappings = new();
-    private List<DisplayRolePagePermissionMapping> _displayMappings = new();
-    private List<DisplayRolePagePermissionMapping> _filteredMappings = new();
-    private List<DisplayRolePagePermissionMapping> _pagedMappings = new();
+    // Data lists
+    private List<RolePagePermissionGroupDto> _groupedMappings = new();
+    private List<DisplayRolePagePermissionGroup> _displayMappings = new();
+    private List<DisplayRolePagePermissionGroup> _filteredMappings = new();
+    private List<DisplayRolePagePermissionGroup> _pagedMappings = new();
     private List<RoleDto> _roles = new();
     private List<PageDto> _pages = new();
-    private List<PermissionDto> _permissions = new();
     private List<DepartmentDto> _departments = new();
-    private DisplayRolePagePermissionMapping? _selectedMapping;
-    private RolePagePermissionMappingFormModel _mappingModel = new();
 
-    private bool _isLoading = true;
-    private bool _isSaving = false;
+    // Dialog and offcanvas
+    private RolePagePermissionMappingFormDialog_New? _formDialog;
+    private RolePagePermissionMappingDetailsOffcanvas? _detailsOffcanvas;
     private bool _isDialogOpen = false;
     private bool _isOffcanvasOpen = false;
     private bool _isEditMode = false;
-    private bool _hasError = false;
-    private string _errorMessage = string.Empty;
+    private DisplayRolePagePermissionGroup? _selectedMapping;
 
-    // Search and Pagination
+    // Search and pagination
     private string _searchString = string.Empty;
-    private string _sortColumn = "";
-    private string _sortDirection = "";
     private int _currentPage = 1;
-    private int _pageSize = 9;
+    private int _pageSize = 10;
     private int _totalItems = 0;
     private int _totalPages = 1;
 
-    // Feature flags
-    private bool _canView = false;
-    private bool _canCreate = false;
-    private bool _canEdit = false;
-    private bool _canDelete = false;
+    // Sorting
+    private string _sortColumn = "";
+    private string _sortDirection = "asc";
 
-    bool showPopup = false;
-    DisplayRolePagePermissionMapping? selectedFeature;
-
-    void closeSelectFeatures()
-    {
-        showPopup=false;
-    }
-
-    void ShowDetails(DisplayRolePagePermissionMapping feature)
-    {
-        selectedFeature = feature;
-        showPopup = true;
-    }
-
-    void ClosePopup()
-    {
-        showPopup = false;
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            await JS.InvokeVoidAsync("loadScriptAndTrigger", "assets/js/toast.js", true);
-
-        }
-    }
-
-    // pagination
-
-    private (int start, int end) GetMobilePageRange()
-    {
-        //int windowSize = 2; // always show 2 page numbers
-
-        int start = _currentPage;
-        int end = _currentPage + 1;
-
-        if (end > _totalPages)
-        {
-            end = _totalPages;
-            start = Math.Max(1, end - 1);
-        }
-
-        return (start, end);
-    }
-
+    // Loading states
+    private bool _isLoading = false;
+    private bool _isSaving = false;
 
     protected override async Task OnInitializedAsync()
     {
-        try
-        {
-            Logger.LogInformation("RolePagePermissionMapping page initializing...");
-
-            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
-            if (!authState.User.Identity?.IsAuthenticated ?? true)
-            {
-                Logger.LogWarning("User not authenticated, redirecting to login");
-                NavigationManager.NavigateTo("/login");
-                return;
-            }
-
-            Logger.LogInformation("User authenticated: {Email}", authState.User.Identity?.Name);
-
-            // Get user permissions for this page
-            var permissions = await PermissionService.GetPagePermissionsAsync("RolePagePermissionMapping");
-            _canView = permissions.CanView;
-            _canCreate = permissions.CanAdd;
-            _canEdit = permissions.CanEdit;
-            _canDelete = permissions.CanDelete;
-
-            Logger.LogInformation("Permissions set - View: {View}, Create: {Create}, Edit: {Edit}, Delete: {Delete}",
-                _canView, _canCreate, _canEdit, _canDelete);
-
-            await LoadData();
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Error initializing RolePagePermissionMapping page");
-            _hasError = true;
-            _errorMessage = $"Error initializing page: {ex.Message}";
-            _isLoading = false;
-        }
+        await LoadData();
     }
 
     private async Task LoadData()
     {
         _isLoading = true;
-        _hasError = false;
-
         try
         {
-            var rolesTask = RBACService.GetAllRolesAsync();
-            var pagesTask = RBACService.GetAllPagesAsync();
-            var permissionsTask = RBACService.GetAllPermissionsAsync();
-            var departmentsTask = RBACService.GetAllDepartmentsAsync();
-            var mappingsTask = RBACService.GetAllRolePagePermissionMappingsAsync();
+            // Load grouped mappings
+            var response = await RBACService.GetGroupedRolePagePermissionsAsync();
+            if (response.Success && response.Data != null)
+            {
+                _groupedMappings = response.Data;
 
-            await Task.WhenAll(rolesTask, pagesTask, permissionsTask, departmentsTask, mappingsTask);
+                // Convert to display model
+                _displayMappings = _groupedMappings.Select(g => new DisplayRolePagePermissionGroup
+                {
+                    Id = Guid.NewGuid(), // Generate unique Id for display
+                    DepartmentId = g.DepartmentId,
+                    DepartmentName = g.DepartmentName,
+                    RoleId = g.RoleId,
+                    RoleName = g.RoleName,
+                    PageId = g.PageId,
+                    PageName = g.PageName,
+                    PageUrl = g.PageUrl,
+                    Permissions = g.Permissions,
+                    CreatedAt = g.CreatedAt
+                }).ToList();
 
-            var rolesResponse = await rolesTask;
-            var pagesResponse = await pagesTask;
-            var permissionsResponse = await permissionsTask;
-            var departmentsResponse = await departmentsTask;
-            var mappingsResponse = await mappingsTask;
+                UpdateFilteredMappings();
+            }
 
+            // Load roles, pages, departments for form
+            var rolesResponse = await RBACService.GetAllRolesAsync();
             if (rolesResponse.Success && rolesResponse.Data != null)
             {
-                _roles = rolesResponse.Data.ToList();
+                _roles = rolesResponse.Data;
             }
 
+            var pagesResponse = await RBACService.GetAllPagesAsync();
             if (pagesResponse.Success && pagesResponse.Data != null)
             {
-                _pages = pagesResponse.Data.Where(p => p.IsActive).ToList();
+                _pages = pagesResponse.Data;
             }
 
-            if (permissionsResponse.Success && permissionsResponse.Data != null)
+            var deptsResponse = await RBACService.GetAllDepartmentsAsync();
+            if (deptsResponse.Success && deptsResponse.Data != null)
             {
-                _permissions = permissionsResponse.Data.Where(p => p.IsActive).ToList();
+                _departments = deptsResponse.Data;
             }
-
-            if (departmentsResponse.Success && departmentsResponse.Data != null)
-            {
-                _departments = departmentsResponse.Data.Where(p => p.IsActive).ToList();
-            }
-
-            if (mappingsResponse.Success && mappingsResponse.Data != null)
-            {
-                _mappings = mappingsResponse.Data;
-
-                // Create display mappings with names
-                _displayMappings = _mappings.Select(m => new DisplayRolePagePermissionMapping
-                {
-                    Id = m.Id,
-                    RoleId = m.RoleId,
-                    RoleName = _roles.FirstOrDefault(r => r.Id == m.RoleId)?.Name ?? "Unknown",
-                    PageId = m.PageId,
-                    PageName = _pages.FirstOrDefault(p => p.Id == m.PageId)?.Name ?? "Unknown",
-                    PermissionId = m.PermissionId,
-                    PermissionName = _permissions.FirstOrDefault(p => p.Id == m.PermissionId)?.Name ?? "Unknown",
-                    DepartmentId = m.DepartmentId,
-                    DepartmentName = m.DepartmentId.HasValue 
-                        ? _departments.FirstOrDefault(d => d.Id == m.DepartmentId)?.Name 
-                        : null,
-                    IsActive = m.IsActive,
-                    CreatedAt = m.CreatedAt
-                }).ToList();
-            }
-
-            UpdateFilteredMappings();
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error loading data");
-            _hasError = true;
-            _errorMessage = $"Error loading data: {ex.Message}";
+            await JS.InvokeVoidAsync("showToast", "error", "Error loading data", Severity.Error);
         }
         finally
         {
@@ -1022,11 +803,9 @@
             ("role", "desc") => _filteredMappings.OrderByDescending(m => m.RoleName).ToList(),
             ("page", "asc") => _filteredMappings.OrderBy(m => m.PageName).ToList(),
             ("page", "desc") => _filteredMappings.OrderByDescending(m => m.PageName).ToList(),
-            ("permission", "asc") => _filteredMappings.OrderBy(m => m.PermissionName).ToList(),
-            ("permission", "desc") => _filteredMappings.OrderByDescending(m => m.PermissionName).ToList(),
             ("department", "asc") => _filteredMappings.OrderBy(m => m.DepartmentName ?? "").ToList(),
             ("department", "desc") => _filteredMappings.OrderByDescending(m => m.DepartmentName ?? "").ToList(),
-            _ => _filteredMappings // Preserve original order from API (descending by date)
+            _ => _filteredMappings
         };
 
         _totalItems = _filteredMappings.Count;
@@ -1055,7 +834,6 @@
         StateHasChanged();
     }
 
-    // Issue #3: Clear search method for X icon
     private void ClearSearch()
     {
         _searchString = string.Empty;
@@ -1079,7 +857,7 @@
         StateHasChanged();
     }
 
-    private bool FilterFunc(DisplayRolePagePermissionMapping mapping)
+    private bool FilterFunc(DisplayRolePagePermissionGroup mapping)
     {
         if (string.IsNullOrWhiteSpace(_searchString))
             return true;
@@ -1087,11 +865,11 @@
         var searchLower = _searchString.ToLower();
         return mapping.RoleName.ToLower().Contains(searchLower) ||
                mapping.PageName.ToLower().Contains(searchLower) ||
-               mapping.PermissionName.ToLower().Contains(searchLower) ||
-               (mapping.DepartmentName != null && mapping.DepartmentName.ToLower().Contains(searchLower));
+               (mapping.DepartmentName != null && mapping.DepartmentName.ToLower().Contains(searchLower)) ||
+               (mapping.PageUrl != null && mapping.PageUrl.ToLower().Contains(searchLower));
     }
 
-    private int GetGlobalSerialNumber(DisplayRolePagePermissionMapping mapping)
+    private int GetGlobalSerialNumber(DisplayRolePagePermissionGroup mapping)
     {
         var index = _filteredMappings.IndexOf(mapping);
         return index + 1;
@@ -1131,26 +909,17 @@
     {
         _selectedMapping = null;
         _isEditMode = false;
-        _mappingModel = new RolePagePermissionMappingFormModel();
         _isDialogOpen = true;
     }
 
-    private void OpenEditDialog(DisplayRolePagePermissionMapping mapping)
+    private void OpenEditDialog(DisplayRolePagePermissionGroup mapping)
     {
         _selectedMapping = mapping;
         _isEditMode = true;
-        _mappingModel = new RolePagePermissionMappingFormModel
-        {
-            RoleId = mapping.RoleId.ToString(),
-            PageId = mapping.PageId.ToString(),
-            PermissionId = mapping.PermissionId.ToString(),
-            DepartmentId = mapping.DepartmentId?.ToString() ?? string.Empty,
-            IsActive = mapping.IsActive
-        };
         _isDialogOpen = true;
     }
 
-    private void OpenViewDialog(DisplayRolePagePermissionMapping mapping)
+    private void OpenViewDialog(DisplayRolePagePermissionGroup mapping)
     {
         _selectedMapping = mapping;
         _isOffcanvasOpen = true;
@@ -1160,7 +929,6 @@
     {
         _isDialogOpen = false;
         _selectedMapping = null;
-        _mappingModel = new RolePagePermissionMappingFormModel();
         _isEditMode = false;
     }
 
@@ -1170,86 +938,44 @@
         _selectedMapping = null;
     }
 
-    private async Task HandleSubmit(RolePagePermissionMappingFormModel model)
+    private async Task HandleSubmit(RolePagePermissionFormModel model)
     {
         _isSaving = true;
         try
         {
             var roleId = Guid.Parse(model.RoleId);
             var pageId = Guid.Parse(model.PageId);
-            var permissionId = Guid.Parse(model.PermissionId);
             Guid? departmentId = string.IsNullOrEmpty(model.DepartmentId) ? null : Guid.Parse(model.DepartmentId);
 
-            //  DUPLICATE CHECK
-            var isDuplicate = _mappings.Any(m => 
-                m.RoleId == roleId && 
-                m.PageId == pageId && 
-                m.PermissionId == permissionId && 
-                m.DepartmentId == departmentId && 
-                (!_isEditMode || m.Id != _selectedMapping?.Id));
-
-            if (isDuplicate)
+            // Create or update mapping using batch endpoint
+            // The batch endpoint handles duplicates atomically - it updates existing Dept+Role+Page combinations
+            var request = new CreateOrUpdatePermissionBatchRequest
             {
-                var roleName = _roles.FirstOrDefault(r => r.Id == roleId)?.Name ?? "Unknown Role";
-                var pageName = _pages.FirstOrDefault(p => p.Id == pageId)?.Name ?? "Unknown Page";
-                var permName = _permissions.FirstOrDefault(p => p.Id == permissionId)?.Name ?? "Unknown Permission";
-                var deptName = departmentId.HasValue ? _departments.FirstOrDefault(d => d.Id == departmentId.Value)?.Name ?? "Unknown Department" : "No Department";
-                await JS.InvokeVoidAsync("showToast", "error", $"Duplicate mapping: {roleName} - {pageName} - {permName} - {deptName} already exists", Severity.Warning);
-                _isSaving = false;
-                return;
-            }
+                DepartmentId = departmentId,
+                RoleId = roleId,
+                PageId = pageId,
+                PermissionIds = model.SelectedPermissionIds
+            };
 
-            if (_isEditMode && _selectedMapping != null)
+            var response = await RBACService.CreateOrUpdatePermissionBatchAsync(request);
+            if (response.Success)
             {
-                var updateRequest = new UpdateRolePagePermissionMappingDto
-                {
-                    Id = _selectedMapping.Id,
-                    RoleId = roleId,
-                    PageId = pageId,
-                    PermissionId = permissionId,
-                    DepartmentId = departmentId,
-                    IsActive = model.IsActive
-                };
-
-                var response = await RBACService.UpdateRolePagePermissionMappingAsync(updateRequest);
-                if (response.Success)
-                {
-                    await JS.InvokeVoidAsync("showToast", "success", "Role page permission mapping updated successfully", Severity.Success);
-                    await LoadData();
-                    CloseDialog();
-                }
-                else
-                {
-                    await JS.InvokeVoidAsync("showToast", "error", response.Message ?? "Failed to update role page permission mapping", Severity.Error);
-                }
+                await JS.InvokeVoidAsync("showToast", "success", 
+                    _isEditMode ? "Permissions updated successfully" : "Permissions created successfully", 
+                    Severity.Success);
+                await LoadData();
+                CloseDialog();
             }
             else
             {
-                var createRequest = new CreateRolePagePermissionMappingDto
-                {
-                    RoleId = roleId,
-                    PageId = pageId,
-                    PermissionId = permissionId,
-                    DepartmentId = departmentId,
-                    IsActive = model.IsActive
-                };
-
-                var response = await RBACService.CreateRolePagePermissionMappingAsync(createRequest);
-                if (response.Success)
-                {
-                    await JS.InvokeVoidAsync("showToast", "success", "Role page permission mapping created successfully", Severity.Success);
-                    await LoadData();
-                    CloseDialog();
-                }
-                else
-                {
-                    await JS.InvokeVoidAsync("showToast", "error", response.Message ?? "Failed to create role page permission mapping", Severity.Error);
-                }
+                await JS.InvokeVoidAsync("showToast", "error", 
+                    response.Message ?? "Failed to save permissions", 
+                    Severity.Error);
             }
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Error saving role page permission mapping");
+            Logger.LogError(ex, "Error saving role page permissions");
             await JS.InvokeVoidAsync("showToast", "error", $"Error: {ex.Message}", Severity.Error);
         }
         finally
@@ -1258,32 +984,65 @@
         }
     }
 
-    private async Task DeleteMapping(DisplayRolePagePermissionMapping mapping)
+    private async Task DeleteMapping(DisplayRolePagePermissionGroup mapping)
     {
         try
         {
             var confirmed = await JSRuntime.InvokeAsync<bool>("showDeleteConfirmation",
-                "Delete Role Page Permission Mapping",
-                $"Are you sure you want to delete the mapping for role '{mapping.RoleName}' on page '{mapping.PageName}' with permission '{mapping.PermissionName}'? This action cannot be undone.");
+                "Delete Role Page Permissions",
+                $"Are you sure you want to delete all permissions for role '{mapping.RoleName}' on page '{mapping.PageName}'? This action cannot be undone.");
 
             if (confirmed)
             {
-                var response = await RBACService.DeleteRolePagePermissionMappingAsync(mapping.Id);
-                if (response.Success)
+                // Delete all permissions in the group
+                foreach (var perm in mapping.Permissions)
                 {
-                    await JS.InvokeVoidAsync("showToast", "success", "Role page permission mapping deleted successfully", Severity.Success);
-                    await LoadData();
+                    var response = await RBACService.DeleteRolePagePermissionMappingAsync(perm.Id);
+                    if (!response.Success)
+                    {
+                        if (response.Message != null && response.Message.Contains("Cannot delete View"))
+                        {
+                            await JS.InvokeVoidAsync("showToast", "error", response.Message, Severity.Error);
+                            await LoadData();
+                            return;
+                        }
+                    }
                 }
-                else
-                {
-                    await JS.InvokeVoidAsync("showToast", "error", response.Message ?? "Failed to delete role page permission mapping", Severity.Error);
-                }
+
+                await JS.InvokeVoidAsync("showToast", "success", "Permissions deleted successfully", Severity.Success);
+                await LoadData();
             }
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Error deleting role page permission mapping");
-            await JS.InvokeVoidAsync("showToast", "error", $"Error deleting role page permission mapping: {ex.Message}", Severity.Error);
+            Logger.LogError(ex, "Error deleting role page permissions");
+            await JS.InvokeVoidAsync("showToast", "error", $"Error deleting permissions: {ex.Message}", Severity.Error);
         }
+    }
+
+    private string GetBadgeClass(string permissionName)
+    {
+        return permissionName.ToLower() switch
+        {
+            "view" => "badge-view",
+            "create" => "badge-create",
+            "update" => "badge-update",
+            "delete" => "badge-delete",
+            _ => "badge-default"
+        };
+    }
+
+    private string GetPermissionCode(string permissionName)
+    {
+        if (string.IsNullOrEmpty(permissionName)) return "?";
+
+        return permissionName.ToLower() switch
+        {
+            "view" => "V",
+            "create" => "C",
+            "update" => "U",
+            "delete" => "D",
+            _ => permissionName[0].ToString().ToUpper()
+        };
     }
 }

@@ -1,0 +1,2105 @@
+@using AuthManagement.Models
+@using AuthManagement.Services
+@inject CompanyService CompanyService
+@inject IJSRuntime JS
+@inject ILogger<CompanyWizard> Logger
+
+<style>
+    /* Modal Mode */
+    .wizard-modal .modal-dialog {
+        max-width: 900px;
+    }
+
+    /* Page Mode */
+    .wizard-page-container {
+        display: block;
+    }
+
+    .wizard-page-container .wizard-container {
+        border: none;
+        box-shadow: none;
+    }
+
+    .wizard-container {
+        padding: 0;
+    }
+
+    .wizard-header {
+        background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+        color: white;
+        padding: 20px 24px;
+        border-radius: 8px 8px 0 0;
+    }
+
+    .wizard-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .wizard-subtitle {
+        font-size: 0.875rem;
+        opacity: 0.9;
+        margin-top: 4px;
+    }
+
+    /* Step Indicator */
+    .step-indicator {
+        display: flex;
+        justify-content: space-between;
+        padding: 20px 24px;
+        background: #f8f9fa;
+        border-bottom: 1px solid #e0e0e0;
+        overflow-x: auto;
+    }
+
+    .step-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex: 1;
+        position: relative;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .step-item:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        top: 18px;
+        left: 50%;
+        width: 100%;
+        height: 2px;
+        background: #e0e0e0;
+        z-index: 0;
+    }
+
+    .step-item.completed:not(:last-child)::after {
+        background: #7c3aed;
+    }
+
+    .step-number {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: #e0e0e0;
+        color: #666;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 14px;
+        position: relative;
+        z-index: 1;
+        transition: all 0.3s;
+    }
+
+    .step-item.active .step-number {
+        background: #7c3aed;
+        color: white;
+        box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
+    }
+
+    .step-item.completed .step-number {
+        background: #7c3aed;
+        color: white;
+    }
+
+    .step-item.error .step-number {
+        background: #dc3545;
+        color: white;
+    }
+
+    .step-label {
+        margin-top: 8px;
+        font-size: 12px;
+        color: #666;
+        text-align: center;
+        max-width: 100px;
+    }
+
+    .step-item.active .step-label {
+        color: #7c3aed;
+        font-weight: 600;
+    }
+
+    .step-item.error .step-label {
+        color: #dc3545;
+    }
+
+    /* Step Content */
+    .step-content {
+        padding: 24px;
+        min-height: 400px;
+    }
+
+    .form-section {
+        margin-bottom: 24px;
+    }
+
+    .form-section-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: #7c3aed;
+        margin-bottom: 16px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .form-group {
+        margin-bottom: 16px;
+    }
+
+    .form-label {
+        font-size: 13px;
+        font-weight: 500;
+        color: #333;
+        margin-bottom: 6px;
+        display: block;
+    }
+
+    .form-label.required::after {
+        content: ' *';
+        color: #dc3545;
+    }
+
+    .form-control, .form-select {
+        font-size: 14px;
+        padding: 8px 12px;
+        border: 1px solid #d9d9e3;
+        border-radius: 6px;
+        transition: all 0.2s;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #7c3aed;
+        box-shadow: 0 0 0 0.2rem rgba(124, 58, 237, 0.1);
+        outline: none;
+    }
+
+    .form-control.is-invalid, .form-select.is-invalid {
+        border-color: #dc3545;
+    }
+
+    .invalid-feedback {
+        font-size: 12px;
+        color: #dc3545;
+        margin-top: 4px;
+    }
+
+    .form-check {
+        padding-left: 1.75rem;
+    }
+
+    .form-check-input {
+        width: 1.1rem;
+        height: 1.1rem;
+        margin-top: 0.2rem;
+        margin-left: -1.75rem;
+    }
+
+    .form-check-label {
+        font-size: 14px;
+        color: #333;
+    }
+
+    /* Summary Section */
+    .summary-section {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 16px;
+    }
+
+    .summary-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 12px;
+    }
+
+    .summary-row {
+        display: flex;
+        padding: 6px 0;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .summary-row:last-child {
+        border-bottom: none;
+    }
+
+    .summary-label {
+        font-size: 13px;
+        color: #666;
+        width: 150px;
+        flex-shrink: 0;
+    }
+
+    .summary-value {
+        font-size: 13px;
+        color: #333;
+        font-weight: 500;
+    }
+
+    /* Wizard Footer */
+    .wizard-footer {
+        display: flex;
+        justify-content: space-between;
+        padding: 16px 24px;
+        background: #f8f9fa;
+        border-top: 1px solid #e0e0e0;
+        border-radius: 0 0 8px 8px;
+    }
+
+    .btn-wizard {
+        padding: 10px 24px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s;
+    }
+
+    .btn-wizard-prev {
+        background: white;
+        border: 1px solid #d9d9e3;
+        color: #666;
+    }
+
+    .btn-wizard-prev:hover {
+        background: #f5f5f5;
+        border-color: #7c3aed;
+        color: #7c3aed;
+    }
+
+    .btn-wizard-next {
+        background: #7c3aed;
+        border: none;
+        color: white;
+    }
+
+    .btn-wizard-next:hover {
+        background: #6d28d9;
+    }
+
+    .btn-wizard-next:disabled {
+        background: #a78bfa;
+        cursor: not-allowed;
+    }
+
+    .btn-wizard-submit {
+        background: #28a745;
+        border: none;
+        color: white;
+    }
+
+    .btn-wizard-submit:hover {
+        background: #218838;
+    }
+
+    .btn-wizard-submit:disabled {
+        background: #5cb85c;
+        cursor: not-allowed;
+    }
+
+    .spinner-border-sm {
+        width: 1rem;
+        height: 1rem;
+    }
+
+    @@media (max-width: 768px) {
+        .step-indicator {
+            padding: 16px;
+            gap: 8px;
+        }
+
+        .step-label {
+            display: none;
+        }
+
+        .step-content {
+            padding: 16px;
+        }
+    }
+
+    /* Logo Upload Styles */
+    .logo-upload-container {
+        border: 2px dashed #d9d9e3;
+        border-radius: 12px;
+        padding: 24px;
+        text-align: center;
+        transition: all 0.3s ease;
+        background: #fafafa;
+        min-height: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .logo-upload-container:hover {
+        border-color: #7c3aed;
+        background: #f8f5ff;
+    }
+
+    .logo-upload-container.dragging {
+        border-color: #7c3aed;
+        background: #ede9fe;
+        transform: scale(1.02);
+    }
+
+    .upload-placeholder {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .upload-icon {
+        font-size: 48px;
+        color: #7c3aed;
+        opacity: 0.7;
+    }
+
+    .upload-text {
+        font-size: 16px;
+        font-weight: 500;
+        color: #333;
+        margin: 0;
+    }
+
+    .upload-subtext {
+        font-size: 14px;
+        color: #999;
+        margin: 0;
+    }
+
+    .btn-browse {
+        display: inline-block;
+        padding: 8px 20px;
+        background: #7c3aed;
+        color: white;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+
+    .btn-browse:hover {
+        background: #6d28d9;
+    }
+
+    .upload-hint {
+        font-size: 12px;
+        color: #999;
+        margin: 8px 0 0 0;
+    }
+
+    .logo-preview-wrapper {
+        position: relative;
+        display: inline-block;
+    }
+
+    .logo-preview-image {
+        max-width: 200px;
+        max-height: 150px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        object-fit: contain;
+    }
+
+    .logo-preview-actions {
+        position: absolute;
+        top: -10px;
+        right: -10px;
+    }
+
+    .btn-remove-logo {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: #dc3545;
+        color: white;
+        border: 2px solid white;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        transition: all 0.2s;
+        box-shadow: 0 2px 8px rgba(220, 53, 69, 0.4);
+    }
+
+    .btn-remove-logo:hover {
+        background: #c82333;
+        transform: scale(1.1);
+    }
+</style>
+
+@if (IsOpen)
+{
+    <!-- Page Mode - Direct rendering without modal wrapper -->
+    <div class="wizard-page-container">
+        <div class="wizard-container">
+            @WizardContent
+        </div>
+    </div>
+}
+else
+{
+    <!-- Modal Mode -->
+    <div class="modal fade wizard-modal" id="companyWizardModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content wizard-container">
+                @WizardContent
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    RenderFragment WizardContent => @<text>
+            <!-- Header -->
+            <div class="wizard-header">
+                <h5 class="wizard-title">@(IsEditMode ? "Edit Company" : "Add New Company")</h5>
+                <p class="wizard-subtitle">@GetStepDescription()</p>
+            </div>
+
+            <!-- Step Indicator -->
+            <div class="step-indicator">
+                @for (int i = 0; i < _steps.Length; i++)
+                {
+                    var stepIndex = i;
+                    var isActive = _currentStep == stepIndex;
+                    var isCompleted = _currentStep > stepIndex;
+                    var hasError = _stepErrors.Contains(stepIndex);
+
+                    <div class="step-item @(isActive ? "active" : "") @(isCompleted ? "completed" : "") @(hasError ? "error" : "")"
+                         @onclick="@(() => GoToStep(stepIndex))">
+                        <div class="step-number">
+                            @if (isCompleted && !hasError)
+                            {
+                                <i class="ti tabler-check"></i>
+                            }
+                            else if (hasError)
+                            {
+                                <i class="ti tabler-alert-triangle"></i>
+                            }
+                            else
+                            {
+                                @(stepIndex + 1)
+                            }
+                        </div>
+                        <span class="step-label">@_steps[stepIndex]</span>
+                    </div>
+                }
+            </div>
+
+            <!-- Step Content -->
+            <div class="step-content">
+                @switch (_currentStep)
+                {
+                    case 0:
+                        @RenderStep1_Identity()
+                        break;
+                    case 1:
+                        @RenderStep2_Registration()
+                        break;
+                    case 2:
+                        @RenderStep3_Address()
+                        break;
+                    case 3:
+                        @RenderStep4_Contact()
+                        break;
+                    case 4:
+                        @RenderStep5_Financial()
+                        break;
+                    case 5:
+                        @RenderStep6_Review()
+                        break;
+                }
+            </div>
+
+            <!-- Footer -->
+            <div class="wizard-footer">
+                <div>
+                    @if (_currentStep > 0)
+                    {
+                        <button type="button" class="btn btn-wizard btn-wizard-prev" @onclick="PreviousStep" disabled="@_isSaving">
+                            <i class="ti tabler-arrow-left"></i>
+                            Previous
+                        </button>
+                    }
+                    else
+                    {
+                        @if (IsOpen)
+                        {
+                            <button type="button" class="btn btn-wizard btn-wizard-prev" @onclick="CancelForm" disabled="@_isSaving">
+                                <i class="ti tabler-x"></i>
+                                Cancel
+                            </button>
+                        }
+                        else
+                        {
+                            <button type="button" class="btn btn-wizard btn-wizard-prev" data-bs-dismiss="modal" disabled="@_isSaving">
+                                <i class="ti tabler-x"></i>
+                                Cancel
+                            </button>
+                        }
+                    }
+                </div>
+                <div>
+                    @if (_currentStep < _steps.Length - 1)
+                    {
+                        <button type="button" class="btn btn-wizard btn-wizard-next" @onclick="NextStep" disabled="@_isSaving">
+                            Next
+                            <i class="ti tabler-arrow-right"></i>
+                        </button>
+                    }
+                    else
+                    {
+                        <button type="button" class="btn btn-wizard btn-wizard-submit" @onclick="SubmitForm" disabled="@_isSaving">
+                            @if (_isSaving)
+                            {
+                                <span class="spinner-border spinner-border-sm" role="status"></span>
+                                <span>Saving...</span>
+                            }
+                            else
+                            {
+                                <i class="ti tabler-check"></i>
+                                <span>@(IsEditMode ? "Update Company" : "Create Company")</span>
+                            }
+                        </button>
+                    }
+                </div>
+            </div>
+    </text>;
+}
+
+@code {
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter] public bool IsEditMode { get; set; }
+    [Parameter] public CompanyDto? CompanyToEdit { get; set; }
+    [Parameter] public EventCallback OnSaved { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback OnSave { get; set; }
+
+    private readonly string[] _steps = ["Identity", "Registration", "Address", "Contact", "Financial", "Review"];
+    private int _currentStep;
+    private HashSet<int> _stepErrors = [];
+    private bool _isSaving;
+    private bool _dataLoaded = false;
+
+    // Form Model
+    private CreateCompanyRequest _model = new();
+    private Dictionary<string, string> _validationErrors = [];
+
+    // Logo Upload Fields
+    private string? _logoPreviewUrl;
+    private string? _logoError;
+    private bool _isDragging;
+    private IBrowserFile? _uploadedLogoFile;
+    private const long MaxLogoSize = 2 * 1024 * 1024; // 2MB
+    private readonly string[] _allowedLogoExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+
+    // Lookup Data
+    private List<CountryLookupDto> _countries = [];
+    private List<StateLookupDto> _regStates = [];
+    private List<StateLookupDto> _addrStates = [];
+    private List<CityLookupDto> _addrCities = [];
+    private List<CurrencyLookupDto> _currencies = [];
+    private List<TimeZoneLookupDto> _timeZones = [];
+    private List<TimeZoneLookupDto> _filteredTimeZones = [];
+    private List<CompanyLookupDto> _parentCompanies = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadLookupData();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        // Handle page mode (IsOpen=true) with edit data
+        if (IsOpen && IsEditMode && CompanyToEdit != null && !_dataLoaded)
+        {
+            MapDtoToModel(CompanyToEdit);
+            // Load dependent dropdowns
+            if (_model.RegistrationCountryId != Guid.Empty)
+                await LoadRegistrationStates(_model.RegistrationCountryId);
+            if (_model.AddressCountryId != Guid.Empty)
+            {
+                await LoadAddressStates(_model.AddressCountryId);
+                
+                // Load filtered timezones for edit mode
+                var timezonesResponse = await CompanyService.GetTimezonesByCountryAsync(_model.AddressCountryId);
+                if (timezonesResponse.Success && timezonesResponse.Data != null && timezonesResponse.Data.Any())
+                {
+                    _filteredTimeZones = timezonesResponse.Data;
+                }
+                else
+                {
+                    _filteredTimeZones = _timeZones;
+                }
+            }
+            if (_model.AddressStateId != Guid.Empty)
+                await LoadAddressCities(_model.AddressStateId);
+            
+            _dataLoaded = true;
+            StateHasChanged();
+        }
+        else if (IsOpen && !IsEditMode && !_dataLoaded)
+        {
+            // Initialize new company model
+            _model = new CreateCompanyRequest
+            {
+                Status = CompanyStatus.Draft,
+                FiscalYearStartMonth = 4, // Default to April for India
+                RoundingPrecision = 2,
+                RoundingMode = RoundingMode.HalfUp,
+                BooksStartDate = DateTime.UtcNow.Date,
+                LegalStructure = LegalStructure.PrivateLimited
+            };
+            _dataLoaded = true;
+        }
+    }
+
+    public async Task ShowAsync()
+    {
+        _currentStep = 0;
+        _stepErrors.Clear();
+        _validationErrors.Clear();
+
+        if (IsEditMode && CompanyToEdit != null)
+        {
+            MapDtoToModel(CompanyToEdit);
+            // Load dependent dropdowns
+            if (_model.RegistrationCountryId != Guid.Empty)
+                await LoadRegistrationStates(_model.RegistrationCountryId);
+            if (_model.AddressCountryId != Guid.Empty)
+                await LoadAddressStates(_model.AddressCountryId);
+            if (_model.AddressStateId != Guid.Empty)
+                await LoadAddressCities(_model.AddressStateId);
+        }
+        else
+        {
+            _model = new CreateCompanyRequest
+            {
+                Status = CompanyStatus.Draft,
+                FiscalYearStartMonth = 4, // Default to April for India
+                RoundingPrecision = 2,
+                RoundingMode = RoundingMode.HalfUp
+            };
+        }
+
+        await JS.InvokeVoidAsync("eval", "new bootstrap.Modal(document.getElementById('companyWizardModal')).show()");
+        StateHasChanged();
+    }
+
+    private async Task LoadLookupData()
+    {
+        try
+        {
+            var countriesTask = CompanyService.GetCountriesAsync();
+            var currenciesTask = CompanyService.GetCurrenciesAsync();
+            var timeZonesTask = CompanyService.GetTimeZonesAsync();
+            var companiesTask = CompanyService.GetCompaniesLookupAsync();
+
+            await Task.WhenAll(countriesTask, currenciesTask, timeZonesTask, companiesTask);
+
+            if (countriesTask.Result.Success) _countries = countriesTask.Result.Data ?? [];
+            if (currenciesTask.Result.Success) _currencies = currenciesTask.Result.Data ?? [];
+            if (timeZonesTask.Result.Success) _timeZones = timeZonesTask.Result.Data ?? [];
+            if (companiesTask.Result.Success) _parentCompanies = companiesTask.Result.Data ?? [];
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error loading lookup data");
+        }
+    }
+
+    private async Task LoadRegistrationStates(Guid countryId)
+    {
+        try
+        {
+            var response = await CompanyService.GetStatesByCountryAsync(countryId);
+            if (response.Success)
+            {
+                _regStates = response.Data ?? [];
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error loading registration states");
+        }
+    }
+
+    private async Task LoadAddressStates(Guid countryId)
+    {
+        try
+        {
+            var response = await CompanyService.GetStatesByCountryAsync(countryId);
+            if (response.Success)
+            {
+                _addrStates = response.Data ?? [];
+                _addrCities = [];
+                _model.AddressStateId = Guid.Empty;
+                _model.AddressCityId = Guid.Empty;
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error loading address states");
+        }
+    }
+
+    private async Task LoadAddressCities(Guid stateId)
+    {
+        try
+        {
+            var response = await CompanyService.GetCitiesByStateAsync(stateId);
+            if (response.Success)
+            {
+                _addrCities = response.Data ?? [];
+                _model.AddressCityId = Guid.Empty;
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error loading cities");
+        }
+    }
+
+    private void MapDtoToModel(CompanyDto dto)
+    {
+        _model = new CreateCompanyRequest
+        {
+            CompanyCode = dto.CompanyCode,
+            LegalName = dto.LegalName,
+            TradeName = dto.TradeName,
+            ShortName = dto.ShortName,
+            LegalStructure = dto.LegalStructure,
+            IncorporationDate = dto.IncorporationDate,
+            ParentCompanyId = dto.ParentCompanyId,
+            RegistrationNumber = dto.RegistrationNumber,
+            PANNumber = dto.PANNumber,
+            GSTIN = dto.GSTIN,
+            TAN = dto.TAN,
+            OtherTaxIdentifier = dto.OtherTaxIdentifier,
+            RegistrationCountryId = dto.RegistrationCountryId,
+            RegistrationStateId = dto.RegistrationStateId,
+            AddressLine1 = dto.AddressLine1,
+            AddressLine2 = dto.AddressLine2,
+            AddressCountryId = dto.AddressCountryId,
+            AddressStateId = dto.AddressStateId,
+            AddressCityId = dto.AddressCityId,
+            PostalCode = dto.PostalCode,
+            TimeZoneId = dto.TimeZoneId,
+            PrimaryContactName = dto.PrimaryContactName,
+            PrimaryEmail = dto.PrimaryEmail,
+            PrimaryPhone = dto.PrimaryPhone,
+            WebsiteUrl = dto.WebsiteUrl,
+            LogoFileUrl = dto.LogoFileUrl,
+            BaseCurrencyId = dto.BaseCurrencyId,
+            ReportingCurrencyId = dto.ReportingCurrencyId,
+            FiscalYearStartMonth = dto.FiscalYearStartMonth,
+            BooksStartDate = dto.BooksStartDate ?? DateTime.UtcNow.Date,
+            EnableMultiCurrency = dto.EnableMultiCurrency,
+            RoundingPrecision = dto.RoundingPrecision,
+            RoundingMode = dto.RoundingMode,
+            AllowPostingFromDate = dto.AllowPostingFromDate,
+            AllowPostingToDate = dto.AllowPostingToDate,
+            LockBackDatedPosting = dto.LockBackDatedPosting,
+            Notes = dto.Notes,
+            Status = dto.Status
+        };
+        
+        // Set logo preview if logo URL exists
+        if (!string.IsNullOrEmpty(dto.LogoFileUrl))
+        {
+            _logoPreviewUrl = dto.LogoFileUrl;
+        }
+    }
+
+    private void GoToStep(int step)
+    {
+        if (step >= 0 && step < _steps.Length)
+        {
+            _currentStep = step;
+            StateHasChanged();
+        }
+    }
+
+    private void NextStep()
+    {
+        if (ValidateCurrentStep())
+        {
+            _stepErrors.Remove(_currentStep);
+            if (_currentStep < _steps.Length - 1)
+            {
+                _currentStep++;
+                StateHasChanged();
+            }
+        }
+    }
+
+    private void PreviousStep()
+    {
+        if (_currentStep > 0)
+        {
+            _currentStep--;
+            StateHasChanged();
+        }
+    }
+
+    private bool ValidateCurrentStep()
+    {
+        _validationErrors.Clear();
+
+        switch (_currentStep)
+        {
+            case 0: // Identity
+                if (string.IsNullOrWhiteSpace(_model.CompanyCode))
+                    _validationErrors["CompanyCode"] = "Company Code is required";
+                else if (_model.CompanyCode.Length > 10)
+                    _validationErrors["CompanyCode"] = "Company Code must be 10 characters or less";
+
+                if (string.IsNullOrWhiteSpace(_model.LegalName))
+                    _validationErrors["LegalName"] = "Legal Name is required";
+                else if (_model.LegalName.Length > 200)
+                    _validationErrors["LegalName"] = "Legal Name must be 200 characters or less";
+
+                if (_model.IncorporationDate.HasValue && _model.IncorporationDate.Value > DateTime.Today)
+                    _validationErrors["IncorporationDate"] = "Incorporation Date cannot be in the future";
+                break;
+
+            case 1: // Registration
+                // Registration Country is REQUIRED
+                if (_model.RegistrationCountryId == Guid.Empty)
+                    _validationErrors["RegistrationCountryId"] = "Registration Country is required";
+
+                // PAN Number validation with regex
+                if (!string.IsNullOrWhiteSpace(_model.PANNumber))
+                {
+                    if (_model.PANNumber.Length != 10)
+                        _validationErrors["PANNumber"] = "PAN must be exactly 10 characters";
+                    else if (!System.Text.RegularExpressions.Regex.IsMatch(_model.PANNumber, @"^[A-Z]{5}[0-9]{4}[A-Z]$", System.Text.RegularExpressions.RegexOptions.IgnoreCase))
+                        _validationErrors["PANNumber"] = "Invalid PAN format. Expected format: ABCDE1234F";
+                }
+
+                // GSTIN validation with regex
+                if (!string.IsNullOrWhiteSpace(_model.GSTIN))
+                {
+                    if (_model.GSTIN.Length != 15)
+                        _validationErrors["GSTIN"] = "GSTIN must be exactly 15 characters";
+                    else if (!System.Text.RegularExpressions.Regex.IsMatch(_model.GSTIN, @"^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$", System.Text.RegularExpressions.RegexOptions.IgnoreCase))
+                        _validationErrors["GSTIN"] = "Invalid GSTIN format. Expected format: 22AAAAA0000A1Z5";
+                }
+
+                // TAN validation with regex
+                if (!string.IsNullOrWhiteSpace(_model.TAN))
+                {
+                    if (_model.TAN.Length != 10)
+                        _validationErrors["TAN"] = "TAN must be exactly 10 characters";
+                    else if (!System.Text.RegularExpressions.Regex.IsMatch(_model.TAN, @"^[A-Z]{4}[0-9]{5}[A-Z]$", System.Text.RegularExpressions.RegexOptions.IgnoreCase))
+                        _validationErrors["TAN"] = "Invalid TAN format. Expected format: DELA99999A";
+                }
+                break;
+
+            case 2: // Address - REQUIRED FIELDS
+                if (string.IsNullOrWhiteSpace(_model.AddressLine1))
+                    _validationErrors["AddressLine1"] = "Address Line 1 is required";
+
+                if (_model.AddressCountryId == Guid.Empty)
+                    _validationErrors["AddressCountryId"] = "Country is required";
+
+                if (_model.AddressStateId == Guid.Empty)
+                    _validationErrors["AddressStateId"] = "State/Province is required";
+
+                if (_model.AddressCityId == Guid.Empty)
+                    _validationErrors["AddressCityId"] = "City is required";
+
+                if (string.IsNullOrWhiteSpace(_model.PostalCode))
+                    _validationErrors["PostalCode"] = "Postal Code is required";
+
+                if (_model.TimeZoneId == Guid.Empty)
+                    _validationErrors["TimeZoneId"] = "Time Zone is required";
+                break;
+
+            case 3: // Contact
+                if (!string.IsNullOrWhiteSpace(_model.PrimaryEmail) && !IsValidEmail(_model.PrimaryEmail))
+                    _validationErrors["PrimaryEmail"] = "Invalid email format";
+
+                if (!string.IsNullOrWhiteSpace(_model.WebsiteUrl) && !IsValidUrl(_model.WebsiteUrl))
+                    _validationErrors["WebsiteUrl"] = "Invalid URL format";
+                break;
+
+            case 4: // Financial
+                // Base Currency is REQUIRED
+                if (_model.BaseCurrencyId == Guid.Empty)
+                    _validationErrors["BaseCurrencyId"] = "Base Currency is required";
+
+                if (_model.FiscalYearStartMonth < 1 || _model.FiscalYearStartMonth > 12)
+                    _validationErrors["FiscalYearStartMonth"] = "Month must be between 1 and 12";
+
+                if (_model.RoundingPrecision < 0 || _model.RoundingPrecision > 4)
+                    _validationErrors["RoundingPrecision"] = "Precision must be between 0 and 4";
+
+                if (_model.IncorporationDate.HasValue && _model.BooksStartDate < _model.IncorporationDate.Value)
+                    _validationErrors["BooksStartDate"] = "Books Start Date cannot be before Incorporation Date";
+                break;
+
+            case 5: // Review - Final validation of ALL REQUIRED fields
+                // Identity - Required
+                if (string.IsNullOrWhiteSpace(_model.CompanyCode))
+                    _validationErrors["CompanyCode"] = "Company Code is required";
+                if (string.IsNullOrWhiteSpace(_model.LegalName))
+                    _validationErrors["LegalName"] = "Legal Name is required";
+
+                // Registration - Required
+                if (_model.RegistrationCountryId == Guid.Empty)
+                    _validationErrors["RegistrationCountryId"] = "Registration Country is required";
+
+                // Address - ALL Required
+                if (string.IsNullOrWhiteSpace(_model.AddressLine1))
+                    _validationErrors["AddressLine1"] = "Address Line 1 is required";
+                if (_model.AddressCountryId == Guid.Empty)
+                    _validationErrors["AddressCountryId"] = "Country is required";
+                if (_model.AddressStateId == Guid.Empty)
+                    _validationErrors["AddressStateId"] = "State/Province is required";
+                if (_model.AddressCityId == Guid.Empty)
+                    _validationErrors["AddressCityId"] = "City is required";
+                if (string.IsNullOrWhiteSpace(_model.PostalCode))
+                    _validationErrors["PostalCode"] = "Postal Code is required";
+                if (_model.TimeZoneId == Guid.Empty)
+                    _validationErrors["TimeZoneId"] = "Time Zone is required";
+
+                // Financial - Required
+                if (_model.BaseCurrencyId == Guid.Empty)
+                    _validationErrors["BaseCurrencyId"] = "Base Currency is required";
+                break;
+        }
+
+        if (_validationErrors.Any())
+        {
+            _stepErrors.Add(_currentStep);
+            StateHasChanged();
+            return false;
+        }
+
+        return true;
+    }
+
+    private async Task SubmitForm()
+    {
+        // Validate all steps
+        _stepErrors.Clear();
+        for (int i = 0; i < _steps.Length; i++)
+        {
+            _currentStep = i;
+            if (!ValidateCurrentStep() && _validationErrors.Any())
+            {
+                _stepErrors.Add(i);
+            }
+        }
+
+        if (_stepErrors.Any())
+        {
+            _currentStep = _stepErrors.First();
+            
+            // Build detailed error message
+            var errorSteps = string.Join(", ", _stepErrors.Select(i => _steps[i]));
+            var missingFields = string.Join("\n• ", _validationErrors.Values);
+            
+            await JS.InvokeVoidAsync("Swal.fire", new
+            {
+                title = "Required Fields Missing",
+                html = $"<div style='text-align: left;'><p>Please complete the following required fields:</p><ul style='margin-top: 10px;'><li>{string.Join("</li><li>", _validationErrors.Values)}</li></ul><p style='margin-top: 15px;'>Steps with errors: <strong>{errorSteps}</strong></p></div>",
+                icon = "warning",
+                confirmButtonText = "OK",
+                width = "600px"
+            });
+            StateHasChanged();
+            return;
+        }
+
+        // Clean up optional Guid fields: Convert Guid.Empty to null before sending to API
+        CleanOptionalGuidFields();
+
+        _isSaving = true;
+        StateHasChanged();
+
+        try
+        {
+            ApiResponse<CompanyDto> response;
+
+            if (IsEditMode && CompanyToEdit != null)
+            {
+                var updateRequest = MapToUpdateRequest();
+                response = await CompanyService.UpdateCompanyAsync(CompanyToEdit.Id, updateRequest);
+            }
+            else
+            {
+                response = await CompanyService.CreateCompanyAsync(_model);
+            }
+
+            if (response.Success)
+            {
+                if (IsOpen)
+                {
+                    // Page mode - use callbacks
+                    await OnSave.InvokeAsync();
+                    await OnClose.InvokeAsync();
+                }
+                else
+                {
+                    // Modal mode - hide modal
+                    await JS.InvokeVoidAsync("eval", "bootstrap.Modal.getInstance(document.getElementById('companyWizardModal')).hide()");
+                }
+                
+                await JS.InvokeVoidAsync("Swal.fire", new
+                {
+                    title = "Success!",
+                    text = IsEditMode ? "Company updated successfully." : "Company created successfully.",
+                    icon = "success",
+                    timer = 2000,
+                    showConfirmButton = false
+                });
+                await OnSaved.InvokeAsync();
+            }
+            else
+            {
+                // Show detailed error message
+                var errorMessage = response.Message ?? "Failed to save company";
+                if (response.Errors != null && response.Errors.Any())
+                {
+                    errorMessage += "\n\n" + string.Join("\n", response.Errors);
+                }
+                
+                await JS.InvokeVoidAsync("Swal.fire", new
+                {
+                    title = "Error",
+                    text = errorMessage,
+                    icon = "error"
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error saving company");
+            await JS.InvokeVoidAsync("Swal.fire", new
+            {
+                title = "Error",
+                text = $"Error saving company: {ex.Message}",
+                icon = "error"
+            });
+        }
+        finally
+        {
+            _isSaving = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task CancelForm()
+    {
+        if (IsOpen)
+        {
+            // Page mode - use OnClose callback
+            await OnClose.InvokeAsync();
+        }
+        // Modal mode is handled by data-bs-dismiss attribute
+    }
+
+    private void CleanOptionalGuidFields()
+    {
+        // Convert Guid.Empty to null for optional fields to avoid foreign key violations
+        // These fields are optional in the API but Blazor binding converts empty dropdowns to Guid.Empty
+        
+        if (_model.RegistrationStateId == Guid.Empty)
+            _model.RegistrationStateId = null;
+        
+        if (_model.ParentCompanyId == Guid.Empty)
+            _model.ParentCompanyId = null;
+        
+        if (_model.ReportingCurrencyId == Guid.Empty)
+            _model.ReportingCurrencyId = null;
+    }
+
+    private UpdateCompanyRequest MapToUpdateRequest()
+    {
+        return new UpdateCompanyRequest
+        {
+            LegalName = _model.LegalName,
+            TradeName = _model.TradeName,
+            ShortName = _model.ShortName,
+            LegalStructure = _model.LegalStructure,
+            IncorporationDate = _model.IncorporationDate,
+            ParentCompanyId = _model.ParentCompanyId,
+            RegistrationNumber = _model.RegistrationNumber,
+            PANNumber = _model.PANNumber,
+            GSTIN = _model.GSTIN,
+            TAN = _model.TAN,
+            OtherTaxIdentifier = _model.OtherTaxIdentifier,
+            RegistrationCountryId = _model.RegistrationCountryId,
+            RegistrationStateId = _model.RegistrationStateId,
+            AddressLine1 = _model.AddressLine1,
+            AddressLine2 = _model.AddressLine2,
+            AddressCountryId = _model.AddressCountryId,
+            AddressStateId = _model.AddressStateId,
+            AddressCityId = _model.AddressCityId,
+            PostalCode = _model.PostalCode,
+            TimeZoneId = _model.TimeZoneId,
+            PrimaryContactName = _model.PrimaryContactName,
+            PrimaryEmail = _model.PrimaryEmail,
+            PrimaryPhone = _model.PrimaryPhone,
+            WebsiteUrl = _model.WebsiteUrl,
+            LogoFileUrl = _model.LogoFileUrl,
+            BaseCurrencyId = _model.BaseCurrencyId,
+            ReportingCurrencyId = _model.ReportingCurrencyId,
+            FiscalYearStartMonth = _model.FiscalYearStartMonth,
+            BooksStartDate = _model.BooksStartDate,
+            EnableMultiCurrency = _model.EnableMultiCurrency,
+            RoundingPrecision = _model.RoundingPrecision,
+            RoundingMode = _model.RoundingMode,
+            AllowPostingFromDate = _model.AllowPostingFromDate,
+            AllowPostingToDate = _model.AllowPostingToDate,
+            LockBackDatedPosting = _model.LockBackDatedPosting,
+            Notes = _model.Notes,
+            Status = _model.Status
+        };
+    }
+
+    private string GetStepDescription() => _currentStep switch
+    {
+        0 => "Enter basic company identification details",
+        1 => "Provide registration and compliance information",
+        2 => "Enter registered address details",
+        3 => "Add contact and branding information",
+        4 => "Configure financial settings",
+        5 => "Review and submit",
+        _ => ""
+    };
+
+    private bool IsValidEmail(string email) =>
+        System.Text.RegularExpressions.Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$");
+
+    private bool IsValidUrl(string url) =>
+        Uri.TryCreate(url, UriKind.Absolute, out var uri) && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
+
+    private string GetValidationClass(string field) =>
+        _validationErrors.ContainsKey(field) ? "is-invalid" : "";
+
+    private RenderFragment RenderStep1_Identity() => __builder =>
+    {
+        <div class="form-section">
+            <h6 class="form-section-title"><i class="ti tabler-id me-2"></i>Company Identity</h6>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label required">Company Code</label>
+                        <input type="text" class="form-control @GetValidationClass("CompanyCode")"
+                               @bind="_model.CompanyCode" @bind:event="oninput"
+                               placeholder="e.g., COMP001" maxlength="10"
+                               disabled="@IsEditMode" />
+                        @if (_validationErrors.ContainsKey("CompanyCode"))
+                        {
+                            <div class="invalid-feedback d-block">@_validationErrors["CompanyCode"]</div>
+                        }
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label required">Legal Name</label>
+                        <input type="text" class="form-control @GetValidationClass("LegalName")"
+                               @bind="_model.LegalName" @bind:event="oninput"
+                               placeholder="Enter legal name" maxlength="200" />
+                        @if (_validationErrors.ContainsKey("LegalName"))
+                        {
+                            <div class="invalid-feedback d-block">@_validationErrors["LegalName"]</div>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">Trade Name</label>
+                        <input type="text" class="form-control"
+                               @bind="_model.TradeName" @bind:event="oninput"
+                               placeholder="Enter trade name" maxlength="200" />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">Short Name</label>
+                        <input type="text" class="form-control"
+                               @bind="_model.ShortName" @bind:event="oninput"
+                               placeholder="Enter short name" maxlength="50" />
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">Legal Structure</label>
+                        <select class="form-select" @bind="_model.LegalStructure">
+                            <option value="">Select Legal Structure</option>
+                            @foreach (var structure in Enum.GetValues<LegalStructure>())
+                            {
+                                <option value="@structure">@GetLegalStructureName(structure)</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">Incorporation Date</label>
+                        <input type="date" class="form-control @GetValidationClass("IncorporationDate")"
+                               @bind="_model.IncorporationDate" max="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                        @if (_validationErrors.ContainsKey("IncorporationDate"))
+                        {
+                            <div class="invalid-feedback d-block">@_validationErrors["IncorporationDate"]</div>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">Parent Company</label>
+                        <select class="form-select" @bind="_model.ParentCompanyId">
+                            <option value="">Select Parent Company</option>
+                            @foreach (var parent in _parentCompanies.Where(p => !IsEditMode || p.Id != CompanyToEdit?.Id))
+                            {
+                                <option value="@parent.Id">@parent.LegalName (@parent.CompanyCode)</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">Status</label>
+                        <select class="form-select" @bind="_model.Status">
+                            @foreach (var status in Enum.GetValues<CompanyStatus>())
+                            {
+                                <option value="@status">@status</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    };
+
+    private RenderFragment RenderStep2_Registration() => __builder =>
+    {
+        <div class="form-section">
+            <h6 class="form-section-title"><i class="ti tabler-certificate me-2"></i>Registration & Compliance</h6>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">Registration Number</label>
+                        <input type="text" class="form-control"
+                               @bind="_model.RegistrationNumber" @bind:event="oninput"
+                               placeholder="e.g., CIN Number" maxlength="50" />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">PAN Number</label>
+                        <input type="text" class="form-control @GetValidationClass("PANNumber")"
+                               @bind="_model.PANNumber" @bind:event="oninput"
+                               placeholder="e.g., ABCDE1234F" maxlength="10"
+                               style="text-transform: uppercase;" />
+                        @if (_validationErrors.ContainsKey("PANNumber"))
+                        {
+                            <div class="invalid-feedback d-block">@_validationErrors["PANNumber"]</div>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">GSTIN</label>
+                        <input type="text" class="form-control @GetValidationClass("GSTIN")"
+                               @bind="_model.GSTIN" @bind:event="oninput"
+                               placeholder="e.g., 22AAAAA0000A1Z5" maxlength="15"
+                               style="text-transform: uppercase;" />
+                        @if (_validationErrors.ContainsKey("GSTIN"))
+                        {
+                            <div class="invalid-feedback d-block">@_validationErrors["GSTIN"]</div>
+                        }
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">TAN</label>
+                        <input type="text" class="form-control @GetValidationClass("TAN")"
+                               @bind="_model.TAN" @bind:event="oninput"
+                               placeholder="e.g., DELA99999A" maxlength="10"
+                               style="text-transform: uppercase;" />
+                        @if (_validationErrors.ContainsKey("TAN"))
+                        {
+                            <div class="invalid-feedback d-block">@_validationErrors["TAN"]</div>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">Other Tax Identifier</label>
+                        <input type="text" class="form-control"
+                               @bind="_model.OtherTaxIdentifier" @bind:event="oninput"
+                               placeholder="Any other tax ID" maxlength="50" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h6 class="form-section-title"><i class="ti tabler-map me-2"></i>Registration Location</h6>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label required">Registration Country</label>
+                        <select class="form-select @(_validationErrors.ContainsKey("RegistrationCountryId") ? "is-invalid" : "")" 
+                                @bind="_model.RegistrationCountryId"
+                                @bind:after="OnRegistrationCountryChanged">
+                            <option value="@Guid.Empty">Select Country</option>
+                            @foreach (var country in _countries)
+                            {
+                                <option value="@country.Id">@country.Name</option>
+                            }
+                        </select>
+                        @if (_validationErrors.ContainsKey("RegistrationCountryId"))
+                        {
+                            <div class="invalid-feedback d-block">@_validationErrors["RegistrationCountryId"]</div>
+                        }
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">Registration State</label>
+                        <select class="form-select" @bind="_model.RegistrationStateId"
+                                disabled="@(_model.RegistrationCountryId == Guid.Empty)">
+                            <option value="">Select State</option>
+                            @foreach (var state in _regStates)
+                            {
+                                <option value="@state.Id">@state.Name</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    };
+
+    private RenderFragment RenderStep3_Address() => __builder =>
+    {
+        <div class="form-section">
+            <h6 class="form-section-title"><i class="ti tabler-building me-2"></i>Registered Address</h6>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label required">Address Line 1</label>
+                        <textarea class="form-control @(_validationErrors.ContainsKey("AddressLine1") ? "is-invalid" : "")"
+                               @bind="_model.AddressLine1" @bind:event="oninput"
+                               placeholder="Street address" maxlength="250" rows="2"></textarea>
+                        @if (_validationErrors.ContainsKey("AddressLine1"))
+                        {
+                            <div class="invalid-feedback d-block">@_validationErrors["AddressLine1"]</div>
+                        }
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">Address Line 2</label>
+                        <textarea class="form-control"
+                               @bind="_model.AddressLine2" @bind:event="oninput"
+                               placeholder="Apartment, suite, etc." maxlength="250" rows="2"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label required">Country</label>
+                        <select class="form-select @(_validationErrors.ContainsKey("AddressCountryId") ? "is-invalid" : "")" 
+                                @bind="_model.AddressCountryId"
+                                @bind:after="OnAddressCountryChanged">
+                            <option value="@Guid.Empty">Select Country</option>
+                            @foreach (var country in _countries)
+                            {
+                                <option value="@country.Id">@country.Name</option>
+                            }
+                        </select>
+                        @if (_validationErrors.ContainsKey("AddressCountryId"))
+                        {
+                            <div class="invalid-feedback d-block">@_validationErrors["AddressCountryId"]</div>
+                        }
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label required">State/Province</label>
+                        <select class="form-select @(_validationErrors.ContainsKey("AddressStateId") ? "is-invalid" : "")" 
+                                @bind="_model.AddressStateId"
+                                @bind:after="OnAddressStateChanged"
+                                disabled="@(_model.AddressCountryId == Guid.Empty)">
+                            <option value="@Guid.Empty">Select State</option>
+                            @foreach (var state in _addrStates)
+                            {
+                                <option value="@state.Id">@state.Name</option>
+                            }
+                        </select>
+                        @if (_validationErrors.ContainsKey("AddressStateId"))
+                        {
+                            <div class="invalid-feedback d-block">@_validationErrors["AddressStateId"]</div>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label required">City</label>
+                        <select class="form-select @(_validationErrors.ContainsKey("AddressCityId") ? "is-invalid" : "")" 
+                                @bind="_model.AddressCityId"
+                                disabled="@(_model.AddressStateId == Guid.Empty)">
+                            <option value="@Guid.Empty">Select City</option>
+                            @foreach (var city in _addrCities)
+                            {
+                                <option value="@city.Id">@city.Name</option>
+                            }
+                        </select>
+                        @if (_validationErrors.ContainsKey("AddressCityId"))
+                        {
+                            <div class="invalid-feedback d-block">@_validationErrors["AddressCityId"]</div>
+                        }
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label required">Postal Code</label>
+                        <input type="text" 
+                               class="form-control @(_validationErrors.ContainsKey("PostalCode") ? "is-invalid" : "")"
+                               @bind="_model.PostalCode" @bind:event="oninput"
+                               placeholder="e.g., 560001" maxlength="20" />
+                        @if (_validationErrors.ContainsKey("PostalCode"))
+                        {
+                            <div class="invalid-feedback d-block">@_validationErrors["PostalCode"]</div>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label required">Time Zone</label>
+                        <select class="form-select @(_validationErrors.ContainsKey("TimeZoneId") ? "is-invalid" : "")" 
+                                @bind="_model.TimeZoneId">
+                            <option value="@Guid.Empty">Select Time Zone</option>
+                            @if (_filteredTimeZones.Any())
+                            {
+                                @foreach (var tz in _filteredTimeZones)
+                                {
+                                    <option value="@tz.Id">
+                                        @tz.DisplayName
+                                        @if (tz.IsDefault)
+                                        {
+                                            <text> (Recommended)</text>
+                                        }
+                                    </option>
+                                }
+                            }
+                            else
+                            {
+                                @foreach (var tz in _timeZones)
+                                {
+                                    <option value="@tz.Id">@tz.DisplayName</option>
+                                }
+                            }
+                        </select>
+                        @if (_validationErrors.ContainsKey("TimeZoneId"))
+                        {
+                            <div class="invalid-feedback d-block">@_validationErrors["TimeZoneId"]</div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    };
+
+    private RenderFragment RenderStep4_Contact() => __builder =>
+    {
+        <div class="form-section">
+            <h6 class="form-section-title"><i class="ti tabler-address-book me-2"></i>Contact Information</h6>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">Primary Contact Name</label>
+                        <input type="text" class="form-control"
+                               @bind="_model.PrimaryContactName" @bind:event="oninput"
+                               placeholder="Contact person name" maxlength="100" />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">Primary Email</label>
+                        <input type="email" class="form-control @GetValidationClass("PrimaryEmail")"
+                               @bind="_model.PrimaryEmail" @bind:event="oninput"
+                               placeholder="email@company.com" maxlength="100" />
+                        @if (_validationErrors.ContainsKey("PrimaryEmail"))
+                        {
+                            <div class="invalid-feedback d-block">@_validationErrors["PrimaryEmail"]</div>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">Primary Phone</label>
+                        <input type="tel" class="form-control"
+                               @bind="_model.PrimaryPhone" @bind:event="oninput"
+                               placeholder="+91 98765 43210" maxlength="20" />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">Website URL</label>
+                        <input type="url" class="form-control @GetValidationClass("WebsiteUrl")"
+                               @bind="_model.WebsiteUrl" @bind:event="oninput"
+                               placeholder="https://www.company.com" maxlength="250" />
+                        @if (_validationErrors.ContainsKey("WebsiteUrl"))
+                        {
+                            <div class="invalid-feedback d-block">@_validationErrors["WebsiteUrl"]</div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h6 class="form-section-title"><i class="ti tabler-photo me-2"></i>Branding</h6>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <label class="form-label">Company Logo</label>
+                        <div class="logo-upload-container @(_isDragging ? "dragging" : "")"
+                             @ondragenter="@HandleDragEnter"
+                             @ondragleave="@HandleDragLeave"
+                             @ondragover="@HandleDragOver"
+                             @ondrop="@HandleDrop">
+                            @if (!string.IsNullOrEmpty(_logoPreviewUrl))
+                            {
+                                <div class="logo-preview-wrapper">
+                                    <img src="@_logoPreviewUrl" alt="Logo Preview" class="logo-preview-image" />
+                                    <div class="logo-preview-actions">
+                                        <button type="button" class="btn-remove-logo" @onclick="RemoveLogo" title="Remove logo">
+                                            <i class="ti tabler-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="upload-placeholder">
+                                    <i class="ti tabler-cloud-upload upload-icon"></i>
+                                    <p class="upload-text">Drag & drop your logo here</p>
+                                    <p class="upload-subtext">or</p>
+                                    <label class="btn-browse">
+                                        Browse Files
+                                        <InputFile OnChange="@HandleFileSelected" accept=".jpg,.jpeg,.png,.gif,.webp" style="display: none;" />
+                                    </label>
+                                    <p class="upload-hint">Supports: JPG, PNG, GIF, WebP (Max 2MB)</p>
+                                </div>
+                            }
+                        </div>
+                        @if (!string.IsNullOrEmpty(_logoError))
+                        {
+                            <div class="text-danger mt-2">@_logoError</div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    };
+
+    private RenderFragment RenderStep5_Financial() => __builder =>
+    {
+        <div class="form-section">
+            <h6 class="form-section-title"><i class="ti tabler-currency-dollar me-2"></i>Currency Settings</h6>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label required">Base Currency</label>
+                        <select class="form-select @(_validationErrors.ContainsKey("BaseCurrencyId") ? "is-invalid" : "")" 
+                                @bind="_model.BaseCurrencyId">
+                            <option value="@Guid.Empty">Select Base Currency</option>
+                            @foreach (var currency in _currencies)
+                            {
+                                <option value="@currency.Id">@currency.Code - @currency.Name (@currency.Symbol)</option>
+                            }
+                        </select>
+                        @if (_validationErrors.ContainsKey("BaseCurrencyId"))
+                        {
+                            <div class="invalid-feedback d-block">@_validationErrors["BaseCurrencyId"]</div>
+                        }
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">Reporting Currency</label>
+                        <select class="form-select" @bind="_model.ReportingCurrencyId">
+                            <option value="">Select Reporting Currency</option>
+                            @foreach (var currency in _currencies)
+                            {
+                                <option value="@currency.Id">@currency.Code - @currency.Name (@currency.Symbol)</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-check mt-2">
+                        <input type="checkbox" class="form-check-input" id="enableMultiCurrency"
+                               @bind="_model.EnableMultiCurrency" />
+                        <label class="form-check-label" for="enableMultiCurrency">
+                            Enable Multi-Currency Transactions
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h6 class="form-section-title"><i class="ti tabler-calendar me-2"></i>Fiscal Settings</h6>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">Fiscal Year Start Month</label>
+                        <select class="form-select @GetValidationClass("FiscalYearStartMonth")" @bind="_model.FiscalYearStartMonth">
+                            @for (int m = 1; m <= 12; m++)
+                            {
+                                <option value="@m">@GetMonthName(m)</option>
+                            }
+                        </select>
+                        @if (_validationErrors.ContainsKey("FiscalYearStartMonth"))
+                        {
+                            <div class="invalid-feedback d-block">@_validationErrors["FiscalYearStartMonth"]</div>
+                        }
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">Books Start Date</label>
+                        <input type="date" class="form-control @GetValidationClass("BooksStartDate")"
+                               @bind="_model.BooksStartDate" />
+                        @if (_validationErrors.ContainsKey("BooksStartDate"))
+                        {
+                            <div class="invalid-feedback d-block">@_validationErrors["BooksStartDate"]</div>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">Rounding Precision</label>
+                        <select class="form-select @GetValidationClass("RoundingPrecision")" @bind="_model.RoundingPrecision">
+                            @for (int p = 0; p <= 4; p++)
+                            {
+                                <option value="@p">@p decimal places</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">Rounding Mode</label>
+                        <select class="form-select" @bind="_model.RoundingMode">
+                            @foreach (var mode in Enum.GetValues<RoundingMode>())
+                            {
+                                <option value="@mode">@GetRoundingModeName(mode)</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h6 class="form-section-title"><i class="ti tabler-lock me-2"></i>Posting Controls</h6>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">Allow Posting From</label>
+                        <input type="date" class="form-control"
+                               @bind="_model.AllowPostingFromDate" />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">Allow Posting To</label>
+                        <input type="date" class="form-control"
+                               @bind="_model.AllowPostingToDate" />
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-check mt-2">
+                        <input type="checkbox" class="form-check-input" id="lockBackDated"
+                               @bind="_model.LockBackDatedPosting" />
+                        <label class="form-check-label" for="lockBackDated">
+                            Lock Back-Dated Posting
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h6 class="form-section-title"><i class="ti tabler-notes me-2"></i>Additional Notes</h6>
+            <div class="row">
+                <div class="col-12">
+                    <div class="form-group">
+                        <textarea class="form-control" rows="3"
+                                  @bind="_model.Notes" @bind:event="oninput"
+                                  placeholder="Any additional notes or comments" maxlength="1000"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+    };
+
+    private RenderFragment RenderStep6_Review() => __builder =>
+    {
+        <div class="form-section">
+            <h6 class="form-section-title"><i class="ti tabler-checklist me-2"></i>Review Company Details</h6>
+
+            <div class="summary-section">
+                <div class="summary-title">Company Identity</div>
+                <div class="summary-row">
+                    <span class="summary-label">Company Code:</span>
+                    <span class="summary-value">@(_model.CompanyCode ?? "-")</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Legal Name:</span>
+                    <span class="summary-value">@(_model.LegalName ?? "-")</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Trade Name:</span>
+                    <span class="summary-value">@(_model.TradeName ?? "-")</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Legal Structure:</span>
+                    <span class="summary-value">@GetLegalStructureName(_model.LegalStructure)</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Status:</span>
+                    <span class="summary-value">@_model.Status</span>
+                </div>
+            </div>
+
+            <div class="summary-section">
+                <div class="summary-title">Registration & Compliance</div>
+                <div class="summary-row">
+                    <span class="summary-label">PAN:</span>
+                    <span class="summary-value">@(_model.PANNumber ?? "-")</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">GSTIN:</span>
+                    <span class="summary-value">@(_model.GSTIN ?? "-")</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">TAN:</span>
+                    <span class="summary-value">@(_model.TAN ?? "-")</span>
+                </div>
+            </div>
+
+            <div class="summary-section">
+                <div class="summary-title">Address</div>
+                <div class="summary-row">
+                    <span class="summary-label">Address:</span>
+                    <span class="summary-value">
+                        @(_model.AddressLine1 ?? "-")
+                        @if (!string.IsNullOrEmpty(_model.AddressLine2))
+                        {
+                            <text>, @_model.AddressLine2</text>
+                        }
+                    </span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Location:</span>
+                    <span class="summary-value">
+                        @GetLocationSummary()
+                    </span>
+                </div>
+            </div>
+
+            <div class="summary-section">
+                <div class="summary-title">Contact</div>
+                <div class="summary-row">
+                    <span class="summary-label">Contact Person:</span>
+                    <span class="summary-value">@(_model.PrimaryContactName ?? "-")</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Email:</span>
+                    <span class="summary-value">@(_model.PrimaryEmail ?? "-")</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Phone:</span>
+                    <span class="summary-value">@(_model.PrimaryPhone ?? "-")</span>
+                </div>
+            </div>
+
+            <div class="summary-section">
+                <div class="summary-title">Financial Settings</div>
+                <div class="summary-row">
+                    <span class="summary-label">Base Currency:</span>
+                    <span class="summary-value">@GetCurrencyName(_model.BaseCurrencyId)</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Fiscal Year Start:</span>
+                    <span class="summary-value">@GetMonthName(_model.FiscalYearStartMonth)</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Multi-Currency:</span>
+                    <span class="summary-value">@(_model.EnableMultiCurrency ? "Enabled" : "Disabled")</span>
+                </div>
+            </div>
+        </div>
+    };
+
+    private async Task OnRegistrationCountryChanged()
+    {
+        if (_model.RegistrationCountryId != Guid.Empty)
+        {
+            await LoadRegistrationStates(_model.RegistrationCountryId);
+            _model.RegistrationStateId = null; // Optional field - use null
+        }
+        else
+        {
+            _regStates = [];
+        }
+        StateHasChanged();
+    }
+
+    private async Task OnAddressCountryChanged()
+    {
+        // Clear dependent fields
+        _model.AddressStateId = Guid.Empty;
+        _model.AddressCityId = Guid.Empty;
+        _model.TimeZoneId = Guid.Empty;
+        _addrStates = [];
+        _addrCities = [];
+        _filteredTimeZones = [];
+        
+        if (_model.AddressCountryId != Guid.Empty)
+        {
+            // Load states for the selected country
+            await LoadAddressStates(_model.AddressCountryId);
+            
+            // Load and filter timezones for the selected country
+            var timezonesResponse = await CompanyService.GetTimezonesByCountryAsync(_model.AddressCountryId);
+            if (timezonesResponse.Success && timezonesResponse.Data != null && timezonesResponse.Data.Any())
+            {
+                _filteredTimeZones = timezonesResponse.Data;
+                
+                // Auto-select if only one timezone
+                if (_filteredTimeZones.Count == 1)
+                {
+                    _model.TimeZoneId = _filteredTimeZones[0].Id;
+                }
+                // Auto-select default if multiple timezones
+                else if (_filteredTimeZones.Count > 1)
+                {
+                    var defaultTz = _filteredTimeZones.FirstOrDefault(tz => tz.IsDefault);
+                    if (defaultTz != null)
+                    {
+                        _model.TimeZoneId = defaultTz.Id;
+                    }
+                }
+            }
+            else
+            {
+                // Fallback to all timezones if country-specific filtering not available
+                _filteredTimeZones = _timeZones;
+            }
+        }
+        
+        StateHasChanged();
+    }
+
+    private async Task OnAddressStateChanged()
+    {
+        if (_model.AddressStateId != Guid.Empty)
+        {
+            await LoadAddressCities(_model.AddressStateId);
+        }
+        else
+        {
+            _addrCities = [];
+        }
+        StateHasChanged();
+    }
+
+    // Logo Upload Methods
+    private void HandleDragEnter(DragEventArgs e)
+    {
+        _isDragging = true;
+    }
+
+    private void HandleDragLeave(DragEventArgs e)
+    {
+        _isDragging = false;
+    }
+
+    private void HandleDragOver(DragEventArgs e)
+    {
+        // Required to allow drop
+    }
+
+    private async Task HandleDrop(DragEventArgs e)
+    {
+        _isDragging = false;
+        // Note: Blazor doesn't support getting files from drop events directly
+        // Users need to use the file input
+        await Task.CompletedTask;
+    }
+
+    private async Task HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        _logoError = null;
+        var file = e.File;
+
+        if (file == null)
+        {
+            return;
+        }
+
+        // Validate file size
+        if (file.Size > MaxLogoSize)
+        {
+            _logoError = $"File size exceeds 2MB limit. Your file is {(file.Size / 1024.0 / 1024.0):F2}MB";
+            return;
+        }
+
+        // Validate file extension
+        var extension = Path.GetExtension(file.Name).ToLowerInvariant();
+        if (!_allowedLogoExtensions.Contains(extension))
+        {
+            _logoError = $"Invalid file type. Allowed types: JPG, PNG, GIF, WebP";
+            return;
+        }
+
+        try
+        {
+            // Read file and create preview
+            using var stream = file.OpenReadStream(MaxLogoSize);
+            using var memoryStream = new MemoryStream();
+            await stream.CopyToAsync(memoryStream);
+            var bytes = memoryStream.ToArray();
+            var base64 = Convert.ToBase64String(bytes);
+            var contentType = GetContentType(extension);
+            _logoPreviewUrl = $"data:{contentType};base64,{base64}";
+            _uploadedLogoFile = file;
+            
+            // Store the base64 data URL in the model for now
+            // In production, you'd upload to a server and get a URL back
+            _model.LogoFileUrl = _logoPreviewUrl;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error reading logo file");
+            _logoError = "Error reading file. Please try again.";
+        }
+    }
+
+    private void RemoveLogo()
+    {
+        _logoPreviewUrl = null;
+        _uploadedLogoFile = null;
+        _model.LogoFileUrl = null;
+        _logoError = null;
+    }
+
+    private string GetContentType(string extension) => extension.ToLowerInvariant() switch
+    {
+        ".jpg" or ".jpeg" => "image/jpeg",
+        ".png" => "image/png",
+        ".gif" => "image/gif",
+        ".webp" => "image/webp",
+        _ => "application/octet-stream"
+    };
+
+    private string GetLegalStructureName(LegalStructure structure) => structure switch
+    {
+        LegalStructure.PrivateLimited => "Private Limited",
+        LegalStructure.PublicLimited => "Public Limited",
+        LegalStructure.LLP => "Limited Liability Partnership",
+        LegalStructure.Partnership => "Partnership",
+        LegalStructure.Proprietorship => "Proprietorship",
+        LegalStructure.HUF => "Hindu Undivided Family",
+        LegalStructure.Trust => "Trust",
+        LegalStructure.Society => "Society",
+        LegalStructure.Other => "Other",
+        _ => structure.ToString()
+    };
+
+    private string GetRoundingModeName(RoundingMode mode) => mode switch
+    {
+        RoundingMode.HalfUp => "Half Up (Standard)",
+        RoundingMode.HalfDown => "Half Down",
+        RoundingMode.Ceiling => "Ceiling (Round Up)",
+        RoundingMode.Floor => "Floor (Round Down)",
+        RoundingMode.HalfEven => "Half Even (Banker's)",
+        _ => mode.ToString()
+    };
+
+    private string GetMonthName(int month) => new DateTime(2024, month, 1).ToString("MMMM");
+
+    private string GetLocationSummary()
+    {
+        var parts = new List<string>();
+
+        if (_model.AddressCityId != Guid.Empty)
+        {
+            var city = _addrCities.FirstOrDefault(c => c.Id == _model.AddressCityId);
+            if (city != null) parts.Add(city.Name);
+        }
+
+        if (_model.AddressStateId != Guid.Empty)
+        {
+            var state = _addrStates.FirstOrDefault(s => s.Id == _model.AddressStateId);
+            if (state != null) parts.Add(state.Name);
+        }
+
+        if (_model.AddressCountryId != Guid.Empty)
+        {
+            var country = _countries.FirstOrDefault(c => c.Id == _model.AddressCountryId);
+            if (country != null) parts.Add(country.Name);
+        }
+
+        if (!string.IsNullOrEmpty(_model.PostalCode))
+        {
+            parts.Add(_model.PostalCode);
+        }
+
+        return parts.Count > 0 ? string.Join(", ", parts) : "-";
+    }
+
+    private string GetCurrencyName(Guid? currencyId)
+    {
+        if (!currencyId.HasValue) return "-";
+        var currency = _currencies.FirstOrDefault(c => c.Id == currencyId);
+        return currency != null ? $"{currency.Code} - {currency.Name}" : "-";
+    }
+}

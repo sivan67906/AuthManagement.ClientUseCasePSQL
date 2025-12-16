@@ -1,0 +1,602 @@
+@using AuthManagement.Models
+@inject IJSRuntime JS
+
+<style>
+    .details-offcanvas {
+        width: 480px !important;
+    }
+
+    .offcanvas-header-custom {
+        background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+        color: white;
+        padding: 20px;
+    }
+
+    .offcanvas-title-custom {
+        font-size: 1.125rem;
+        font-weight: 600;
+    }
+
+    .offcanvas-subtitle {
+        font-size: 0.875rem;
+        opacity: 0.9;
+        margin-top: 4px;
+    }
+
+    .btn-close-white {
+        filter: brightness(0) invert(1);
+    }
+
+    .company-header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 20px;
+        background: #f8f9fa;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .company-avatar-lg {
+        width: 72px;
+        height: 72px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        font-weight: 700;
+        color: white;
+    }
+
+    .company-header-info h5 {
+        margin: 0;
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .company-header-info .code {
+        font-size: 14px;
+        color: #7c3aed;
+        font-weight: 500;
+        margin-top: 4px;
+    }
+
+    .detail-section {
+        padding: 16px 20px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .detail-section:last-child {
+        border-bottom: none;
+    }
+
+    .detail-section-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: #7c3aed;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .detail-section-title i {
+        font-size: 16px;
+    }
+
+    .detail-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+
+    .detail-item {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .detail-item.full-width {
+        grid-column: 1 / -1;
+    }
+
+    .detail-label {
+        font-size: 12px;
+        color: #888;
+        margin-bottom: 2px;
+    }
+
+    .detail-value {
+        font-size: 14px;
+        color: #333;
+        font-weight: 500;
+    }
+
+    .detail-value.empty {
+        color: #bbb;
+        font-style: italic;
+        font-weight: 400;
+    }
+
+    .status-badge-lg {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .status-draft-bg {
+        background-color: #fef3cd;
+        color: #856404;
+    }
+
+    .status-active-bg {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .status-inactive-bg {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+
+    .detail-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 8px;
+        background: #f0f0f0;
+        border-radius: 4px;
+        font-size: 12px;
+        color: #666;
+    }
+
+    .detail-badge i {
+        font-size: 12px;
+    }
+
+    .detail-badge.enabled {
+        background: #e8f5e9;
+        color: #2e7d32;
+    }
+
+    .detail-badge.disabled {
+        background: #ffebee;
+        color: #c62828;
+    }
+
+    @@media (max-width: 576px) {
+        .details-offcanvas {
+            width: 100% !important;
+        }
+
+        .detail-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<!-- Offcanvas -->
+<div class="offcanvas offcanvas-end details-offcanvas" tabindex="-1" id="companyDetailsOffcanvas">
+    <div class="offcanvas-header offcanvas-header-custom">
+        <div>
+            <h5 class="offcanvas-title-custom">Company Details</h5>
+            <p class="offcanvas-subtitle mb-0">View complete company information</p>
+        </div>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+    </div>
+
+    <div class="offcanvas-body p-0" style="overflow-y: auto;">
+        @if (Company != null)
+        {
+            <!-- Company Header -->
+            <div class="company-header">
+                <div class="company-avatar-lg" style="background: @GenerateAvatarColor(Company.CompanyCode);">
+                    @GetInitials(Company.LegalName)
+                </div>
+                <div class="company-header-info">
+                    <h5>@Company.LegalName</h5>
+                    <div class="code">@Company.CompanyCode</div>
+                    <div class="mt-2">
+                        <span class="status-badge-lg @GetStatusClass(Company.Status)">
+                            <i class="ti @GetStatusIcon(Company.Status)"></i>
+                            @Company.StatusName
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Identity Section -->
+            <div class="detail-section">
+                <h6 class="detail-section-title">
+                    <i class="ti tabler-id"></i>
+                    Company Identity
+                </h6>
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <span class="detail-label">Trade Name</span>
+                        <span class="detail-value @(string.IsNullOrEmpty(Company.TradeName) ? "empty" : "")">
+                            @(Company.TradeName ?? "Not specified")
+                        </span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Short Name</span>
+                        <span class="detail-value @(string.IsNullOrEmpty(Company.ShortName) ? "empty" : "")">
+                            @(Company.ShortName ?? "Not specified")
+                        </span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Legal Structure</span>
+                        <span class="detail-value @(string.IsNullOrEmpty(Company.LegalStructureName) ? "empty" : "")">
+                            @(Company.LegalStructureName ?? "Not specified")
+                        </span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Incorporation Date</span>
+                        <span class="detail-value @(Company.IncorporationDate == null ? "empty" : "")">
+                            @(Company.IncorporationDate?.ToString("dd MMM yyyy") ?? "Not specified")
+                        </span>
+                    </div>
+                    <div class="detail-item full-width">
+                        <span class="detail-label">Parent Company</span>
+                        <span class="detail-value @(string.IsNullOrEmpty(Company.ParentCompanyName) ? "empty" : "")">
+                            @(Company.ParentCompanyName ?? "None (Root Company)")
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Registration Section -->
+            <div class="detail-section">
+                <h6 class="detail-section-title">
+                    <i class="ti tabler-certificate"></i>
+                    Registration & Compliance
+                </h6>
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <span class="detail-label">Registration Number</span>
+                        <span class="detail-value @(string.IsNullOrEmpty(Company.RegistrationNumber) ? "empty" : "")">
+                            @(Company.RegistrationNumber ?? "Not specified")
+                        </span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">PAN Number</span>
+                        <span class="detail-value @(string.IsNullOrEmpty(Company.PANNumber) ? "empty" : "")">
+                            @(Company.PANNumber ?? "Not specified")
+                        </span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">GSTIN</span>
+                        <span class="detail-value @(string.IsNullOrEmpty(Company.GSTIN) ? "empty" : "")">
+                            @(Company.GSTIN ?? "Not specified")
+                        </span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">TAN</span>
+                        <span class="detail-value @(string.IsNullOrEmpty(Company.TAN) ? "empty" : "")">
+                            @(Company.TAN ?? "Not specified")
+                        </span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Registration Country</span>
+                        <span class="detail-value @(string.IsNullOrEmpty(Company.RegistrationCountryName) ? "empty" : "")">
+                            @(Company.RegistrationCountryName ?? "Not specified")
+                        </span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Registration State</span>
+                        <span class="detail-value @(string.IsNullOrEmpty(Company.RegistrationStateName) ? "empty" : "")">
+                            @(Company.RegistrationStateName ?? "Not specified")
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Address Section -->
+            <div class="detail-section">
+                <h6 class="detail-section-title">
+                    <i class="ti tabler-map-pin"></i>
+                    Registered Address
+                </h6>
+                <div class="detail-grid">
+                    <div class="detail-item full-width">
+                        <span class="detail-label">Address</span>
+                        <span class="detail-value @(string.IsNullOrEmpty(Company.AddressLine1) ? "empty" : "")">
+                            @if (!string.IsNullOrEmpty(Company.AddressLine1))
+                            {
+                                @Company.AddressLine1
+                                @if (!string.IsNullOrEmpty(Company.AddressLine2))
+                                {
+                                    <text>, @Company.AddressLine2</text>
+                                }
+                            }
+                            else
+                            {
+                                <text>Not specified</text>
+                            }
+                        </span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Country</span>
+                        <span class="detail-value @(string.IsNullOrEmpty(Company.AddressCountryName) ? "empty" : "")">
+                            @(Company.AddressCountryName ?? "Not specified")
+                        </span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">State/Province</span>
+                        <span class="detail-value @(string.IsNullOrEmpty(Company.AddressStateName) ? "empty" : "")">
+                            @(Company.AddressStateName ?? "Not specified")
+                        </span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">City</span>
+                        <span class="detail-value @(string.IsNullOrEmpty(Company.AddressCityName) ? "empty" : "")">
+                            @(Company.AddressCityName ?? "Not specified")
+                        </span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Postal Code</span>
+                        <span class="detail-value @(string.IsNullOrEmpty(Company.PostalCode) ? "empty" : "")">
+                            @(Company.PostalCode ?? "Not specified")
+                        </span>
+                    </div>
+                    <div class="detail-item full-width">
+                        <span class="detail-label">Time Zone</span>
+                        <span class="detail-value @(string.IsNullOrEmpty(Company.TimeZoneName) ? "empty" : "")">
+                            @(Company.TimeZoneName ?? "Not specified")
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Section -->
+            <div class="detail-section">
+                <h6 class="detail-section-title">
+                    <i class="ti tabler-address-book"></i>
+                    Contact Information
+                </h6>
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <span class="detail-label">Contact Person</span>
+                        <span class="detail-value @(string.IsNullOrEmpty(Company.PrimaryContactName) ? "empty" : "")">
+                            @(Company.PrimaryContactName ?? "Not specified")
+                        </span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Phone</span>
+                        <span class="detail-value @(string.IsNullOrEmpty(Company.PrimaryPhone) ? "empty" : "")">
+                            @(Company.PrimaryPhone ?? "Not specified")
+                        </span>
+                    </div>
+                    <div class="detail-item full-width">
+                        <span class="detail-label">Email</span>
+                        <span class="detail-value @(string.IsNullOrEmpty(Company.PrimaryEmail) ? "empty" : "")">
+                            @if (!string.IsNullOrEmpty(Company.PrimaryEmail))
+                            {
+                                <a href="mailto:@Company.PrimaryEmail" style="color: #7c3aed;">@Company.PrimaryEmail</a>
+                            }
+                            else
+                            {
+                                <text>Not specified</text>
+                            }
+                        </span>
+                    </div>
+                    <div class="detail-item full-width">
+                        <span class="detail-label">Website</span>
+                        <span class="detail-value @(string.IsNullOrEmpty(Company.WebsiteUrl) ? "empty" : "")">
+                            @if (!string.IsNullOrEmpty(Company.WebsiteUrl))
+                            {
+                                <a href="@Company.WebsiteUrl" target="_blank" style="color: #7c3aed;">
+                                    @Company.WebsiteUrl <i class="ti tabler-external-link" style="font-size: 12px;"></i>
+                                </a>
+                            }
+                            else
+                            {
+                                <text>Not specified</text>
+                            }
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Financial Section -->
+            <div class="detail-section">
+                <h6 class="detail-section-title">
+                    <i class="ti tabler-currency-dollar"></i>
+                    Financial Settings
+                </h6>
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <span class="detail-label">Base Currency</span>
+                        <span class="detail-value @(string.IsNullOrEmpty(Company.BaseCurrencyCode) ? "empty" : "")">
+                            @if (!string.IsNullOrEmpty(Company.BaseCurrencyCode))
+                            {
+                                <text>@Company.BaseCurrencyCode (@Company.BaseCurrencyName)</text>
+                            }
+                            else
+                            {
+                                <text>Not specified</text>
+                            }
+                        </span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Reporting Currency</span>
+                        <span class="detail-value @(string.IsNullOrEmpty(Company.ReportingCurrencyCode) ? "empty" : "")">
+                            @if (!string.IsNullOrEmpty(Company.ReportingCurrencyCode))
+                            {
+                                <text>@Company.ReportingCurrencyCode (@Company.ReportingCurrencyName)</text>
+                            }
+                            else
+                            {
+                                <text>Not specified</text>
+                            }
+                        </span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Fiscal Year Start</span>
+                        <span class="detail-value">
+                            @GetMonthName(Company.FiscalYearStartMonth)
+                        </span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Books Start Date</span>
+                        <span class="detail-value @(Company.BooksStartDate == null ? "empty" : "")">
+                            @(Company.BooksStartDate?.ToString("dd MMM yyyy") ?? "Not specified")
+                        </span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Rounding Precision</span>
+                        <span class="detail-value">
+                            @Company.RoundingPrecision decimal places
+                        </span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Rounding Mode</span>
+                        <span class="detail-value">
+                            @Company.RoundingModeName
+                        </span>
+                    </div>
+                    <div class="detail-item full-width">
+                        <span class="detail-label">Multi-Currency</span>
+                        <span class="detail-badge @(Company.EnableMultiCurrency ? "enabled" : "disabled")">
+                            <i class="ti @(Company.EnableMultiCurrency ? "tabler-check" : "tabler-x")"></i>
+                            @(Company.EnableMultiCurrency ? "Enabled" : "Disabled")
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Posting Controls Section -->
+            <div class="detail-section">
+                <h6 class="detail-section-title">
+                    <i class="ti tabler-lock"></i>
+                    Posting Controls
+                </h6>
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <span class="detail-label">Allow Posting From</span>
+                        <span class="detail-value @(Company.AllowPostingFromDate == null ? "empty" : "")">
+                            @(Company.AllowPostingFromDate?.ToString("dd MMM yyyy") ?? "Not restricted")
+                        </span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Allow Posting To</span>
+                        <span class="detail-value @(Company.AllowPostingToDate == null ? "empty" : "")">
+                            @(Company.AllowPostingToDate?.ToString("dd MMM yyyy") ?? "Not restricted")
+                        </span>
+                    </div>
+                    <div class="detail-item full-width">
+                        <span class="detail-label">Back-Dated Posting</span>
+                        <span class="detail-badge @(Company.LockBackDatedPosting ? "disabled" : "enabled")">
+                            <i class="ti @(Company.LockBackDatedPosting ? "tabler-lock" : "tabler-lock-open")"></i>
+                            @(Company.LockBackDatedPosting ? "Locked" : "Allowed")
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notes Section -->
+            @if (!string.IsNullOrEmpty(Company.Notes))
+            {
+                <div class="detail-section">
+                    <h6 class="detail-section-title">
+                        <i class="ti tabler-notes"></i>
+                        Notes
+                    </h6>
+                    <p class="detail-value" style="white-space: pre-wrap;">@Company.Notes</p>
+                </div>
+            }
+
+            <!-- Audit Section -->
+            <div class="detail-section" style="background: #fafafa;">
+                <h6 class="detail-section-title">
+                    <i class="ti tabler-history"></i>
+                    Audit Information
+                </h6>
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <span class="detail-label">Created At</span>
+                        <span class="detail-value">
+                            @Company.CreatedAt.ToString("dd MMM yyyy HH:mm")
+                        </span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Last Updated</span>
+                        <span class="detail-value">
+                            @(Company.UpdatedAt?.ToString("dd MMM yyyy HH:mm") ?? "Never")
+                        </span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Created By</span>
+                        <span class="detail-value @(string.IsNullOrEmpty(Company.CreatedBy) ? "empty" : "")">
+                            @(Company.CreatedBy ?? "System")
+                        </span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Updated By</span>
+                        <span class="detail-value @(string.IsNullOrEmpty(Company.UpdatedBy) ? "empty" : "")">
+                            @(Company.UpdatedBy ?? "System")
+                        </span>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <i class="ti tabler-building-factory-2" style="font-size: 48px; color: #ddd;"></i>
+                <p class="text-muted mt-3">No company selected</p>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public CompanyDto? Company { get; set; }
+
+    public async Task ShowAsync()
+    {
+        await JS.InvokeVoidAsync("eval", "new bootstrap.Offcanvas(document.getElementById('companyDetailsOffcanvas')).show()");
+    }
+
+    private string GenerateAvatarColor(string code)
+    {
+        var hash = code.GetHashCode();
+        var colors = new[] { "#7c3aed", "#2196f3", "#4caf50", "#ff9800", "#e91e63", "#00bcd4", "#9c27b0", "#607d8b" };
+        return colors[Math.Abs(hash) % colors.Length];
+    }
+
+    private string GetInitials(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return "?";
+        var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length >= 2)
+            return $"{parts[0][0]}{parts[1][0]}".ToUpper();
+        return name.Length >= 2 ? name[..2].ToUpper() : name.ToUpper();
+    }
+
+    private string GetStatusClass(CompanyStatus status) => status switch
+    {
+        CompanyStatus.Draft => "status-draft-bg",
+        CompanyStatus.Active => "status-active-bg",
+        CompanyStatus.Inactive => "status-inactive-bg",
+        _ => ""
+    };
+
+    private string GetStatusIcon(CompanyStatus status) => status switch
+    {
+        CompanyStatus.Draft => "tabler-edit",
+        CompanyStatus.Active => "tabler-check",
+        CompanyStatus.Inactive => "tabler-x",
+        _ => "tabler-circle"
+    };
+
+    private string GetMonthName(int month) => new DateTime(2024, month, 1).ToString("MMMM");
+}

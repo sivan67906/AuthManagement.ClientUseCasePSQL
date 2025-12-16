@@ -1,0 +1,222 @@
+@page "/company/create"
+@page "/company/edit/{Id:guid}"
+@using AuthManagement.Models
+@using AuthManagement.Services
+@inject CompanyService CompanyService
+@inject NavigationManager NavigationManager
+@inject ILogger<CompanyForm> Logger
+@inject ISnackbar Snackbar
+@inject IJSRuntime JS
+@attribute [Authorize]
+
+<PageTitle>@(_isEditMode ? "Edit Company" : "Create Company")</PageTitle>
+
+<style>
+    .page-header {
+        background: white;
+        padding: 1.5rem 1.5rem 0 1.5rem;
+        border-bottom: 1px solid #e0e0e0;
+        margin-bottom: 0;
+    }
+
+    .breadcrumb-nav {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 12px;
+    }
+
+    .breadcrumb-link {
+        color: #7c3aed;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .breadcrumb-link:hover {
+        text-decoration: underline;
+    }
+
+    .breadcrumb-separator {
+        color: #999;
+    }
+
+    .page-title-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 1rem;
+    }
+
+    .page-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #333;
+        margin: 0;
+    }
+
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: #7c3aed;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        padding: 6px 12px;
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
+        transition: all 0.2s;
+    }
+
+    .back-link:hover {
+        background: #f8f9fa;
+        border-color: #7c3aed;
+    }
+
+    .page-content {
+        background: #f8f9fa;
+        min-height: calc(100vh - 140px);
+        padding: 24px;
+    }
+
+    .wizard-wrapper {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        overflow: visible;
+    }
+
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+    }
+
+    .spinner {
+        width: 48px;
+        height: 48px;
+        border: 3px solid #f0f0f0;
+        border-top-color: #7c3aed;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @@keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+</style>
+
+@if (_isLoading)
+{
+    <div class="loading-overlay">
+        <div class="spinner"></div>
+    </div>
+}
+else
+{
+    <div class="page-header">
+        <nav class="breadcrumb-nav">
+            <span class="breadcrumb-link" @onclick='() => NavigationManager.NavigateTo("/")'>
+                <i class="bi bi-house-door"></i> Home
+            </span>
+            <span class="breadcrumb-separator">/</span>
+            <span class="breadcrumb-link" @onclick="NavigateBack">Companies</span>
+            <span class="breadcrumb-separator">/</span>
+            <span style="color: #333;">@(_isEditMode ? "Edit Company" : "Add New Company")</span>
+        </nav>
+
+        <div class="page-title-section">
+            <h1 class="page-title">@(_isEditMode ? "Edit Company" : "Add New Company")</h1>
+            <a class="back-link" @onclick="NavigateBack">
+                <i class="bi bi-arrow-left"></i>
+                Back to Companies
+            </a>
+        </div>
+    </div>
+
+    <div class="page-content">
+        <div class="wizard-wrapper">
+            <CompanyWizard 
+                IsOpen="true"
+                IsEditMode="_isEditMode"
+                CompanyToEdit="_companyToEdit"
+                OnClose="HandleClose"
+                OnSave="HandleSave" />
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public Guid? Id { get; set; }
+
+    private bool _isEditMode => Id.HasValue;
+    private CompanyDto? _companyToEdit;
+    private bool _isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (_isEditMode && Id.HasValue)
+        {
+            await LoadCompany();
+        }
+        else
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task LoadCompany()
+    {
+        try
+        {
+            _isLoading = true;
+            var response = await CompanyService.GetCompanyAsync(Id!.Value);
+            if (response.Success && response.Data != null)
+            {
+                _companyToEdit = response.Data;
+            }
+            else
+            {
+                Snackbar.Add(response.Message ?? "Failed to load company", Severity.Error);
+                NavigateBack();
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error loading company");
+            Snackbar.Add("An error occurred while loading company", Severity.Error);
+            NavigateBack();
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private void HandleClose()
+    {
+        NavigateBack();
+    }
+
+    private void HandleSave()
+    {
+        NavigateBack();
+    }
+
+    private void NavigateBack()
+    {
+        NavigationManager.NavigateTo("/company");
+    }
+}

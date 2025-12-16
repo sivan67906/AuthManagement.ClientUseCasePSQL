@@ -50,6 +50,9 @@ builder.Services.AddScoped<BootstrapDialogService>();
 // Register SweetAlert Service for confirmations and toasts
 builder.Services.AddScoped<SweetAlertService>();
 
+// Register Company Service for Company Management
+builder.Services.AddScoped<CompanyService>();
+
 //  CRITICAL FIX: Register AuthenticationMessageHandler as Transient
 builder.Services.AddScoped<AuthenticationMessageHandler>();
 

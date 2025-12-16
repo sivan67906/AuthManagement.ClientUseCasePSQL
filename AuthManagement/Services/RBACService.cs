@@ -546,6 +546,41 @@ public class RBACService
                ?? new ApiResponse<List<RolePagePermissionMappingDto>> { Success = false, Data = new List<RolePagePermissionMappingDto>() };
     }
 
+    public async Task<ApiResponse<List<RolePagePermissionGroupDto>>> GetGroupedRolePagePermissionsAsync()
+    {
+        await SetAuthorizationHeaderAsync();
+        return await _httpClient.GetFromJsonAsync<ApiResponse<List<RolePagePermissionGroupDto>>>(
+            "api/rolepagepermissionmapping/grouped")
+               ?? new ApiResponse<List<RolePagePermissionGroupDto>> { Success = false, Data = new List<RolePagePermissionGroupDto>() };
+    }
+
+    public async Task<ApiResponse<List<RolePagePermissionMappingDto>>> CreateOrUpdatePermissionBatchAsync(
+        CreateOrUpdatePermissionBatchRequest request)
+    {
+        await SetAuthorizationHeaderAsync();
+        var httpResponse = await _httpClient.PostAsJsonAsync("api/rolepagepermissionmapping/batch", request);
+        
+        if (httpResponse.IsSuccessStatusCode)
+        {
+            return await httpResponse.Content.ReadFromJsonAsync<ApiResponse<List<RolePagePermissionMappingDto>>>()
+                   ?? new ApiResponse<List<RolePagePermissionMappingDto>> { Success = false };
+        }
+        
+        // Try to parse error response
+        try
+        {
+            var errorResponse = await httpResponse.Content.ReadFromJsonAsync<ApiResponse<List<RolePagePermissionMappingDto>>>();
+            if (errorResponse != null) return errorResponse;
+        }
+        catch { }
+        
+        return new ApiResponse<List<RolePagePermissionMappingDto>> 
+        { 
+            Success = false, 
+            Message = $"Failed to update permissions. Server returned {httpResponse.StatusCode}" 
+        };
+    }
+
     // RoleFeatureMapping Operations
     public async Task<ApiResponse<List<RoleFeatureMappingDto>>> GetAllRoleFeatureMappingsAsync()
     {
