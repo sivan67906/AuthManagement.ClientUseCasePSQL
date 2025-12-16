@@ -397,7 +397,7 @@
         .page-btn:hover:not(:disabled) {
             background: #f5f5f5;
             border-color: var(--bs-primary);
-            color: var(--bs-primary);
+            color: var(--bs-primary) !important;
         }
 
         .page-btn:disabled {
@@ -1005,18 +1005,22 @@ Role Details
         }
     }
 
-    private void OpenAddDialog()
+    async Task OpenAddDialog()
     {
         _selectedRole = null;
         _isEditMode = false;
         _roleModel = new RoleFormDialog.RoleFormModel();
         _isDialogOpen = true;
+        await JS.InvokeVoidAsync("disableScroll");
+
     }
 
-    private void OpenEditDialog(RoleDto role)
+    async Task OpenEditDialog(RoleDto role)
     {
         _selectedRole = role;
         _isEditMode = true;
+        await JS.InvokeVoidAsync("disableScroll");
+
         _roleModel = new RoleFormDialog.RoleFormModel
             {
                 Name = role.Name,
@@ -1026,24 +1030,29 @@ Role Details
         _isDialogOpen = true;
     }
 
-    private void OpenViewDialog(RoleDto role)
+    async Task OpenViewDialog(RoleDto role)
     {
         _selectedRole = role;
         _isOffcanvasOpen = true;
+        await JS.InvokeVoidAsync("disableScroll");
+
     }
 
-    private void CloseDialog()
+    async Task CloseDialog()
     {
         _isDialogOpen = false;
         _selectedRole = null;
         _roleModel = new RoleFormDialog.RoleFormModel();
         _isEditMode = false;
+        await JS.InvokeVoidAsync("disableScroll");
+
     }
 
-    private void CloseOffcanvas()
+    async Task CloseOffcanvas()
     {
         _isOffcanvasOpen = false;
         _selectedRole = null;
+        await JS.InvokeVoidAsync("disableScroll");
     }
 
     private async Task HandleSubmit(RoleFormDialog.RoleFormModel model)

@@ -117,7 +117,13 @@
         gap: 5px;
     }
     .form-control { border: 1px solid #d9d9e3; border-radius: 6px; padding: 10px 12px; font-size: 14px; }
-    .form-control:focus { border-color: #7c3aed; box-shadow: 0 0 0 0.2rem rgba(124, 58, 237, 0.1); outline: none; }
+
+        .form-control:focus {
+            border-color: #7c3aed;
+            box-shadow: 0 0 0 0.2rem rgba(124, 58, 237, 0.1);
+            outline: none;
+            padding-block: 9px;
+        }
     .btn-primary { background-color: #7c3aed; border-color: #7c3aed; color: white; padding: 8px 20px; font-size: 14px; font-weight: 500; border-radius: 6px; }
     .btn-label-secondary { background-color: transparent; border: 1px solid #d9d9e3; color: #666; padding: 8px 20px; font-size: 14px; font-weight: 500; border-radius: 6px; }
     .text-danger { color: #dc3545; font-size: 12px; margin-top: 4px; display: block; }

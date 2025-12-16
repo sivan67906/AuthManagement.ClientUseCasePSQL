@@ -1,6 +1,7 @@
 @using AuthManagement.Models
 @using AuthManagement.Helpers
 @using System.ComponentModel.DataAnnotations
+@inject IJSRuntime JS
 
 @if (IsOpen)
 {
@@ -155,6 +156,7 @@
         border-color: #7c3aed;
         box-shadow: 0 0 0 0.2rem rgba(124, 58, 237, 0.1);
         outline: none;
+         padding-block: 9px;
     }
 
     .form-control:disabled {
@@ -302,6 +304,8 @@
             nameValidationError = null;
             descriptionValidationError = null;
             await OnCancel.InvokeAsync();
+            await JS.InvokeVoidAsync("enableScroll");
+
         }
     }
 
@@ -324,6 +328,8 @@
         FormModel.Description = InputValidationHelper.SanitizeText(FormModel.Description);
         
         await OnSubmit.InvokeAsync(FormModel);
+        await JS.InvokeVoidAsync("enableScroll");
+
     }
 
     public class DepartmentFormModel

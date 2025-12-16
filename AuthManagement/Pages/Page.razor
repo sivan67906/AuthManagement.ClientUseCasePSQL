@@ -247,7 +247,7 @@
         .page-btn:hover:not(:disabled) {
             background: #f5f5f5;
             border-color: var(--bs-primary);
-            color: var(--bs-primary);
+            color: var(--bs-primary) !important;
         }
 
         .page-btn:disabled {
@@ -645,11 +645,31 @@ Roles Details
     private int GetStartPage() => Math.Max(1, _currentPage - 2);
     private int GetEndPage() => Math.Min(_totalPages, _currentPage + 2);
     private void GoToPage(int page) { if (page >= 1 && page <= _totalPages) { _currentPage = page; UpdateFilteredPages(); StateHasChanged(); } }
-    private void OpenAddDialog() { _selectedPage = null; _isEditMode = false; _pageModel = new PageFormDialog.PageFormModel(); _isDialogOpen = true; }
-    private void OpenEditDialog(PageDto page) { _selectedPage = page; _isEditMode = true; _pageModel = new PageFormDialog.PageFormModel { Name = page.Name, Url = page.Url, Description = page.Description, DisplayOrder = page.DisplayOrder, MenuContext = page.MenuContext, IsActive = page.IsActive }; _isDialogOpen = true; }
-    private void OpenViewDialog(PageDto page) { _selectedPage = page; _isOffcanvasOpen = true; }
-    private void CloseDialog() { _isDialogOpen = false; _selectedPage = null; _pageModel = new PageFormDialog.PageFormModel(); _isEditMode = false; }
-    private void CloseOffcanvas() { _isOffcanvasOpen = false; _selectedPage = null; }
+    async Task OpenAddDialog()
+    {
+        await JS.InvokeVoidAsync("disableScroll");
+        _selectedPage = null; _isEditMode = false; _pageModel = new PageFormDialog.PageFormModel(); _isDialogOpen = true;
+    }
+    async Task OpenEditDialog(PageDto page)
+    {
+        await JS.InvokeVoidAsync("disableScroll");
+        _selectedPage = page; _isEditMode = true; _pageModel = new PageFormDialog.PageFormModel { Name = page.Name, Url = page.Url, Description = page.Description, DisplayOrder = page.DisplayOrder, MenuContext = page.MenuContext, IsActive = page.IsActive }; _isDialogOpen = true;
+    }
+    async Task OpenViewDialog(PageDto page)
+    {
+        await JS.InvokeVoidAsync("disableScroll");
+        _selectedPage = page; _isOffcanvasOpen = true;
+    }
+    async Task CloseDialog()
+    {
+        await JS.InvokeVoidAsync("enableScroll");
+        _isDialogOpen = false; _selectedPage = null; _pageModel = new PageFormDialog.PageFormModel(); _isEditMode = false;
+    }
+    async Task CloseOffcanvas()
+    {
+        await JS.InvokeVoidAsync("enableScroll");
+        _isOffcanvasOpen = false; _selectedPage = null;
+    }
 
     private async Task HandleSubmit(PageFormDialog.PageFormModel model)
     {
@@ -672,7 +692,10 @@ Roles Details
             }
         }
         catch (Exception ex) { Logger.LogError(ex, "Error saving page"); await JS.InvokeVoidAsync("showToast", "error", $"Error: {ex.Message}", Severity.Error); }
-        finally { _isSaving = false; }
+        finally
+        {
+            _isSaving = false; await JS.InvokeVoidAsync("enableScroll");
+        }
     }
 
     private async Task DeletePage(PageDto page)

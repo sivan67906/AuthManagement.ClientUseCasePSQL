@@ -113,20 +113,20 @@
         display: flex;
         align-items: center;
         gap: 12px;
-        margin-left: auto;
+        /* margin-left: auto; */
     }
 
     .search-box {
         position: relative;
-        min-width: 280px;
+        min-width: auto;
     }
 
     .search-input {
         width: 100%;
-        padding: 8px 12px 8px 36px;
+        padding: 8px 12px 8px 11px;
         border: 1px solid #d9d9e3;
         font-size: 14px;
-        padding-left: 39px;
+        /* padding-left: 39px; */
         border-radius: 0.25rem;
         padding-top: 5px;
         padding-bottom: 7px;
@@ -377,12 +377,16 @@
     /* Pagination */
     .pagination-container {
         display: flex;
-        justify-content: space-between;
+        justify-content: center;
         align-items: center;
-        padding: 16px 0;
-        border-top: 1px solid #f0f0f0;
-        margin-top: 16px;
+        padding: 13px 0px;
+        background: white;
+        border-left: 1px solid #80808047;
+        margin-bottom: 1px;
+        border-right: 1px solid #80808047;
+        border-bottom: 1px solid #80808047;
     }
+
 
     .pagination-info {
         font-size: 14px;
@@ -391,43 +395,64 @@
 
     .pagination-controls {
         display: flex;
-        gap: 4px;
         align-items: center;
+        gap: 8px;
     }
 
-    .pagination-btn {
-        width: 32px;
-        height: 32px;
-        border: 1px solid #d9d9e3;
-        background: white;
-        border-radius: 4px;
-        cursor: pointer;
+    .page-size-selector {
         display: flex;
         align-items: center;
-        justify-content: center;
-        transition: all 0.2s;
-        font-size: 14px;
-        color: #666;
+        gap: 8px;
+        margin-right: 16px;
     }
 
-        .pagination-btn:hover:not(:disabled) {
-            background: #f5f5f5;
-            border-color: #7c3aed;
+        .page-size-selector label {
+            font-size: 14px;
+            color: #666;
         }
 
-        .pagination-btn:disabled {
+        .page-size-selector select {
+            padding: 4px 8px;
+            border: 1px solid #d9d9e3;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+    .pagination-buttons {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .page-btn {
+        min-width: 40px;
+        height: 40px;
+        padding: 0 8px;
+        border: 1px solid #d9d9e373;
+        border-radius: 50%;
+        font-size: 18px;
+        cursor: pointer;
+        transition: all 0.2s;
+        color: #333;
+    }
+
+        .page-btn:hover:not(:disabled) {
+            background: #f5f5f5;
+            border-color: var(--bs-primary);
+            color: var(--bs-primary) !important;
+        }
+
+        .page-btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
         }
 
-        .pagination-btn.active {
-            background: #7c3aed;
+        .page-btn.active {
             color: white;
-            border-color: #7c3aed;
-        }
-
-        .pagination-btn i {
-            font-size: 16px;
+            border-color: var(--bs-primary);
+            font-weight: 700;
+            background: var(--bs-primary);
         }
 
     /* Loading spinner */
@@ -477,25 +502,27 @@
 </style>
 
 <div class="container-fluid p-0 p-sm-2">
-    <!-- Page Header with Breadcrumbs -->
-    <div class="page-header mb-3">
-        <div>
-            <h4 class="page-title mb-2">Role Page Permission Mapping</h4>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item">
-                        <a href="/" class="breadcrumb-link">
-                            <i class="bi bi-house-door"></i> Home
-                        </a>
-                    </li>
-                    <li class="breadcrumb-item">
-                        <span class="breadcrumb-separator">›</span>
-                        <span class="breadcrumb-current">Role Page Permission Mapping</span>
-                    </li>
-                </ol>
-            </nav>
-        </div>
+   
+      <div class="page-header">
+        <h1 class="page-title">Role Hierarchy Mapping</h1>
+        <nav>
+            <ul class="breadcrumb">
+                <li class="breadcrumb-item">
+                   
+                    <a href="/" class="breadcrumb-link">
+                        <i class="ti tabler-home"></i>Home
+                    </a>
+                    <span class="breadcrumb-separator">></span>
+                </li>
+                <li class="">
+                    <span class="breadcrumb-current">Role Page Permission Mapping</span>
+                </li>
+            </ul>
+        </nav>
     </div>
+
+
+
 
     <!-- Main Container -->
     <div class="mapping-container">
@@ -513,7 +540,7 @@
                            @oninput="@((e) => OnSearchChanged(e.Value?.ToString() ?? string.Empty))" />
                     @if (string.IsNullOrEmpty(_searchString))
                     {
-                        <i class="bi bi-search search-icon"></i>
+                        <i class="ti tabler-search search-icon"></i>
                     }
                     else
                     {
@@ -521,26 +548,28 @@
                     }
                 </div>
                 <button class="add-button" @onclick="OpenAddDialog">
-                    <i class="bi bi-plus-circle"></i>
+                    <i class="ti tabler-plus"></i>
                     <span>Add Mapping</span>
                 </button>
+
             </div>
         </div>
 
         <!-- Table -->
         @if (_isLoading)
         {
-            <div class="loading-spinner">
-                <div class="spinner"></div>
-            </div>
+            <LoadingSpinner FullPage="true" />
+
         }
         else if (_pagedMappings.Any())
         {
-            <table class="mapping-table">
+            <table class="mapping-table" id="PagePermission">
                 <thead>
                     <tr>
+                        <th class="plusHeading"></th>
+
                         <th class="text-center sortable" @onclick='() => ToggleSort("no")'>
-                            NO.
+                            #
                             <div class="sort-indicator">
                                 <div class="sort-arrow up @(_sortColumn == "no" && _sortDirection == "asc" ? "active" : "")"></div>
                                 <div class="sort-arrow down @(_sortColumn == "no" && _sortDirection == "desc" ? "active" : "")"></div>
@@ -575,6 +604,21 @@
                     @foreach (var mapping in _pagedMappings)
                     {
                         <tr>
+                            <td class="details-control" @onclick="@(() => ShowDetails(mapping))">
+                                <div class="plus" style="border-radius: 50%;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            box-sizing: content-box;
+                            border: 2px solid var(--bs-paper-bg);
+                            background-color: var(--bs-primary);
+                            block-size: .85rem;
+                            box-shadow: 0 0 3px var(--bs-gray-800);
+                            color: var(--bs-white);    width: 17px;
+                height: 17px;">
+                                    <i class="ti tabler-plus"></i>
+                                </div>
+                            </td>
                             <td class="text-center serial-number">@GetGlobalSerialNumber(mapping)</td>
                             <td>@(mapping.DepartmentName ?? "All Departments")</td>
                             <td class="mapping-name">@mapping.RoleName</td>
@@ -586,7 +630,7 @@
                             </td>
                             <td>
                                 <div class="permission-badges-container">
-                                    @foreach (var perm in mapping.Permissions.OrderBy(p => p.PermissionName))
+                                    @foreach (var perm in mapping.Permissions.OrderBy(p => GetPermissionOrder(p.PermissionName)))
                                     {
                                         <span class="permission-badge @GetBadgeClass(perm.PermissionName)"
                                               title="@perm.PermissionName">
@@ -621,32 +665,67 @@
 
             <!-- Pagination -->
             <div class="pagination-container">
-                <div class="pagination-info">
-                    Showing @GetStartRecord() to @GetEndRecord() of @_totalItems entries
-                </div>
+                @* <div class="pagination-info">
+          Showing @GetStartRecord() to @GetEndRecord() of @_totalItems entries
+      </div> *@
                 <div class="pagination-controls">
-                    <button class="pagination-btn" @onclick="() => GoToPage(1)" disabled="@(_currentPage == 1)">
-                        <i class="bi bi-chevron-double-left"></i>
-                    </button>
-                    <button class="pagination-btn" @onclick="() => GoToPage(_currentPage - 1)" disabled="@(_currentPage == 1)">
-                        <i class="bi bi-chevron-left"></i>
-                    </button>
 
-                    @for (int i = GetStartPage(); i <= GetEndPage(); i++)
-                    {
-                        var pageNum = i;
-                        <button class="pagination-btn @(_currentPage == pageNum ? "active" : "")"
-                                @onclick="() => GoToPage(pageNum)">
-                            @pageNum
-                        </button>
+                    @* mobile  screen *@
+
+                    @{
+                        var range = GetMobilePageRange();
                     }
 
-                    <button class="pagination-btn" @onclick="() => GoToPage(_currentPage + 1)" disabled="@(_currentPage == _totalPages)">
-                        <i class="bi bi-chevron-right"></i>
-                    </button>
-                    <button class="pagination-btn" @onclick="() => GoToPage(_totalPages)" disabled="@(_currentPage == _totalPages)">
-                        <i class="bi bi-chevron-double-right"></i>
-                    </button>
+                    <div class="pagination-buttons mobile-only">
+
+                        <button class="page-btn" @onclick="() => GoToPage(1)" disabled="@(_currentPage == 1)">
+                            <i class="bi bi-chevron-bar-left"></i>
+                        </button>
+
+                        <button class="page-btn" @onclick="() => GoToPage(_currentPage - 1)" disabled="@(_currentPage == 1)">
+                            <i class="ti tabler-chevron-left"></i>
+                        </button>
+
+                        <button class="page-btn active">
+                            @_currentPage
+                        </button>
+
+                        <button class="page-btn" @onclick="() => GoToPage(_currentPage + 1)" disabled="@(_currentPage == _totalPages)">
+                            <i class="ti tabler-chevron-right"></i>
+                        </button>
+
+                        <button class="page-btn" @onclick="() => GoToPage(_totalPages)" disabled="@(_currentPage == _totalPages)">
+                            <i class="bi bi-chevron-bar-right"></i>
+                        </button>
+
+                    </div>
+
+
+
+                    <div class="pagination-buttons web-Only">
+                        <button class="page-btn" @onclick="() => GoToPage(1)" disabled="@(_currentPage == 1)">
+                            <i class="bi bi-chevron-bar-left"></i>
+                        </button>
+                        <button class="page-btn" @onclick="() => GoToPage(_currentPage - 1)" disabled="@(_currentPage == 1)">
+                            <i class="ti tabler-chevron-left"></i>
+                        </button>
+
+                        @for (int i = GetStartPage(); i <= GetEndPage(); i++)
+                        {
+                            var pageNum = i;
+                            <button class="page-btn @(_currentPage == pageNum ? "active" : "")"
+                                    @onclick="() => GoToPage(pageNum)">
+                                @pageNum
+                            </button>
+                        }
+
+                        <button class="page-btn" @onclick="() => GoToPage(_currentPage + 1)" disabled="@(_currentPage == _totalPages)">
+                            <i class="ti tabler-chevron-right"></i>
+                        </button>
+                        <button class="page-btn" @onclick="() => GoToPage(_totalPages)" disabled="@(_currentPage == _totalPages)">
+                            <i class="bi bi-chevron-bar-right"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         }
@@ -683,6 +762,38 @@
         OnClose="CloseOffcanvas" />
 }
 
+
+
+
+
+@if (showPopup && _selectedMapping != null)
+{
+
+    <div class="modal-backdrop show" @onclick:stopPropagation="true"></div>
+    <div class="modal show d-block" tabindex="-1" @onclick:stopPropagation="true">
+        <div class="modal-dialog modal-dialog-top">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        Role Hierarchy Mapping
+                    </h5>
+                    <button type="button" class="btn-close" @onclick="closeSelectFeatures"></button>
+                </div>
+                <div class="modal-body" style="padding: 24px;">
+                    <p><b>Department:</b> @_selectedMapping.DepartmentName</p>
+                    <p><b>Role Name:</b> @_selectedMapping.RoleName</p>
+                    <p><b>Page Name:</b> @_selectedMapping.PageName</p>
+                    <p><b>Permission:</b> @_selectedMapping.Permissions</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+}
+
+
+
 @code {
     // Data lists
     private List<RolePagePermissionGroupDto> _groupedMappings = new();
@@ -692,7 +803,8 @@
     private List<RoleDto> _roles = new();
     private List<PageDto> _pages = new();
     private List<DepartmentDto> _departments = new();
-
+    private string _sortDirection = "";
+ 
     // Dialog and offcanvas
     private RolePagePermissionMappingFormDialog_New? _formDialog;
     private RolePagePermissionMappingDetailsOffcanvas? _detailsOffcanvas;
@@ -710,11 +822,61 @@
 
     // Sorting
     private string _sortColumn = "";
-    private string _sortDirection = "asc";
 
     // Loading states
     private bool _isLoading = false;
     private bool _isSaving = false;
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JS.InvokeVoidAsync("loadScriptAndTrigger", "assets/js/toast.js", true);
+
+        }
+    }
+
+
+    
+    bool showPopup = false;
+    // RolePagePermissionGroupDto? rolePagePermission;
+
+    void closeSelectFeatures()
+    {
+        showPopup = false;
+    }
+
+    void ShowDetails(DisplayRolePagePermissionGroup newpermission)
+    {
+        _selectedMapping = newpermission;
+        showPopup = true;
+    }
+
+    void ClosePopup()
+    {
+        showPopup = false;
+    }
+
+
+
+    private (int start, int end) GetMobilePageRange()
+    {
+        //int windowSize = 2; // always show 2 page numbers
+
+        int start = _currentPage;
+        int end = _currentPage + 1;
+
+        if (end > _totalPages)
+        {
+            end = _totalPages;
+            start = Math.Max(1, end - 1);
+        }
+
+        return (start, end);
+    }
+
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -905,37 +1067,42 @@
         }
     }
 
-    private void OpenAddDialog()
+     async Task OpenAddDialog()
     {
         _selectedMapping = null;
         _isEditMode = false;
         _isDialogOpen = true;
+        await JS.InvokeVoidAsync("disableScroll");
     }
 
-    private void OpenEditDialog(DisplayRolePagePermissionGroup mapping)
+    async Task OpenEditDialog(DisplayRolePagePermissionGroup mapping)
     {
         _selectedMapping = mapping;
         _isEditMode = true;
         _isDialogOpen = true;
+        await JS.InvokeVoidAsync("disableScroll");
     }
 
-    private void OpenViewDialog(DisplayRolePagePermissionGroup mapping)
+    async Task OpenViewDialog(DisplayRolePagePermissionGroup mapping)
     {
         _selectedMapping = mapping;
         _isOffcanvasOpen = true;
+        await JS.InvokeVoidAsync("disableScroll");
     }
 
-    private void CloseDialog()
+    async Task CloseDialog()
     {
         _isDialogOpen = false;
         _selectedMapping = null;
         _isEditMode = false;
+        await JS.InvokeVoidAsync("enableScroll");
     }
 
-    private void CloseOffcanvas()
+    async Task CloseOffcanvas()
     {
         _isOffcanvasOpen = false;
         _selectedMapping = null;
+        await JS.InvokeVoidAsync("enableScroll");
     }
 
     private async Task HandleSubmit(RolePagePermissionFormModel model)
@@ -981,6 +1148,7 @@
         finally
         {
             _isSaving = false;
+            await JS.InvokeVoidAsync("enableScroll");
         }
     }
 
@@ -995,7 +1163,11 @@
             if (confirmed)
             {
                 // Delete all permissions in the group
-                foreach (var perm in mapping.Permissions)
+                var orderedPermissions = mapping.Permissions
+                    .OrderByDescending(p => GetPermissionOrder(p.PermissionName)) // Delete in reverse order: D, U, C, V
+                    .ToList();
+
+                foreach (var perm in orderedPermissions)
                 {
                     var response = await RBACService.DeleteRolePagePermissionMappingAsync(perm.Id);
                     if (!response.Success)
@@ -1043,6 +1215,20 @@
             "update" => "U",
             "delete" => "D",
             _ => permissionName[0].ToString().ToUpper()
+        };
+    }
+
+    private int GetPermissionOrder(string permissionName)
+    {
+        if (string.IsNullOrEmpty(permissionName)) return 99;
+
+        return permissionName.ToLower() switch
+        {
+            "view" => 1,
+            "create" => 2,
+            "update" => 3,
+            "delete" => 4,
+            _ => 99
         };
     }
 }

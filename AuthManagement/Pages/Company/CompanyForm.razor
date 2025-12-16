@@ -13,9 +13,9 @@
 
 <style>
     .page-header {
-        background: white;
+        /* background: white; */
         padding: 1.5rem 1.5rem 0 1.5rem;
-        border-bottom: 1px solid #e0e0e0;
+        /* border-bottom: 1px solid #e0e0e0; */
         margin-bottom: 0;
     }
 
@@ -46,7 +46,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding-bottom: 1rem;
+        /* padding-bottom: 1rem; */
     }
 
     .page-title {
@@ -126,22 +126,23 @@
 else
 {
     <div class="page-header">
-        <nav class="breadcrumb-nav">
-            <span class="breadcrumb-link" @onclick='() => NavigationManager.NavigateTo("/")'>
-                <i class="bi bi-house-door"></i> Home
-            </span>
-            <span class="breadcrumb-separator">/</span>
-            <span class="breadcrumb-link" @onclick="NavigateBack">Companies</span>
-            <span class="breadcrumb-separator">/</span>
-            <span style="color: #333;">@(_isEditMode ? "Edit Company" : "Add New Company")</span>
-        </nav>
-
+      
         <div class="page-title-section">
             <h1 class="page-title">@(_isEditMode ? "Edit Company" : "Add New Company")</h1>
-            <a class="back-link" @onclick="NavigateBack">
+            <nav class="breadcrumb-nav">
+                <span class="breadcrumb-link" @onclick='() => NavigationManager.NavigateTo("/")'>
+                    <i class="bi bi-house-door"></i> Home
+                </span>
+                <span class="breadcrumb-separator">></span>
+                <span class="breadcrumb-link" @onclick="NavigateBack">Companies</span>
+                <span class="breadcrumb-separator">></span>
+                <span style="color: #333;">@(_isEditMode ? "Edit Company" : "Add New Company")</span>
+            </nav>
+
+            @* <a class="back-link" @onclick="NavigateBack">
                 <i class="bi bi-arrow-left"></i>
                 Back to Companies
-            </a>
+            </a> *@
         </div>
     </div>
 

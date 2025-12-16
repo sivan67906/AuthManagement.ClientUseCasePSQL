@@ -47,12 +47,14 @@
     .step-indicator {
         display: flex;
         justify-content: space-between;
-        padding: 20px 24px;
-        background: #f8f9fa;
-        border-bottom: 1px solid #e0e0e0;
+        padding: 38px 24px;
+        background: transparent;
+        /* border-bottom: 1px solid #e0e0e0; */
         overflow-x: auto;
     }
-
+    .form-section-title i{
+        font-size: 35px;
+    }
     .step-item {
         display: flex;
         flex-direction: column;
@@ -81,8 +83,8 @@
     .step-number {
         width: 36px;
         height: 36px;
-        border-radius: 50%;
-        background: #e0e0e0;
+        border-radius: 26%;
+        background: white;
         color: #666;
         display: flex;
         align-items: center;
@@ -92,12 +94,14 @@
         position: relative;
         z-index: 1;
         transition: all 0.3s;
+        border: 2px solid #7367f0;
     }
 
     .step-item.active .step-number {
         background: #7c3aed;
         color: white;
         box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
+        border: 3px solid white;
     }
 
     .step-item.completed .step-number {
@@ -131,6 +135,7 @@
     .step-content {
         padding: 24px;
         min-height: 400px;
+        padding-bottom: 0;
     }
 
     .form-section {
@@ -144,6 +149,8 @@
         margin-bottom: 16px;
         padding-bottom: 8px;
         border-bottom: 1px solid #e0e0e0;
+        display: flex;
+        align-items: center;
     }
 
     .form-group {
@@ -246,13 +253,13 @@
         display: flex;
         justify-content: space-between;
         padding: 16px 24px;
-        background: #f8f9fa;
-        border-top: 1px solid #e0e0e0;
+        /* background: #f8f9fa; */
+        /* border-top: 1px solid #e0e0e0; */
         border-radius: 0 0 8px 8px;
     }
 
     .btn-wizard {
-        padding: 10px 24px;
+        padding: 6px 19pxss;
         border-radius: 6px;
         font-size: 14px;
         font-weight: 500;
@@ -282,6 +289,7 @@
 
     .btn-wizard-next:hover {
         background: #6d28d9;
+            color: white;
     }
 
     .btn-wizard-next:disabled {
@@ -436,6 +444,61 @@
         background: #c82333;
         transform: scale(1.1);
     }
+
+    .stepper-scroll-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+/* Scroll area */
+.bs-stepper-header {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 16px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-behavior: smooth;
+    padding: 8px 40px; /* space for arrows */
+
+    /* hide scrollbar */
+    scrollbar-width: none; /* Firefox */
+}
+
+.bs-stepper-header::-webkit-scrollbar {
+    display: none; /* Chrome */
+}
+
+/* Arrow buttons */
+.stepper-arrow {
+    position: absolute;
+    z-index: 10;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.stepper-arrow.left {
+    left: 4px;
+}
+
+.stepper-arrow.right {
+    right: 4px;
+}
+
+.stepper-arrow:hover {
+    background: #7367f0;
+    color: #fff;
+}
+
+
 </style>
 
 @if (IsOpen)
@@ -459,47 +522,80 @@ else
     </div>
 }
 
+ @* <div class="wizard-header">
+                <h5 class="wizard-title">@(IsEditMode ? "Edit Company" : "Add New Company")</h5>
+                <p class="wizard-subtitle">@GetStepDescription()</p>
+            </div> *@
+
 @code {
     RenderFragment WizardContent => @<text>
             <!-- Header -->
-            <div class="wizard-header">
-                <h5 class="wizard-title">@(IsEditMode ? "Edit Company" : "Add New Company")</h5>
-                <p class="wizard-subtitle">@GetStepDescription()</p>
+           
+
+              <div class="col-12 mb-6">
+            <div class="bs-stepper wizard-numbered mt-2">
+            <div class="stepper-wrapper">
+             <div class="stepper-scroll-container">
+    
+    <!-- LEFT ARROW -->
+    <button type="button"
+            class="stepper-arrow left"
+            @onclick="ScrollLeft">
+        <i class="ti tabler-chevron-left"></i>
+    </button>
+
+  
+    <div class="bs-stepper-header" id="stepperHeader">
+
+        @for (int i = 0; i < _steps.Length; i++)
+        {
+            var stepIndex = i;
+            var isActive = _currentStep == stepIndex;
+            var isCompleted = _currentStep > stepIndex;
+            var hasError = _stepErrors.Contains(stepIndex);
+
+            <div class="step @(isActive ? "active" : "") @(isCompleted ? "completed" : "") @(hasError ? "error" : "")">
+                <button type="button"
+                        class="step-trigger"
+                        @onclick="() => GoToStep(stepIndex)">
+                    
+                    <span class="bs-stepper-circle">
+                        @(stepIndex + 1)
+                    </span>
+
+                    <span class="bs-stepper-label">
+                        <span class="bs-stepper-title">@_steps[stepIndex]</span>
+                        <span class="bs-stepper-subtitle text-ellipsis">
+                            @GetStepDescription(stepIndex)
+                        </span>
+                    </span>
+                </button>
             </div>
 
-            <!-- Step Indicator -->
-            <div class="step-indicator">
-                @for (int i = 0; i < _steps.Length; i++)
-                {
-                    var stepIndex = i;
-                    var isActive = _currentStep == stepIndex;
-                    var isCompleted = _currentStep > stepIndex;
-                    var hasError = _stepErrors.Contains(stepIndex);
+            @if (i < _steps.Length - 1)
+            {
+                <div class="line">
+                    <i class="ti tabler-chevron-right"></i>
+                </div>
+            }
+        }
+    </div>
 
-                    <div class="step-item @(isActive ? "active" : "") @(isCompleted ? "completed" : "") @(hasError ? "error" : "")"
-                         @onclick="@(() => GoToStep(stepIndex))">
-                        <div class="step-number">
-                            @if (isCompleted && !hasError)
-                            {
-                                <i class="ti tabler-check"></i>
-                            }
-                            else if (hasError)
-                            {
-                                <i class="ti tabler-alert-triangle"></i>
-                            }
-                            else
-                            {
-                                @(stepIndex + 1)
-                            }
-                        </div>
-                        <span class="step-label">@_steps[stepIndex]</span>
-                    </div>
-                }
-            </div>
+    <!-- RIGHT ARROW -->
+    <button type="button"
+            class="stepper-arrow right"
+            @onclick="ScrollRight">
+        <i class="ti tabler-chevron-right"></i>
+    </button>
 
-            <!-- Step Content -->
-            <div class="step-content">
-                @switch (_currentStep)
+</div>
+
+                
+                </div>
+
+                <div class="bs-stepper-content">
+
+                  @switch (_currentStep)
                 {
                     case 0:
                         @RenderStep1_Identity()
@@ -520,10 +616,9 @@ else
                         @RenderStep6_Review()
                         break;
                 }
-            </div>
-
-            <!-- Footer -->
-            <div class="wizard-footer">
+                </div>
+          
+                            <div class="wizard-footer">
                 <div>
                     @if (_currentStep > 0)
                     {
@@ -575,6 +670,13 @@ else
                     }
                 </div>
             </div>
+
+                </div>
+        </div>
+
+
+
+
     </text>;
 }
 
@@ -618,7 +720,15 @@ else
     {
         await LoadLookupData();
     }
+    private async Task ScrollLeft()
+{
+    await JS.InvokeVoidAsync("scrollStepper", "stepperHeader", -300);
+}
 
+private async Task ScrollRight()
+{
+    await JS.InvokeVoidAsync("scrollStepper", "stepperHeader", 300);
+}
     protected override async Task OnParametersSetAsync()
     {
         // Handle page mode (IsOpen=true) with edit data
@@ -821,15 +931,19 @@ else
             _logoPreviewUrl = dto.LogoFileUrl;
         }
     }
+ 
 
-    private void GoToStep(int step)
+
+    private async Task GoToStep(int stepIndex)
     {
-        if (step >= 0 && step < _steps.Length)
-        {
-            _currentStep = step;
-            StateHasChanged();
-        }
+        _currentStep = stepIndex;
+
+        await JS.InvokeVoidAsync(
+            "scrollStepIntoView",
+            $"step-{stepIndex}"
+        );
     }
+
 
     private void NextStep()
     {
@@ -1171,7 +1285,7 @@ else
         };
     }
 
-    private string GetStepDescription() => _currentStep switch
+    private string GetStepDescription(int stepIndex) => stepIndex switch
     {
         0 => "Enter basic company identification details",
         1 => "Provide registration and compliance information",
@@ -1181,6 +1295,7 @@ else
         5 => "Review and submit",
         _ => ""
     };
+
 
     private bool IsValidEmail(string email) =>
         System.Text.RegularExpressions.Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$");

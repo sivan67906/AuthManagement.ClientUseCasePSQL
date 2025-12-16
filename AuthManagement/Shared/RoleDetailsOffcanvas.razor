@@ -1,4 +1,5 @@
 @using AuthManagement.Models
+@inject IJSRuntime JS
 
 <!-- Offcanvas Overlay -->
 @if (IsOpen)
@@ -85,7 +86,7 @@
         position: fixed;
         top: 0;
         left: 0;
-        z-index: 1111;
+        z-index: 11111;
         width: 100vw;
         height: 100vh;
         background-color: rgba(0, 0, 0, 0.5);
@@ -260,5 +261,7 @@
     private async Task Close()
     {
         await OnClose.InvokeAsync();
+        await JS.InvokeVoidAsync("enableScroll");
+
     }
 }

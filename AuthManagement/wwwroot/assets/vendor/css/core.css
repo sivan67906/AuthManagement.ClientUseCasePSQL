@@ -16211,7 +16211,7 @@ li:not(:first-child) .dropdown-item,
 }
 
 [data-bs-theme=dark] .modal-backdrop {
-    background-color: #ffffff24;
+    background-color: #ffffff80;
 }
 
 :dir(rtl) .modal:not(.modal-top) .modal-header .btn-close {
@@ -16696,7 +16696,7 @@ li:not(:first-child) .dropdown-item,
         margin-block: -0.75rem -0.75rem;
         margin-inline: auto .2505rem;
         position: fixed;
-        right: 7px;
+        right: 13px;
         top: 29px;
     }
 
@@ -16731,8 +16731,17 @@ li:not(:first-child) .dropdown-item,
 }
 
     [data-bs-theme=dark] .offcanvas-backdrop.show {
-        background: #ffffff24;
+        background: #ffffff6b;
     }
+[data-bs-theme=dark] .detail-section-title {
+    color: white
+}
+[data-bs-theme=dark] .no-results-icon i {
+    color: inherit !important;
+}
+[data-bs-theme=dark] .form-control option {
+    background: #373b50;
+}
 
 .bg-label-primary {
     background-color: color-mix(in sRGB, var(--bs-paper-bg) var(--bs-bg-label-tint-amount), var(--bs-primary)) !important;
@@ -30933,11 +30942,29 @@ body:not(.modal-open) .layout-content-navbar .layout-navbar {
     color: white !important
 }
     [data-bs-theme=dark] .btn-label-secondary:hover{
-        color:black
+        color:black;
+        background:white
     }
-    [data-bs-theme=dark] .modal .btn-close {
-        background-color: #ffffff4f
-    }
+[data-bs-theme=dark] .permission-checkboxes {
+    background: #373b50 !important;
+}
+[data-bs-theme=dark] .form-select {
+/*    background: transparent;*/
+    color: white
+}
+
+[data-bs-theme=dark] .loading__ring svg {
+    fill: white
+}
+[data-bs-theme=dark] .permission-name {
+    color: white
+}
+[data-bs-theme=dark] .form-select option {
+    color: white;
+}
+[data-bs-theme=dark] .modal .btn-close {
+    background-color: #ffffff4f
+}
 [data-bs-theme=dark] .btn-label-secondary:hover {
     color: black !important
 }
@@ -31149,6 +31176,12 @@ body:not(.modal-open) .layout-content-navbar .layout-navbar {
     #userRoleMap td:nth-child(5) {
         display: none;
     }
+    #PagePermission th:not(:nth-child(1)):not(:nth-child(2)):not(:last-child),
+    #PagePermission td:not(:nth-child(1)):not(:nth-child(2)):not(:last-child) {
+        display: none;
+    }
+
+    
 
     .details-control {
         cursor: pointer;

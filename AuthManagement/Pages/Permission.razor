@@ -121,10 +121,10 @@
 
     .search-input {
         width: 100%;
-        padding: 8px 12px 8px 36px;
+        padding: 8px 12px 8px 11px;
         border: 1px solid #d9d9e3;
         font-size: 14px;
-        padding-left: 39px;
+        /* padding-left: 39px; */
         border-radius: 0.25rem;
         padding-top: 5px;
         padding-bottom: 7px;
@@ -768,11 +768,13 @@ PermissionDto? selectedFeature;
     private int GetStartPage() => Math.Max(1, _currentPage - 2);
     private int GetEndPage() => Math.Min(_totalPages, _currentPage + 2);
     private void GoToPage(int page) { if (page >= 1 && page <= _totalPages) { _currentPage = page; UpdateFilteredPermissions(); StateHasChanged(); } }
-    private void OpenAddDialog() { _selectedPermission = null; _isEditMode = false; _permissionModel = new PermissionFormDialog.PermissionFormModel(); _isDialogOpen = true; }
-    private void OpenEditDialog(PermissionDto permission) { _selectedPermission = permission; _isEditMode = true; _permissionModel = new PermissionFormDialog.PermissionFormModel { Name = permission.Name, Description = permission.Description }; _isDialogOpen = true; }
-    private void OpenViewDialog(PermissionDto permission) { _selectedPermission = permission; _isOffcanvasOpen = true; }
-    private void CloseDialog() { _isDialogOpen = false; _selectedPermission = null; _permissionModel = new PermissionFormDialog.PermissionFormModel(); _isEditMode = false; }
-    private void CloseOffcanvas() { _isOffcanvasOpen = false; _selectedPermission = null; }
+    async Task OpenAddDialog() {
+        await JS.InvokeVoidAsync("disableScroll");
+    _selectedPermission = null; _isEditMode = false; _permissionModel = new PermissionFormDialog.PermissionFormModel(); _isDialogOpen = true; }
+     async Task OpenEditDialog(PermissionDto permission) { await JS.InvokeVoidAsync("disableScroll"); _selectedPermission = permission; _isEditMode = true; _permissionModel = new PermissionFormDialog.PermissionFormModel { Name = permission.Name, Description = permission.Description }; _isDialogOpen = true; }
+    async Task OpenViewDialog(PermissionDto permission) { await JS.InvokeVoidAsync("disableScroll"); _selectedPermission = permission; _isOffcanvasOpen = true; }
+    async Task CloseDialog() { await JS.InvokeVoidAsync("enableScroll"); _isDialogOpen = false; _selectedPermission = null; _permissionModel = new PermissionFormDialog.PermissionFormModel(); _isEditMode = false; }
+    async Task CloseOffcanvas() { await JS.InvokeVoidAsync("enableScroll"); _isOffcanvasOpen = false; _selectedPermission = null; }
 
     private async Task HandleSubmit(PermissionFormDialog.PermissionFormModel model)
     {
@@ -795,7 +797,7 @@ PermissionDto? selectedFeature;
             }
         }
         catch (Exception ex) { Logger.LogError(ex, "Error saving permission"); await JS.InvokeVoidAsync("showToast", "error", $"Error: {ex.Message}", Severity.Error); }
-        finally { _isSaving = false; }
+        finally { _isSaving = false; await JS.InvokeVoidAsync("enableScroll"); }
     }
 
     private async Task DeletePermission(PermissionDto permission)

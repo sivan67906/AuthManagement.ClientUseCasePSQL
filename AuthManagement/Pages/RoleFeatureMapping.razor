@@ -124,10 +124,10 @@
 
     .search-input {
         width: 100%;
-        padding: 8px 12px 8px 36px;
+        padding: 8px 12px 8px 11px;
         border: 1px solid #d9d9e3;
         font-size: 14px;
-        padding-left: 39px;
+        /* padding-left: 39px; */
         border-radius: 0.25rem;
         padding-top: 5px;
         padding-bottom: 7px;
@@ -403,7 +403,7 @@
         .page-btn:hover:not(:disabled) {
             background: #f5f5f5;
             border-color: var(--bs-primary);
-            color: var(--bs-primary);
+            color: var(--bs-primary) !important;
         }
 
         .page-btn:disabled {
@@ -1106,18 +1106,21 @@
         }
     }
 
-    private void OpenAddDialog()
+     async Task OpenAddDialog()
     {
         _selectedMapping = null;
         _isEditMode = false;
         _mappingModel = new RoleFeatureMappingFormModel();
         _isDialogOpen = true;
+        await JS.InvokeVoidAsync("disableScroll");
     }
 
-    private void OpenEditDialog(DisplayRoleFeatureMapping mapping)
+    async Task OpenEditDialog(DisplayRoleFeatureMapping mapping)
     {
         _selectedMapping = mapping;
         _isEditMode = true;
+
+        await JS.InvokeVoidAsync("disableScroll");
         _mappingModel = new RoleFeatureMappingFormModel
         {
             RoleId = mapping.RoleId.ToString(),
@@ -1128,24 +1131,27 @@
         _isDialogOpen = true;
     }
 
-    private void OpenViewDialog(DisplayRoleFeatureMapping mapping)
+     async Task OpenViewDialog(DisplayRoleFeatureMapping mapping)
     {
         _selectedMapping = mapping;
         _isOffcanvasOpen = true;
+        await JS.InvokeVoidAsync("disableScroll");
     }
 
-    private void CloseDialog()
+     async Task CloseDialog()
     {
         _isDialogOpen = false;
         _selectedMapping = null;
         _mappingModel = new RoleFeatureMappingFormModel();
         _isEditMode = false;
+        await JS.InvokeVoidAsync("enableScroll");
     }
 
-    private void CloseOffcanvas()
+    async Task CloseOffcanvas()
     {
         _isOffcanvasOpen = false;
         _selectedMapping = null;
+        await JS.InvokeVoidAsync("enableScroll");
     }
 
     private async Task HandleSubmit(RoleFeatureMappingFormModel model)
@@ -1228,6 +1234,7 @@
         finally
         {
             _isSaving = false;
+            await JS.InvokeVoidAsync("enableScroll");
         }
     }
 

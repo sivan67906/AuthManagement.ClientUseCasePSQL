@@ -7,14 +7,11 @@
 @inject IJSRuntime JS
 @inject HttpClient Http
 @inject NavigationManager Nav
+@layout AuthLayout
 
 <div class="d-flex justify-content-center align-items-center" style="min-height: 100vh;">
-    <div class="text-center">
-        <div class="spinner-border text-primary mb-3" role="status">
-            <span class="visually-hidden">Logging out...</span>
-        </div>
-        <h5>Logging out...</h5>
-    </div>
+    <LoadingSpinner FullPage="true" />
+
 </div>
 
 @code {

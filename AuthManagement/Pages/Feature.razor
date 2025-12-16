@@ -282,7 +282,7 @@
         .page-btn:hover:not(:disabled) {
             background: #f5f5f5;
             border-color: var(--bs-primary);
-            color: var(--bs-primary);
+            color: var(--bs-primary) !important;
         }
 
         .page-btn:disabled {
@@ -833,11 +833,29 @@ Features Details
     private int GetStartPage() => Math.Max(1, _currentPage - 2);
     private int GetEndPage() => Math.Min(_totalPages, _currentPage + 2);
     private void GoToPage(int page) { if (page >= 1 && page <= _totalPages) { _currentPage = page; UpdateFilteredFeatures(); StateHasChanged(); } }
-    private void OpenAddDialog() { _selectedFeature = null; _isEditMode = false; _featureModel = new FeatureFormDialog.FeatureFormModel(); _isDialogOpen = true; }
-    private void OpenEditDialog(FeatureDto feature) { _selectedFeature = feature; _isEditMode = true; _featureModel = new FeatureFormDialog.FeatureFormModel { Name = feature.Name, Description = feature.Description, RouteUrl = feature.RouteUrl, IsMainMenu = feature.IsMainMenu, ParentFeatureId = feature.ParentFeatureId, DisplayOrder = feature.DisplayOrder, Level = feature.Level, Icon = feature.Icon }; _isDialogOpen = true; }
-    private void OpenViewDialog(FeatureDto feature) { _selectedFeature = feature; _isOffcanvasOpen = true; }
-    private void CloseDialog() { _isDialogOpen = false; _selectedFeature = null; _featureModel = new FeatureFormDialog.FeatureFormModel(); _isEditMode = false; }
-    private void CloseOffcanvas() { _isOffcanvasOpen = false; _selectedFeature = null; }
+    async Task OpenAddDialog()
+    {
+         _selectedFeature = null; _isEditMode = false; _featureModel = new FeatureFormDialog.FeatureFormModel(); _isDialogOpen = true; await JS.InvokeVoidAsync("disableScroll");
+    }
+    async Task OpenEditDialog(FeatureDto feature)
+    {
+        await JS.InvokeVoidAsync("disableScroll");
+
+        _selectedFeature = feature; _isEditMode = true; _featureModel = new FeatureFormDialog.FeatureFormModel { Name = feature.Name, Description = feature.Description, RouteUrl = feature.RouteUrl, IsMainMenu = feature.IsMainMenu, ParentFeatureId = feature.ParentFeatureId, DisplayOrder = feature.DisplayOrder, Level = feature.Level, Icon = feature.Icon }; _isDialogOpen = true; }
+    async Task OpenViewDialog(FeatureDto feature)
+    {
+        await JS.InvokeVoidAsync("disableScroll");
+
+        _selectedFeature = feature; _isOffcanvasOpen = true; }
+    async Task CloseDialog() { 
+        await JS.InvokeVoidAsync("enableScroll");
+        _isDialogOpen = false; _selectedFeature = null; _featureModel = new FeatureFormDialog.FeatureFormModel(); _isEditMode = false;
+    }
+    async Task CloseOffcanvas()
+    {
+        await JS.InvokeVoidAsync("enableScroll");
+
+        _isOffcanvasOpen = false; _selectedFeature = null; }
 
     private async Task HandleSubmit(FeatureFormDialog.FeatureFormModel model)
     {
@@ -876,7 +894,10 @@ Features Details
                 }
             }
         catch (Exception ex) { Logger.LogError(ex, "Error saving feature"); await JS.InvokeVoidAsync("showToast", "error", $"Error: {ex.Message}", Severity.Error); }
-        finally { _isSaving = false; }
+        finally
+        {
+            _isSaving = false; await JS.InvokeVoidAsync("enableScroll");
+        }
     }
 
     private async Task DeleteFeature(FeatureDto feature)

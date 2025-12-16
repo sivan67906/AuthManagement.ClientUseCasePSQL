@@ -7,46 +7,68 @@
 @* This component receives props from parent instead of managing its own state *@
 
 <style>
-    .modal-backdrop-custom {
+    .modal-backdrop {
         position: fixed;
         top: 0;
         left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.5);
-        z-index: 1040;
-        display: @(IsOpen ? "block" : "none");
+        z-index: 11111;
+        width: 100vw;
+        height: 100vh;
+        background-color: rgba(0, 0, 0, 0.5);
     }
 
-    .modal-dialog-custom {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-        z-index: 1050;
-        width: 90%;
-        max-width: 600px;
-        max-height: 90vh;
-        display: @(IsOpen ? "block" : "none");
-        overflow: hidden;
+    .modal {
+        z-index: 111111;
     }
 
-    .modal-header-custom {
-        padding: 20px 24px;
-        border-bottom: 1px solid #e5e7eb;
+    .modal-dialog-centered {
+        min-height: calc(100% - 3.5rem);
         display: flex;
-        justify-content: space-between;
         align-items: center;
+        margin: 1.75rem auto;
+        max-width: 540px;
+        width: 100%;
+        padding: 0 15px;
+    }
+
+    .modal-content {
+        border-radius: 8px;
+        border: none;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+        overflow: visible;
+        max-width: 100%;
+        width: 100%;
+    }
+
+    .modal-header {
+        padding: 20px 24px;
+        border-bottom: 1px solid #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: relative;
     }
 
     .modal-title {
-        font-size: 1.25rem;
+        font-size: 18px;
         font-weight: 600;
-        color: #111827;
+        color: #333;
+        display: flex;
+        align-items: center;
         margin: 0;
+    }
+
+    .btn-close {
+        border-radius: 1rem !important;
+    }
+
+    .modal-body{
+        border-radius: 8px;
+        border: none;
+        /* box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+        overflow: visible;
+        max-width: 100%;
+        width: 100%; */
     }
 
     .modal-body-custom {
@@ -87,12 +109,28 @@
         border-radius: 6px;
         font-size: 14px;
         transition: border-color 0.2s;
+        /* background: transparent; */
     }
 
         .form-control:focus, .form-select:focus {
             outline: none;
             border-color: #3b82f6;
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+    .btn-primary {
+        background-color: #7c3aed;
+        border-color: #7c3aed;
+        color: white;
+        padding: 8px 20px;
+        font-size: 14px;
+        font-weight: 500;
+        border-radius: 6px;
+    }
+
+        .btn-primary:hover:not(:disabled) {
+            background-color: #6d28d9;
+            border-color: #6d28d9;
         }
 
     .error-message {
@@ -109,7 +147,24 @@
         background: #f9fafb;
         border-radius: 6px;
         border: 1px solid #e5e7eb;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(206px, 1fr));
     }
+
+    .btn-label-secondary {
+          background-color: transparent;
+    border: 1px solid #d9d9e3 !important;
+    color: #666 !important;
+    padding: 8px 20px !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    border-radius: 6px !important;
+    }
+
+        .btn-label-secondary:hover:not(:disabled) {
+            background-color: #f5f5f5;
+            border-color: #d9d9e3;
+        }
 
     .permission-checkbox-item {
         display: flex;
@@ -182,14 +237,6 @@
         transition: all 0.2s;
     }
 
-    .btn-primary {
-        background: #3b82f6;
-        color: white;
-    }
-
-        .btn-primary:hover:not(:disabled) {
-            background: #2563eb;
-        }
 
         .btn-primary:disabled {
             background: #9ca3af;
@@ -208,16 +255,25 @@
     .close-btn {
         background: none;
         border: none;
-        font-size: 24px;
+        font-size: 19px;
         color: #6b7280;
         cursor: pointer;
-        padding: 0;
-        width: 32px;
-        height: 32px;
+        padding: 0px;
+        width: 28px;
+        height: 28px;
         display: flex;
         align-items: center;
         justify-content: center;
         border-radius: 4px;
+        position: absolute;
+        right: -7px;
+        top: -7px;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: rgba(0, 0, 0, 0.1) -4px 9px 25px -6px;
+        padding-bottom: 3px;
     }
 
         .close-btn:hover {
@@ -232,22 +288,30 @@
         color: #1e40af;
         display: flex;
         align-items: center;
-        gap: 8px;
+        /* gap: 8px; */
     }
 
     .alert-info i {
         font-size: 16px;
     }
+
+   
 </style>
 
-<div class="modal-backdrop-custom" @onclick="HandleCancel"></div>
-<div class="modal-dialog-custom">
-    <div class="modal-header-custom">
+<div class="modal-backdrop show" @onclick="HandleCancel"></div>
+ <div class="modal show d-block" tabindex="-1" @onclick:stopPropagation="true">
+        <div class="modal-dialog modal-dialog-centered">
+<div class="modal-content">
+    <div class="modal-header">
         <h5 class="modal-title">@(IsEditMode ? "Edit Permissions" : "Create Permission Mapping")</h5>
+        @* <button class="close-btn" @onclick="HandleCancel">&times;</button> *@
+        @* <button type="button" class="btn-close" @onclick="HandleCancel" disabled="@IsSaving"></button> *@
         <button class="close-btn" @onclick="HandleCancel">&times;</button>
+
+
     </div>
 
-    <div class="modal-body-custom">
+    <div class="modal-body">
         @if (_showViewWarning)
         {
             <div class="validation-warning">
@@ -313,9 +377,11 @@
 
         <div class="form-group">
             <label class="form-label form-label-required">Permissions</label>
-            <div class="alert alert-info" style="font-size: 12px; padding: 8px 12px; margin-bottom: 12px;">
+            <div class="alert alert-info" style="font-size: 11px; padding:4px 4px; margin-bottom: 12px;">
                 <i class="ti tabler-info-circle"></i>
+                <div>
                 <strong>View permission is mandatory.</strong> It cannot be unchecked and is required for all permission mappings.
+                </div>
             </div>
             <div class="permission-checkboxes">
                 @foreach (var permission in _permissions.OrderBy(p => GetPermissionOrder(p.Name)))
@@ -347,14 +413,48 @@
                 <div class="error-message">@_errors["Permissions"]</div>
             }
         </div>
+
+
+
+
+           <div class="d-flex justify-content-end gap-2 mt-4">
+                            <button type="button" 
+                                    class="btn btn-label-secondary" 
+                                    @onclick="HandleCancel"
+                                    disabled="@IsSaving">
+                                Cancel
+                            </button>
+                            <button type="submit" 
+                                    class="btn btn-primary" 
+                            disabled="@IsSaving" @onclick="HandleSave">
+                                @if (IsSaving)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                    <span>Saving...</span>
+                                }
+                                else
+                                {
+                                    <i class="ti tabler-check me-1"></i>
+                                    <span>@(IsEditMode ? "Update" : "Create")</span>
+                                }
+                            </button>
+                        </div>
+
+
+
     </div>
 
-    <div class="modal-footer-custom">
+    @* <div class="modal-footer-custom">
         <button class="btn btn-secondary" @onclick="HandleCancel">Cancel</button>
         <button class="btn btn-primary" @onclick="HandleSave" disabled="@IsSaving">
             @(IsSaving ? "Saving..." : "Save")
         </button>
-    </div>
+    </div> *@
+
+    
+
+</div>
+</div>
 </div>
 
 @code {

@@ -280,7 +280,9 @@
 		{
 			try
 			{
-
+				var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+				if (!authState.User.Identity?.IsAuthenticated ?? true)
+					return;
 				await SetHeaderHeightAsync();   // ← REQUIRED
 												// Listen to resize events
 				await JS.InvokeVoidAsync("window.addEventListener", "resize",

@@ -427,7 +427,7 @@
         .page-btn:hover:not(:disabled) {
             background: #f5f5f5;
             border-color: var(--bs-primary);
-            color: var(--bs-primary);
+            color: var(--bs-primary) !important;
         }
 
         .page-btn:disabled {
@@ -1144,18 +1144,22 @@
         }
     }
 
-    private void OpenAddDialog()
+     async Task OpenAddDialog()
     {
         _selectedDepartment = null;
         _isEditMode = false;
         _departmentModel = new DepartmentFormDialog.DepartmentFormModel();
         _isDialogOpen = true;
+        await JS.InvokeVoidAsync("disableScroll");
+
     }
 
-    private void OpenEditDialog(DepartmentDto department)
+    async Task OpenEditDialog(DepartmentDto department)
     {
         _selectedDepartment = department;
         _isEditMode = true;
+        await JS.InvokeVoidAsync("disableScroll");
+
         _departmentModel = new DepartmentFormDialog.DepartmentFormModel
         {
             Name = department.Name,
@@ -1164,24 +1168,31 @@
         _isDialogOpen = true;
     }
 
-    private void OpenViewDialog(DepartmentDto department)
+    async Task OpenViewDialog(DepartmentDto department)
     {
         _selectedDepartment = department;
         _isOffcanvasOpen = true;
+        await JS.InvokeVoidAsync("disableScroll");
+
     }
 
-    private void CloseDialog()
+    async Task CloseDialog()
     {
         _isDialogOpen = false;
         _selectedDepartment = null;
         _departmentModel = new DepartmentFormDialog.DepartmentFormModel();
         _isEditMode = false;
+        await JS.InvokeVoidAsync("enableScroll");
+
+
     }
 
-    private void CloseOffcanvas()
+    async Task CloseOffcanvas()
     {
         _isOffcanvasOpen = false;
         _selectedDepartment = null;
+        await JS.InvokeVoidAsync("enableScroll");
+
     }
 
     private async Task HandleSubmit(DepartmentFormDialog.DepartmentFormModel model)
