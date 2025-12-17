@@ -41,6 +41,7 @@ public class PageAccessService
         "/profile",
         "/access-denied",
         "/change-password",
+        "/authenticator-setup",
         "/logout",
         "/notification",
         "/billingplan"

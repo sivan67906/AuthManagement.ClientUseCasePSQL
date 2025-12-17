@@ -187,7 +187,7 @@
 
 /* Ensure no icon overlap */
 .menu-link .menu-icon + div {
-    margin-left: 0.5rem;
+    /*margin-left: 0.5rem;*/
 }
 
 /* Fix icon vertical alignment in all contexts */

@@ -139,7 +139,7 @@
     }
 
     .form-section {
-        margin-bottom: 24px;
+        /* margin-bottom: 24px; */
     }
 
     .form-section-title {
@@ -182,6 +182,7 @@
         border-color: #7c3aed;
         box-shadow: 0 0 0 0.2rem rgba(124, 58, 237, 0.1);
         outline: none;
+            padding: 8px;
     }
 
     .form-control.is-invalid, .form-select.is-invalid {
@@ -305,6 +306,7 @@
 
     .btn-wizard-submit:hover {
         background: #218838;
+        color:white
     }
 
     .btn-wizard-submit:disabled {
@@ -532,148 +534,145 @@ else
             <!-- Header -->
            
 
-              <div class="col-12 mb-6">
-            <div class="bs-stepper wizard-numbered mt-2">
+    <div class="col-12 mb-6">
+        <div class="bs-stepper wizard-numbered mt-2">
             <div class="stepper-wrapper">
-             <div class="stepper-scroll-container">
-    
-    <!-- LEFT ARROW -->
-    <button type="button"
-            class="stepper-arrow left"
-            @onclick="ScrollLeft">
-        <i class="ti tabler-chevron-left"></i>
-    </button>
+                <div class="stepper-scroll-container">
 
-  
-    <div class="bs-stepper-header" id="stepperHeader">
+                    <!-- LEFT ARROW -->
+                    <button type="button"
+                            class="stepper-arrow left"
+                            @onclick="ScrollLeft">
+                        <i class="ti tabler-chevron-left"></i>
+                    </button>
 
-        @for (int i = 0; i < _steps.Length; i++)
-        {
-            var stepIndex = i;
-            var isActive = _currentStep == stepIndex;
-            var isCompleted = _currentStep > stepIndex;
-            var hasError = _stepErrors.Contains(stepIndex);
+                    <!-- STEPPER HEADER -->
+                    <div class="bs-stepper-header"
+                         id="stepperHeader"
+                         @ref="StepperHeaderRef">
 
-            <div class="step @(isActive ? "active" : "") @(isCompleted ? "completed" : "") @(hasError ? "error" : "")">
-                <button type="button"
-                        class="step-trigger"
-                        @onclick="() => GoToStep(stepIndex)">
-                    
-                    <span class="bs-stepper-circle">
-                        @(stepIndex + 1)
-                    </span>
+                        @for (int i = 0; i<_steps.Length; i++)
+                                                {
+                                                var stepIndex = i;
+                            var isActive = _currentStep == stepIndex;
+                            var isCompleted = _currentStep > stepIndex;
+                            var hasError = _stepErrors.Contains(stepIndex);
 
-                    <span class="bs-stepper-label">
-                        <span class="bs-stepper-title">@_steps[stepIndex]</span>
-                        <span class="bs-stepper-subtitle text-ellipsis">
-                            @GetStepDescription(stepIndex)
-                        </span>
-                    </span>
-                </button>
+                        <div class="step @(isActive ? "active" : "")
+                                         @(isCompleted ? "completed" : "")
+                                         @(hasError ? "error" : "")">
+
+                            <button type="button"
+                                    class="step-trigger"
+                                    @onclick="() => GoToStep(stepIndex)">
+
+                                <!-- CIRCLE -->
+                                <span class="bs-stepper-circle">
+                                    @if (isCompleted)
+                                                                        {
+                                    <i class="ti tabler-check"></i>
+                                                                        }
+                                                                        else
+                                    {
+                                        @(stepIndex + 1)
+                                    }
+                                </span>
+
+                                <!-- LABEL -->
+                                <span class="bs-stepper-label">
+                                    <span class="bs-stepper-title">
+                                        @_steps[stepIndex]
+                                    </span>
+                                    <span class="bs-stepper-subtitle text-ellipsis">
+                                        @GetStepDescription(stepIndex)
+                                    </span>
+                                </span>
+                            </button>
+                        </div>
+
+                        @if (i < _steps.Length - 1)
+                        {
+                            <div class="line">
+                                <i class="ti tabler-chevron-right"></i>
+                            </div>
+                        }
+                                                }
+                    </div>
+
+                    <!-- RIGHT ARROW -->
+                    <button type="button"
+                            class="stepper-arrow right"
+                            @onclick="ScrollRight">
+                        <i class="ti tabler-chevron-right"></i>
+                    </button>
+
+                </div>
             </div>
 
-            @if (i < _steps.Length - 1)
-            {
-                <div class="line">
-                    <i class="ti tabler-chevron-right"></i>
-                </div>
-            }
-        }
-    </div>
-
-    <!-- RIGHT ARROW -->
-    <button type="button"
-            class="stepper-arrow right"
-            @onclick="ScrollRight">
-        <i class="ti tabler-chevron-right"></i>
-    </button>
-
-</div>
-
-                
-                </div>
-
-                <div class="bs-stepper-content">
-
-                  @switch (_currentStep)
+            <!-- CONTENT -->
+            <div class="bs-stepper-content">
+                @switch (_currentStep)
                 {
                     case 0:
                         @RenderStep1_Identity()
-                        break;
+                        ; break;
                     case 1:
+
                         @RenderStep2_Registration()
-                        break;
+                        ; break;
                     case 2:
+
                         @RenderStep3_Address()
-                        break;
+                        ; break;
                     case 3:
+
                         @RenderStep4_Contact()
-                        break;
+                        ; break;
                     case 4:
+
                         @RenderStep5_Financial()
-                        break;
+                        ; break;
                     case 5:
+
                         @RenderStep6_Review()
-                        break;
+                        ; break;
                 }
-                </div>
-          
-                            <div class="wizard-footer">
+            </div>
+
+            <!-- FOOTER -->
+            <div class="wizard-footer">
                 <div>
                     @if (_currentStep > 0)
                     {
-                        <button type="button" class="btn btn-wizard btn-wizard-prev" @onclick="PreviousStep" disabled="@_isSaving">
+                        <button class="btn btn-wizard btn-wizard-prev"
+                                @onclick="PreviousStep">
                             <i class="ti tabler-arrow-left"></i>
                             Previous
                         </button>
                     }
-                    else
-                    {
-                        @if (IsOpen)
-                        {
-                            <button type="button" class="btn btn-wizard btn-wizard-prev" @onclick="CancelForm" disabled="@_isSaving">
-                                <i class="ti tabler-x"></i>
-                                Cancel
-                            </button>
-                        }
-                        else
-                        {
-                            <button type="button" class="btn btn-wizard btn-wizard-prev" data-bs-dismiss="modal" disabled="@_isSaving">
-                                <i class="ti tabler-x"></i>
-                                Cancel
-                            </button>
-                        }
-                    }
                 </div>
+
                 <div>
                     @if (_currentStep < _steps.Length - 1)
                     {
-                        <button type="button" class="btn btn-wizard btn-wizard-next" @onclick="NextStep" disabled="@_isSaving">
+                        <button class="btn btn-wizard btn-wizard-next"
+                                @onclick="NextStep">
                             Next
                             <i class="ti tabler-arrow-right"></i>
                         </button>
                     }
                     else
                     {
-                        <button type="button" class="btn btn-wizard btn-wizard-submit" @onclick="SubmitForm" disabled="@_isSaving">
-                            @if (_isSaving)
-                            {
-                                <span class="spinner-border spinner-border-sm" role="status"></span>
-                                <span>Saving...</span>
-                            }
-                            else
-                            {
-                                <i class="ti tabler-check"></i>
-                                <span>@(IsEditMode ? "Update Company" : "Create Company")</span>
-                            }
+                        <button class="btn btn-wizard btn-wizard-submit"
+                                @onclick="SubmitForm">
+                            <i class="ti tabler-check"></i>
+                            Submit
                         </button>
                     }
                 </div>
             </div>
-
-                </div>
         </div>
-
+    </div>
 
 
 
@@ -715,6 +714,7 @@ else
     private List<TimeZoneLookupDto> _timeZones = [];
     private List<TimeZoneLookupDto> _filteredTimeZones = [];
     private List<CompanyLookupDto> _parentCompanies = [];
+    private ElementReference StepperHeaderRef;
 
     protected override async Task OnInitializedAsync()
     {
@@ -944,27 +944,46 @@ private async Task ScrollRight()
         );
     }
 
-
-    private void NextStep()
+    private async Task NextStep()
     {
-        if (ValidateCurrentStep())
+        if (!ValidateCurrentStep())
         {
-            _stepErrors.Remove(_currentStep);
-            if (_currentStep < _steps.Length - 1)
-            {
-                _currentStep++;
-                StateHasChanged();
-            }
+            _stepErrors.Add(_currentStep); // mark step error
+            return; // STOP navigation
+        }
+
+        _stepErrors.Remove(_currentStep);
+
+        if (_currentStep < _steps.Length - 1)
+        {
+            _currentStep++;
+
+            await Task.Delay(50);
+            await JS.InvokeVoidAsync(
+                "scrollStepIntoView",
+                $"step-{_currentStep}"
+            );
         }
     }
 
-    private void PreviousStep()
+
+    private async Task PreviousStep()
     {
         if (_currentStep > 0)
         {
             _currentStep--;
-            StateHasChanged();
+
+            await Task.Delay(50);
+            await ScrollToActiveStep();
         }
+    }
+    private async Task ScrollToActiveStep()
+    {
+        await JS.InvokeVoidAsync(
+            "scrollStepIntoView",
+            StepperHeaderRef,
+            _currentStep
+        );
     }
 
     private bool ValidateCurrentStep()

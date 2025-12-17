@@ -25,7 +25,7 @@
         gap: 8px;
         font-size: 14px;
         color: #666;
-        margin-bottom: 12px;
+        /* margin-bottom: 12px; */
     }
 
     .breadcrumb-link {
@@ -78,7 +78,7 @@
     .page-content {
         background: #f8f9fa;
         min-height: calc(100vh - 140px);
-        padding: 24px;
+        /* padding: 24px; */
     }
 
     .wizard-wrapper {
@@ -119,16 +119,25 @@
 
 @if (_isLoading)
 {
-    <div class="loading-overlay">
-        <div class="spinner"></div>
-    </div>
+    <LoadingSpinner FullPage="true" />
+
 }
 else
 {
     <div class="page-header">
       
         <div class="page-title-section">
-            <h1 class="page-title">@(_isEditMode ? "Edit Company" : "Add New Company")</h1>
+            <h1 class="page-title">
+                <a href="/company">
+                    <span style="background: #7c3aed17;
+            padding: 3px 4px 4px 4px;
+            font-size: 12px;
+            border-radius: 6px;
+            color: #7367ef;">
+                        <i class="bi bi-caret-left-fill"></i>
+                    </span>
+                </a>
+                @(_isEditMode ? "Edit Company" : "Add New Company")</h1>
             <nav class="breadcrumb-nav">
                 <span class="breadcrumb-link" @onclick='() => NavigationManager.NavigateTo("/")'>
                     <i class="bi bi-house-door"></i> Home
