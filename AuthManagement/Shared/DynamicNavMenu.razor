@@ -465,23 +465,25 @@
         if (string.IsNullOrEmpty(icon)) return "tabler-circle-dot";
 
         var iconLower = icon.ToLower();
-
-        if (iconLower.Contains("dashboard") || iconLower.Contains("home")) return "tabler-smart-home";
-        if (iconLower.Contains("person") || iconLower.Contains("user")) return "tabler-users";
-        if (iconLower.Contains("security") || iconLower.Contains("shield")) return "tabler-shield-lock";
-        if (iconLower.Contains("settings") || iconLower.Contains("gear")) return "tabler-settings";
-        if (iconLower.Contains("description") || iconLower.Contains("file")) return "tabler-file-text";
-        if (iconLower.Contains("folder")) return "tabler-folder";
-        if (iconLower.Contains("role")) return "tabler-key";
-        if (iconLower.Contains("lock")) return "tabler-lock";
-        if (iconLower.Contains("map")) return "tabler-map";
-        if (iconLower.Contains("list")) return "tabler-list";
-        if (iconLower.Contains("permission")) return "tabler-lock-open";
-        if (iconLower.Contains("department")) return "tabler-building";
-        if (iconLower.Contains("feature")) return "tabler-sparkles";
-        if (iconLower.Contains("page")) return "tabler-file";
-
-        return "tabler-circle-dot";
+        if (!iconLower.Contains("tabler"))
+        {
+            if (iconLower.Contains("dashboard") || iconLower.Contains("home")) return "tabler-smart-home";
+            if (iconLower.Contains("person") || iconLower.Contains("user")) return "tabler-users";
+            if (iconLower.Contains("security") || iconLower.Contains("shield")) return "tabler-shield-lock";
+            if (iconLower.Contains("settings") || iconLower.Contains("gear")) return "tabler-settings";
+            if (iconLower.Contains("description") || iconLower.Contains("file")) return "tabler-file-text";
+            if (iconLower.Contains("folder")) return "tabler-folder";
+            if (iconLower.Contains("role")) return "tabler-key";
+            if (iconLower.Contains("lock")) return "tabler-lock";
+            if (iconLower.Contains("map")) return "tabler-map";
+            if (iconLower.Contains("list")) return "tabler-list";
+            if (iconLower.Contains("permission")) return "tabler-lock-open";
+            if (iconLower.Contains("department")) return "tabler-building";
+            if (iconLower.Contains("feature")) return "tabler-sparkles";
+            if (iconLower.Contains("page")) return "tabler-file";
+         return "tabler-circle-dot";
+        }
+        else return icon;
     }
 
     private void NavigateToPage(string? url)
