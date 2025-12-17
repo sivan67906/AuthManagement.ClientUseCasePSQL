@@ -87,6 +87,7 @@
     .toolbar-left {
         display: flex;
         align-items: center;
+        justify-content: flex-start !important;
     }
 
     .toolbar-left::before {
@@ -123,11 +124,16 @@
     .search-input {
         width: 100%;
         padding: 6px 36px 6px 12px;
-        border: 1px solid #d9d9e3;
+        border:none;
         border-radius: 6px;
         font-size: 13px;
     }
 
+    .search-box{
+        border: 1px solid #d9d9e3;
+        border-radius: 6px;
+        padding: 5px;
+    }
     .search-input:focus {
         outline: none;
         border-color: #7c3aed;
@@ -539,7 +545,7 @@
         }
 
     .project-style-card {
-        border: 2px solid;
+        border: 1px solid #8080803d;
         border-radius: 14px;
         padding: 18px;
         background: #fff;
@@ -611,6 +617,11 @@
         border-top: 1px dashed #e5e7eb;
         padding-top: 12px;
     }
+    .grid{
+        display: grid;
+        gap: 20px;
+        grid-template-columns: repeat(auto-fill, minmax(269px, 1fr));
+    }
 </style>
 
 <div class="flex-grow-1">
@@ -674,7 +685,7 @@
             <!-- Company Cards -->
 
             <div class="card-body" style="margin-bottom: 28px; padding-top: 28px; padding-left: 22px; padding-right: 22px;">
-                <div class="row g-3">
+                <div class="grid">
                     @if (_pagedCompanies.Any())
                     {
                         @foreach (var company in _pagedCompanies)
@@ -682,8 +693,8 @@
                             string borderColor = GenerateRandomColor();
                             string avatarBg = GenerateAvatarColor(company.CompanyCode);
 
-                            <div class="col-12 col-md-6 col-lg-4">
-                             <div class="card project-style-card" style="border-color:@borderColor">
+                            <div class="grid-box">
+                                <div class="card project-style-card" style="border-top:5px solid @borderColor">
 
     <!-- HEADER -->
     <div class="project-header d-flex justify-content-between align-items-start">
@@ -729,9 +740,12 @@
 
     <!-- TAGS -->
     <div class="project-tags mt-3">
-    <span class="tag"><i class="ti tabler-building"></i>&nbsp;@company.LegalStructureName</span>
-    <span class="tag"><i class="ti tabler-map-pin"></i>&nbsp;@company.BaseCurrencyCode</span>
-      <span class="tag"> <i class="ti tabler-currency-dollar"></i>&nbsp;@company.AddressCountryName</span>
+                                        <span class="tag"><i class="bi bi-buildings-fill"></i>&nbsp;@company.LegalStructureName</span>
+                                        <span class="tag">
+                                            <i class="bi bi-geo-alt-fill"></i>
+                                            &nbsp;@company.BaseCurrencyCode
+                                        </span>
+                                        <span class="tag"><i class="bi bi-globe-central-south-asia"></i>&nbsp;@company.AddressCountryName</span>
     </div>
 
     <!-- DESCRIPTION -->
