@@ -1,5 +1,7 @@
 @using AuthManagement.Models
+@using AuthManagement.Services
 @using System.ComponentModel.DataAnnotations
+@* @inject ILogger<RoleFeatureMappingFormDialog> Logger *@
 
 @if (IsOpen)
 {
@@ -30,19 +32,21 @@
 
                            <div class="mb-3">
                             <label class="form-label">
-                                Department <span style="font-size: 12px; color: #999;">(Optional - Leave empty for system-wide)</span>
+                                Department <span class="text-danger">*</span>
                             </label>
                             <select class="form-select"
                                     @bind="FormModel.DepartmentId"
+                                    @bind:after="OnDepartmentChangedAsync"
                                     disabled="@IsSaving">
-                                <option value="">System-wide (All Departments)</option>
+                                <option value="">Select Department</option>
                                 @foreach (var dept in Departments)
                                 {
                                     <option value="@dept.Id">@dept.Name</option>
                                 }
                             </select>
+                            <ValidationMessage For="@(() => FormModel.DepartmentId)" class="text-danger" />
                             <small class="text-muted d-block mt-1">
-                                If specified, only users of this role in this department will see the menu item
+                                Select the department for which this menu item will be visible
                             </small>
                         </div>
 
@@ -371,6 +375,12 @@
 </style>
 
 @code {
+    [Inject]
+    private RBACService RBACService { get; set; } = default!;
+    
+    [Inject]
+    private ILogger<RoleFeatureMappingFormDialog> Logger { get; set; } = default!;
+    
     [Parameter]
     public bool IsOpen { get; set; }
 
@@ -397,6 +407,42 @@
 
     [Parameter]
     public EventCallback<RoleFeatureMappingFormModel> OnSubmit { get; set; }
+    
+    [Parameter]
+    public EventCallback<List<RoleDto>> OnRolesUpdated { get; set; }
+
+    private async Task OnDepartmentChangedAsync()
+    {
+        // Clear role selection when department changes
+        FormModel.RoleId = string.Empty;
+        
+        // Reload roles based on selected department
+        await LoadRolesForDepartmentAsync();
+    }
+    
+    private async Task LoadRolesForDepartmentAsync()
+    {
+        try
+        {
+            Guid? deptId = string.IsNullOrEmpty(FormModel.DepartmentId) 
+                ? null 
+                : Guid.Parse(FormModel.DepartmentId);
+            
+            // If null (System wide), get all roles
+            // If specific department, get only that department's roles
+            var roleResponse = await RBACService.GetRolesByDepartmentAsync(deptId);
+            if (roleResponse.Success && roleResponse.Data != null)
+            {
+                Roles = roleResponse.Data;
+                // Notify parent component
+                await OnRolesUpdated.InvokeAsync(Roles);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error loading roles for department");
+        }
+    }
 
     private async Task HandleCancel()
     {

@@ -5,40 +5,51 @@
 @inject IJSRuntime JSRuntime
 @implements IDisposable
 
-<aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme" style="z-index: 11111;">
-    <div class="app-brand demo">
-        <a href="/" class="app-brand-link">
-            <span class="app-brand-logo demo">
-                <span class="text-primary">
-                    <svg width="32" height="22" viewBox="0 0 32 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path fill-rule="evenodd" clip-rule="evenodd" d="M0.00172773 0V6.85398C0.00172773 6.85398 -0.133178 9.01207 1.98092 10.8388L13.6912 21.9964L19.7809 21.9181L18.8042 9.88248L16.4951 7.17289L9.23799 0H0.00172773Z" fill="currentColor"></path>
-                        <path opacity="0.06" fill-rule="evenodd" clip-rule="evenodd" d="M7.69824 16.4364L12.5199 3.23696L16.5541 7.25596L7.69824 16.4364Z" fill="#161616"></path>
-                        <path opacity="0.06" fill-rule="evenodd" clip-rule="evenodd" d="M8.07751 15.9175L13.9419 4.63989L16.5849 7.28475L8.07751 15.9175Z" fill="#161616"></path>
-                        <path fill-rule="evenodd" clip-rule="evenodd" d="M7.77295 16.3566L23.6563 0H32V6.88383C32 6.88383 31.8262 9.17836 30.6591 10.4057L19.7824 22H13.6938L7.77295 16.3566Z" fill="currentColor"></path>
-                    </svg>
-                </span>
-            </span>
-            <span class="app-brand-text demo menu-text fw-bold ms-3">Gishur</span>
-        </a>
-        <a href="javascript:void(0);"
-           class="layout-menu-toggle menu-link text-large ms-auto"
-           @onclick="ToggleMenuPin">
+<AuthorizeView>
+    <Authorized>
+        <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme" style="z-index: 11111;">
+            <div class="app-brand demo">
+                <a href="/" class="app-brand-link">
+                    <span class="app-brand-logo demo">
+                        <span class="text-primary">
+                            <svg width="32" height="22" viewBox="0 0 32 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M0.00172773 0V6.85398C0.00172773 6.85398 -0.133178 9.01207 1.98092 10.8388L13.6912 21.9964L19.7809 21.9181L18.8042 9.88248L16.4951 7.17289L9.23799 0H0.00172773Z" fill="currentColor"></path>
+                                <path opacity="0.06" fill-rule="evenodd" clip-rule="evenodd" d="M7.69824 16.4364L12.5199 3.23696L16.5541 7.25596L7.69824 16.4364Z" fill="#161616"></path>
+                                <path opacity="0.06" fill-rule="evenodd" clip-rule="evenodd" d="M8.07751 15.9175L13.9419 4.63989L16.5849 7.28475L8.07751 15.9175Z" fill="#161616"></path>
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M7.77295 16.3566L23.6563 0H32V6.88383C32 6.88383 31.8262 9.17836 30.6591 10.4057L19.7824 22H13.6938L7.77295 16.3566Z" fill="currentColor"></path>
+                            </svg>
+                        </span>
+                    </span>
+                    <span class="app-brand-text demo menu-text fw-bold ms-3">Gishur</span>
+                </a>
+                @* Menu Pin Toggle Button
+                   ======================================
+                   Initial State: ti-circle (empty circle ⭕) - UNPINNED
+                   - Menu is collapsed by default
+                   - Expands temporarily on hover
+                   - Icon stays as ti-circle during hover
+                   
+                   Pinned State: ti-circle-dot (circle with dot ⊙) - PINNED
+                   - Menu stays expanded permanently
+                   - Click toggles between pinned/unpinned
+                   - Icon changes only on click, never on hover
+                   
+                   CRITICAL: Icon represents PIN STATE, not HOVER STATE!
+                   ====================================== *@
+                <a href="javascript:void(0);"
+                   class="layout-menu-toggle menu-link text-large ms-auto"
+                   @onclick="ToggleMenuPin">
 
-            <i id="menuPinIcon"
-               class="icon-base ti menu-toggle-icon d-none d-xl-block ti-circle">
-            </i>
+                    <i id="menuPinIcon"
+                       class="icon-base ti menu-toggle-icon d-none d-xl-block ti-circle">
+                    </i>
 
-        </a>
+                </a>
+            </div>
 
+            <div class="menu-inner-shadow"></div>
 
-
-    </div>
-
-    <div class="menu-inner-shadow"></div>
-
-    <ul class="menu-inner py-1">
-        <AuthorizeView>
-            <Authorized>
+            <ul class="menu-inner py-1">
                 @if (_isLoadingNav)
                 {
                     <li class="menu-item">
@@ -58,18 +69,17 @@
                         {
                             <!-- Main Menu with children - HAS menu-toggle class and dynamic icon -->
                             <li class="menu-item @(IsMenuOpen(mainMenu.Id) ? "open" : "")">
-                                <a href="javascript:void(0);" class="menu-link menu-toggle" @onclick="() => ToggleMenu(mainMenu.Id)"
-                                 >
+                                <a href="javascript:void(0);" class="menu-link menu-toggle" @onclick="() => ToggleMenu(mainMenu.Id)">
                                     <i class="menu-icon icon-base ti @GetIconClass(mainMenu.Icon)"></i>
                                     <div data-i18n="@mainMenu.Title">@mainMenu.Title</div>
                                     @if (GetMenuPageCount(mainMenu) > 0)
                                     {
                                         <div class="badge text-bg-primary rounded-pill ms-auto"
                                              style="    width: 22px;
-                    height: 22px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;">
+                                    height: 22px;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;">
                                             @GetMenuPageCount(mainMenu)
                                         </div>
                                     }
@@ -92,9 +102,9 @@
                                             <!-- Submenu with children - HAS menu-toggle class and dynamic icon -->
                                             <li class="menu-item @(IsMenuOpen(child.Id) ? "open" : "")">
                                                 <a href="javascript:void(0);" class="menu-link menu-toggle" @onclick="() => ToggleMenu(child.Id)"
-                                                   style="   
-                                        display: flex;    margin-left: auto;
-                                        align-items: center;">
+                                                   style="
+                                                            display: flex;    margin-left: auto;
+                                                            align-items: center;">
                                                     <i class="menu-icon icon-base ti @GetIconClass(child.Icon)"></i>
                                                     <div data-i18n="@child.Title">@child.Title</div>
                                                 </a>
@@ -106,8 +116,8 @@
                                                         <li class="menu-item @(IsActivePage(pageItem.Url) ? "active" : "")">
                                                             <a href="@pageItem.Url" class="menu-link" @onclick="() => NavigateToPage(pageItem.Url)" @onclick:preventDefault="true"
                                                                style="
-                                                                display: flex;    margin-left: auto;
-                                                                align-items: center;">
+                                                                                        display: flex;    margin-left: auto;
+                                                                                        align-items: center;">
                                                                 <div data-i18n="@pageItem.Title">@pageItem.Title</div>
                                                             </a>
                                                         </li>
@@ -146,24 +156,10 @@
                         </a>
                     </li>
                 }
-            </Authorized>
-            @* <NotAuthorized>
-                <li class="menu-item">
-                    <a href="/login" class="menu-link">
-                        <i class="menu-icon icon-base ti tabler-login"></i>
-                        <div data-i18n="Login">Login</div>
-                    </a>
-                </li>
-                <li class="menu-item">
-                    <a href="/register" class="menu-link">
-                        <i class="menu-icon icon-base ti tabler-user-plus"></i>
-                        <div data-i18n="Register">Register</div>
-                    </a>
-                </li>
-            </NotAuthorized> *@
-        </AuthorizeView>
-    </ul>
-</aside>
+            </ul>
+        </aside>
+    </Authorized>
+</AuthorizeView>
 
 @code {
     private bool _isLoadingNav = false;
@@ -217,16 +213,16 @@
     private async void OnAuthenticationStateChanged(Task<AuthenticationState> task)
     {
         if (_isDisposed) return;
-        
+
         try
         {
             var authState = await task;
             var isAuthenticated = authState.User?.Identity?.IsAuthenticated ?? false;
-            
+
             if (isAuthenticated != _lastAuthState)
             {
                 _lastAuthState = isAuthenticated;
-                
+
                 if (isAuthenticated)
                 {
                     await LoadNavigationIfAuthenticatedAsync();
@@ -247,13 +243,13 @@
     private async Task LoadNavigationIfAuthenticatedAsync()
     {
         if (_isDisposed || _isLoadingNav || _loadSemaphore == null) return;
-        
+
         var timeSinceLastAttempt = DateTime.UtcNow - _lastNavigationLoadAttempt;
         if (timeSinceLastAttempt < _minimumLoadInterval)
         {
             return;
         }
-        
+
         // Use try-catch for WaitAsync in case semaphore is being disposed
         bool lockAcquired = false;
         try
@@ -264,29 +260,29 @@
         {
             return;
         }
-        
+
         if (!lockAcquired)
         {
             return;
         }
-        
+
         try
         {
             _lastNavigationLoadAttempt = DateTime.UtcNow;
-            
+
             var authState = await AuthStateProvider.GetAuthenticationStateAsync();
             var isAuthenticated = authState.User?.Identity?.IsAuthenticated ?? false;
-            
+
             if (!isAuthenticated || _isDisposed)
             {
                 return;
             }
-            
+
             // Always load navigation when authenticated (no caching check)
             // This ensures menus are always fresh after login
             _isLoadingNav = true;
             await InvokeAsync(StateHasChanged);
-            
+
             try
             {
                 // Force refresh to ensure we get fresh data
@@ -322,10 +318,10 @@
     {
         NavService.ClearNavigation();
         _lastNavigationLoadAttempt = DateTime.MinValue;
-        
+
         _isLoadingNav = true;
         await InvokeAsync(StateHasChanged);
-        
+
         try
         {
             await NavService.LoadNavigationAsync(forceRefresh: true);
@@ -377,7 +373,7 @@
         foreach (var menu in NavService.NavigationTree)
         {
             if (menu.Id == id) return menu;
-            
+
             var found = FindMenuInChildren(menu, id);
             if (found != null) return found;
         }
@@ -389,7 +385,7 @@
         foreach (var child in parent.Children)
         {
             if (child.Id == id) return child;
-            
+
             var found = FindMenuInChildren(child, id);
             if (found != null) return found;
         }
@@ -406,7 +402,7 @@
         foreach (var node in nodes)
         {
             if (node.Id == menuId) return currentLevel;
-            
+
             var childLevel = GetLevelRecursive(node.Children, menuId, currentLevel + 1);
             if (childLevel >= 0) return childLevel;
         }
@@ -416,12 +412,12 @@
     private List<NavigationTreeNode> GetMenusAtLevel(int level)
     {
         var result = new List<NavigationTreeNode>();
-        
+
         if (level == 0)
         {
             return NavService.NavigationTree;
         }
-        
+
         CollectMenusAtLevel(NavService.NavigationTree, level, 0, result);
         return result;
     }
@@ -433,7 +429,7 @@
             result.AddRange(nodes);
             return;
         }
-        
+
         foreach (var node in nodes)
         {
             CollectMenusAtLevel(node.Children, targetLevel, currentLevel + 1, result);
@@ -445,11 +441,11 @@
     private bool IsActivePage(string? url)
     {
         if (string.IsNullOrEmpty(url)) return false;
-        
+
         var currentUri = new Uri(_currentUrl);
         var currentPath = currentUri.AbsolutePath.TrimEnd('/');
         var menuPath = url.TrimEnd('/');
-        
+
         return currentPath.Equals(menuPath, StringComparison.OrdinalIgnoreCase);
     }
 
@@ -467,9 +463,9 @@
     private string GetIconClass(string? icon)
     {
         if (string.IsNullOrEmpty(icon)) return "tabler-circle-dot";
-        
+
         var iconLower = icon.ToLower();
-        
+
         if (iconLower.Contains("dashboard") || iconLower.Contains("home")) return "tabler-smart-home";
         if (iconLower.Contains("person") || iconLower.Contains("user")) return "tabler-users";
         if (iconLower.Contains("security") || iconLower.Contains("shield")) return "tabler-shield-lock";
@@ -484,7 +480,7 @@
         if (iconLower.Contains("department")) return "tabler-building";
         if (iconLower.Contains("feature")) return "tabler-sparkles";
         if (iconLower.Contains("page")) return "tabler-file";
-        
+
         return "tabler-circle-dot";
     }
 
@@ -511,15 +507,15 @@
     public void Dispose()
     {
         _isDisposed = true;
-        
+
         // Cancel any ongoing navigation operations
         _navigationCts?.Cancel();
-        
+
         // Unsubscribe from events
         AuthStateProvider.AuthenticationStateChanged -= OnAuthenticationStateChanged;
         NavService.OnNavigationChanged -= OnNavigationChanged;
         Navigation.LocationChanged -= OnLocationChanged;
-        
+
         // Dispose semaphore with null check
         if (_loadSemaphore != null)
         {
@@ -533,7 +529,7 @@
                 // Already disposed
             }
         }
-        
+
         // Dispose cancellation token source
         _navigationCts?.Dispose();
     }

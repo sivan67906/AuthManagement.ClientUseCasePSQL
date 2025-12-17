@@ -325,11 +325,12 @@
         }
 
         <div class="form-group">
-            <label class="form-label">Department</label>
+            <label class="form-label form-label-required">Department</label>
             <select class="form-select" 
                     @bind="_selectedDepartmentId" 
+                    @bind:after="OnDepartmentChanged"
                     disabled="@IsEditMode">
-                <option value="">-- All Departments (System-wide) --</option>
+                <option value="">Select Department</option>
                 @foreach (var dept in _departments)
                 {
                     <option value="@dept.Id">@dept.Name</option>
@@ -507,6 +508,7 @@
         _selectedRoleId = "";
         _selectedPageId = "";
         _selectedPermissionIds.Clear();
+        _roles.Clear(); // Clear roles so they don't persist
         _errors.Clear();
         _showViewWarning = false;
 
@@ -518,7 +520,7 @@
         }
     }
 
-    private void LoadEditMode()
+    private async void LoadEditMode()
     {
         if (SelectedMapping != null)
         {
@@ -530,6 +532,9 @@
                 .ToList();
             _errors.Clear();
             _showViewWarning = false;
+            
+            // Load roles for the selected department
+            await LoadRolesForDepartment();
         }
     }
 
@@ -540,8 +545,8 @@
             var deptResponse = await RBACService.GetAllDepartmentsAsync();
             _departments = deptResponse.Success && deptResponse.Data != null ? deptResponse.Data : new();
 
-            var roleResponse = await RBACService.GetAllRolesAsync();
-            _roles = roleResponse.Success && roleResponse.Data != null ? roleResponse.Data : new();
+            // Don't load roles here - they should only load after department is selected
+            _roles = new();
 
             var pageResponse = await RBACService.GetAllPagesAsync();
             _pages = pageResponse.Success && pageResponse.Data != null ? pageResponse.Data : new();
@@ -552,6 +557,39 @@
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error loading dropdown data");
+        }
+    }
+
+    private async Task OnDepartmentChanged()
+    {
+        // Reload roles based on department selection
+        await LoadRolesForDepartment();
+        
+        // Clear role selection when department changes
+        _selectedRoleId = string.Empty;
+    }
+    
+    private async Task LoadRolesForDepartment()
+    {
+        try
+        {
+            // If no department selected, don't load any roles
+            if (string.IsNullOrEmpty(_selectedDepartmentId))
+            {
+                _roles = new();
+                return;
+            }
+            
+            Guid deptId = Guid.Parse(_selectedDepartmentId);
+            
+            // Get only roles for the selected department
+            var roleResponse = await RBACService.GetRolesByDepartmentAsync(deptId);
+            _roles = roleResponse.Success && roleResponse.Data != null ? roleResponse.Data : new();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error loading roles for department");
+            _roles = new();
         }
     }
 
@@ -621,6 +659,9 @@
     private bool Validate()
     {
         _errors.Clear();
+
+        if (string.IsNullOrEmpty(_selectedDepartmentId))
+            _errors["Department"] = "Department is required";
 
         if (string.IsNullOrEmpty(_selectedRoleId))
             _errors["Role"] = "Role is required";

@@ -71,6 +71,22 @@ public class RBACService
                ?? new ApiResponse<List<RoleDto>> { Success = false, Data = new List<RoleDto>() };
     }
 
+    /// <summary>
+    /// Get roles filtered by department.
+    /// If departmentId is null, returns all roles (System wide).
+    /// If departmentId is provided, returns only roles for that department.
+    /// </summary>
+    public async Task<ApiResponse<List<RoleDto>>> GetRolesByDepartmentAsync(Guid? departmentId)
+    {
+        await SetAuthorizationHeaderAsync();
+        var url = departmentId.HasValue 
+            ? $"api/role/by-department?departmentId={departmentId.Value}"
+            : "api/role/by-department";
+        
+        return await _httpClient.GetFromJsonAsync<ApiResponse<List<RoleDto>>>(url)
+               ?? new ApiResponse<List<RoleDto>> { Success = false, Data = new List<RoleDto>() };
+    }
+
     public async Task<ApiResponse<RoleDto>> GetRoleByIdAsync(Guid id)
     {
         await SetAuthorizationHeaderAsync();
@@ -147,6 +163,18 @@ public class RBACService
         await SetAuthorizationHeaderAsync();
         return await _httpClient.GetFromJsonAsync<ApiResponse<List<FeatureDto>>>("api/feature")
                ?? new ApiResponse<List<FeatureDto>> { Success = false, Data = new List<FeatureDto>() };
+    }
+
+    /// <summary>
+    /// Get features with hierarchical display names.
+    /// Main Menu: "Finance Management (Main Menu)"
+    /// SubMenu: "Finance Management → Test Categories"
+    /// </summary>
+    public async Task<ApiResponse<List<FeatureWithHierarchyDto>>> GetFeaturesWithHierarchyAsync()
+    {
+        await SetAuthorizationHeaderAsync();
+        return await _httpClient.GetFromJsonAsync<ApiResponse<List<FeatureWithHierarchyDto>>>("api/feature/with-hierarchy")
+               ?? new ApiResponse<List<FeatureWithHierarchyDto>> { Success = false, Data = new List<FeatureWithHierarchyDto>() };
     }
 
     public async Task<ApiResponse<FeatureDto>> GetFeatureAsync(Guid id)

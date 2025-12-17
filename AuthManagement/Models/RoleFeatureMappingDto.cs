@@ -39,12 +39,14 @@ public class RoleFeatureMappingFormModel
 {
     public string Id { get; set; } = string.Empty;
     
+    [Required(ErrorMessage = "Department is required")]
+    public string DepartmentId { get; set; } = string.Empty;
+    
     [Required(ErrorMessage = "Role is required")]
     public string RoleId { get; set; } = string.Empty;
     
     [Required(ErrorMessage = "Feature is required")]
     public string FeatureId { get; set; } = string.Empty;
     
-    public string DepartmentId { get; set; } = string.Empty;
     public bool IsActive { get; set; } = true;
 }

@@ -208,65 +208,131 @@
             });
         };
 
-        // Menu state
-        let isMenuPinned = localStorage.getItem('menuPinned') === 'true';
 
-        // Initialize menu on load
-        // Toggle pin/unpin
+        /* ============================================================================
+           MENU PIN TOGGLE FUNCTIONALITY - CORRECT IMPLEMENTATION
+           ============================================================================
+           Expected Icon Behavior:
+           - Unpinned (collapsed): ti-circle (empty circle ⭕)
+           - Pinned (expanded): ti-circle-dot (circle with dot ⊙)
+           - Hover (when unpinned): Menu expands but icon STAYS as ti-circle
+           - Click: Toggles between pinned/unpinned and updates icon accordingly
+           
+           CRITICAL: Icon represents PIN STATE, not EXPANDED STATE!
+           ========================================================================= */
+
+        // Toggle pin/unpin - ONLY called on click
         window.toggleMenuPin = function () {
-            let isMenuPinned = localStorage.getItem('menuPinned') === 'true';
-            isMenuPinned = !isMenuPinned;
-
-            localStorage.setItem('menuPinned', isMenuPinned);
-            window.initMenuToggle(); // re-init
+            const currentPinned = localStorage.getItem('menuPinned') === 'true';
+            const newPinned = !currentPinned;
+            
+            localStorage.setItem('menuPinned', newPinned.toString());
+            
+            // Update icon immediately based on new pin state
+            window.updatePinIcon(newPinned);
+            
+            // Update menu state
+            window.updateMenuState(newPinned);
+            
+            console.log('[MenuPin] Toggled to:', newPinned ? 'PINNED (ti-circle-dot)' : 'UNPINNED (ti-circle)');
         };
 
-        // Initialize menu
-        window.initMenuToggle = function () {
-            const body = document.body;
-            const layoutMenu = document.getElementById('layout-menu');
+        // Update pin icon based on pinned state - CRITICAL: Icon reflects PIN STATE, not hover state
+        window.updatePinIcon = function (isPinned) {
             const toggleIcon = document.getElementById('menuPinIcon');
+            if (!toggleIcon) return;
+            
+            // Remove all possible icon classes first to avoid conflicts
+            toggleIcon.classList.remove('ti-circle', 'ti-circle-dot', 'ti-circle-dot-filled', 'ti-circle-filled');
+            
+            if (isPinned === true) {
+                // PINNED STATE: Show circle with dot
+                toggleIcon.classList.add('ti-circle-dot');
+                console.log('[MenuPin] Icon updated to: ti-circle-dot (PINNED - menu stays expanded)');
+            } else {
+                // UNPINNED STATE: Show empty circle
+                toggleIcon.classList.add('ti-circle');
+                console.log('[MenuPin] Icon updated to: ti-circle (UNPINNED - menu collapses)');
+            }
+        };
 
-            const isMenuPinned = localStorage.getItem('menuPinned') === 'true';
-
-            // ===== MENU STATE =====
-            if (isMenuPinned) {
+        // Update menu collapsed/expanded state
+        window.updateMenuState = function (isPinned) {
+            const body = document.body;
+            
+            if (isPinned === true) {
+                // Menu is PINNED: stays expanded permanently
                 body.classList.add('layout-menu-pinned');
                 body.classList.remove('layout-menu-collapsed', 'layout-menu-hover');
             } else {
+                // Menu is UNPINNED: collapsed by default, expands on hover
                 body.classList.add('layout-menu-collapsed');
                 body.classList.remove('layout-menu-pinned', 'layout-menu-hover');
             }
-
-            // ===== ICON STATE (ONLY BASED ON PIN) =====
-            if (toggleIcon) {
-                toggleIcon.classList.remove('ti-circle','ti-circle-dot-filled');
-
-                if (isMenuPinned) {
-                    toggleIcon.classList.add('ti-circle'); // ✅ pinned only
-                } else {
-                    toggleIcon.classList.add('ti-circle'); // ✅ unpinned
-                }
-            }
-
-            // ===== HOVER FUNCTIONALITY (NO ICON CHANGE) =====
-            if (layoutMenu) {
-                layoutMenu.onmouseenter = function () {
-                    if (!isMenuPinned) {
-                        body.classList.add('layout-menu-hover');
-                        body.classList.remove('layout-menu-collapsed');
-                    }
-                };
-
-                layoutMenu.onmouseleave = function () {
-                    if (!isMenuPinned) {
-                        body.classList.remove('layout-menu-hover');
-                        body.classList.add('layout-menu-collapsed');
-                    }
-                };
-            }
         };
 
+        // Initialize menu - called once on page load
+        window.initMenuToggle = function () {
+            const body = document.body;
+            const layoutMenu = document.getElementById('layout-menu');
+            
+            // Get stored pin state - ONLY 'true' string means pinned, everything else is unpinned
+            const storedValue = localStorage.getItem('menuPinned');
+            const isMenuPinned = storedValue === 'true';
+            
+            console.log('[MenuPin] Initializing - localStorage value:', storedValue, '-> isPinned:', isMenuPinned);
+
+            // ===== SET INITIAL STATE =====
+            window.updateMenuState(isMenuPinned);
+            window.updatePinIcon(isMenuPinned);
+
+            // ===== HOVER FUNCTIONALITY =====
+            // IMPORTANT: Icon NEVER changes on hover - it only changes on click
+            if (layoutMenu) {
+                layoutMenu.addEventListener('mouseenter', function () {
+                    // Only expand on hover if menu is NOT pinned
+                    const currentlyPinned = localStorage.getItem('menuPinned') === 'true';
+                    if (!currentlyPinned) {
+                        body.classList.add('layout-menu-hover');
+                        body.classList.remove('layout-menu-collapsed');
+                        
+                        // CRITICAL: Explicitly ensure icon stays as ti-circle on hover
+                        const icon = document.getElementById('menuPinIcon');
+                        if (icon && !icon.classList.contains('ti-circle-dot')) {
+                            icon.classList.remove('ti-circle-dot');
+                            icon.classList.add('ti-circle');
+                        }
+                        
+                        console.log('[MenuPin] Hover: Menu expanded, icon stays ti-circle');
+                    }
+                });
+
+                layoutMenu.addEventListener('mouseleave', function () {
+                    // Only collapse on mouse leave if menu is NOT pinned
+                    const currentlyPinned = localStorage.getItem('menuPinned') === 'true';
+                    if (!currentlyPinned) {
+                        body.classList.remove('layout-menu-hover');
+                        body.classList.add('layout-menu-collapsed');
+                        
+                        // CRITICAL: Explicitly ensure icon stays as ti-circle after hover
+                        const icon = document.getElementById('menuPinIcon');
+                        if (icon && !icon.classList.contains('ti-circle-dot')) {
+                            icon.classList.remove('ti-circle-dot');
+                            icon.classList.add('ti-circle');
+                        }
+                        
+                        console.log('[MenuPin] Hover out: Menu collapsed, icon stays ti-circle');
+                    }
+                });
+            }
+        };
+        
+        // Helper to reset menu pin state (for debugging/testing)
+        window.resetMenuPinState = function() {
+            localStorage.removeItem('menuPinned');
+            window.initMenuToggle();
+            console.log('[MenuPin] State reset to UNPINNED (ti-circle)');
+        };
 
 
 

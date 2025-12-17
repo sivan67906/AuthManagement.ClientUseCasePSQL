@@ -21,6 +21,39 @@
                         
                         <div class="mb-3">
                             <label class="form-label">
+                                Feature<span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" @bind="FormModel.FeatureId" disabled="@IsSaving">
+                                <option value="">Select Feature</option>
+                                @if (Features != null)
+                                {
+                                    @* Main Menus *@
+                                    @foreach (var feature in Features.Where(f => f.IsMainMenu))
+                                    {
+                                        <option value="@feature.Id.ToString()">@feature.Name (Main Menu)</option>
+                                    }
+                                    @* SubMenus *@
+                                    @foreach (var feature in Features.Where(f => !f.IsMainMenu))
+                                    {
+                                        var parent = Features.FirstOrDefault(f => f.Id == feature.ParentFeatureId);
+                                        <option value="@feature.Id.ToString()">
+                                            @if (parent != null)
+                                            {
+                                                @($"{parent.Name} → {feature.Name}")
+                                            }
+                                            else
+                                            {
+                                                @feature.Name
+                                            }
+                                        </option>
+                                    }
+                                }
+                            </select>
+                            <ValidationMessage For="@(() => FormModel.FeatureId)" class="text-danger" />
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">
                                 Page<span class="text-danger">*</span>
                             </label>
                             <select class="form-select" @bind="FormModel.PageId" disabled="@IsSaving">
@@ -34,23 +67,6 @@
                                 }
                             </select>
                             <ValidationMessage For="@(() => FormModel.PageId)" class="text-danger" />
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label class="form-label">
-                                Feature<span class="text-danger">*</span>
-                            </label>
-                            <select class="form-select" @bind="FormModel.FeatureId" disabled="@IsSaving">
-                                <option value="">Select Feature</option>
-                                @if (Features != null)
-                                {
-                                    @foreach (var feature in Features)
-                                    {
-                                        <option value="@feature.Id.ToString()">@feature.Name</option>
-                                    }
-                                }
-                            </select>
-                            <ValidationMessage For="@(() => FormModel.FeatureId)" class="text-danger" />
                         </div>
                         
                         <div class="d-flex justify-content-end gap-2 mt-4">
@@ -260,10 +276,10 @@
 
     public class MappingFormModel
     {
-        [Required(ErrorMessage = "Page is required")]
-        public string PageId { get; set; } = string.Empty;
-
         [Required(ErrorMessage = "Feature is required")]
         public string FeatureId { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Page is required")]
+        public string PageId { get; set; } = string.Empty;
     }
 }

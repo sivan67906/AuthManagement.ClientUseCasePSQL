@@ -93,6 +93,24 @@ public class FeatureDto
     public string? ModifiedBy { get; set; }
 }
 
+// Feature with hierarchical display
+public class FeatureWithHierarchyDto
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public bool IsMainMenu { get; set; }
+    public Guid? ParentFeatureId { get; set; }
+    public string? ParentFeatureName { get; set; }
+    public int DisplayOrder { get; set; }
+    public string? Icon { get; set; }
+    public bool IsActive { get; set; }
+    public string? RouteUrl { get; set; }
+    public int Level { get; set; }
+    public string DisplayName { get; set; } = string.Empty; // Enhanced display with hierarchy
+}
+
+
 public class CreateFeatureRequest
 {
     public string Name { get; set; } = string.Empty;

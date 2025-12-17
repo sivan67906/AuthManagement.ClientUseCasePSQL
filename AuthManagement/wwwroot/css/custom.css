@@ -194,6 +194,26 @@ CORRECT STRUCTURE (from vuexy):
    MENU PIN/HOVER
    ========================================== */
 
+/* ==========================================
+   MENU PIN TOGGLE ICON FIX
+   ==========================================
+   Override core.css mask-image behavior to ensure
+   icon is controlled by JavaScript pin state,
+   not by menu collapsed/expanded state
+   ========================================== */
+
+/* Force icon to respect ti-circle and ti-circle-dot classes */
+#menuPinIcon.ti-circle {
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23000' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M3 12a9 9 0 1 0 18 0a9 9 0 1 0-18 0'/%3E%3C/svg%3E") !important;
+}
+
+#menuPinIcon.ti-circle-dot {
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='%23000' stroke-linecap='round' stroke-linejoin='round' stroke-width='2'%3E%3Cpath d='M11 12a1 1 0 1 0 2 0a1 1 0 1 0-2 0'/%3E%3Cpath d='M3 12a9 9 0 1 0 18 0a9 9 0 1 0-18 0'/%3E%3C/g%3E%3C/svg%3E") !important;
+}
+
+/* Menu Pin Toggle Icon Styles
+   - Smooth transition when icon changes between ti-circle and ti-circle-dot
+   - Icon changes only on click (pin/unpin), never on hover */
 .menu-toggle-icon {
     transition: all 0.3s ease;
     font-size: 1.25rem;
