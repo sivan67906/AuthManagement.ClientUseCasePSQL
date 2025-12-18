@@ -145,7 +145,7 @@ else
                 <span class="breadcrumb-separator">></span>
                 <span class="breadcrumb-link" @onclick="NavigateBack">Companies</span>
                 <span class="breadcrumb-separator">></span>
-                <span style="color: #333;">@(_isEditMode ? "Edit Company" : "Add New Company")</span>
+                <span style="color: #333;" id="EditBreadcrumb">@(_isEditMode ? "Edit Company" : "Add New Company")</span>
             </nav>
 
             @* <a class="back-link" @onclick="NavigateBack">

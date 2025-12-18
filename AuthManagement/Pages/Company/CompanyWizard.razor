@@ -253,14 +253,13 @@
     .wizard-footer {
         display: flex;
         justify-content: space-between;
-        padding: 16px 24px;
-        /* background: #f8f9fa; */
-        /* border-top: 1px solid #e0e0e0; */
+        padding: 19px 28px;
         border-radius: 0 0 8px 8px;
+        margin-top: -35px;
     }
 
     .btn-wizard {
-        padding: 6px 19pxss;
+        padding: 6px 19px;
         border-radius: 6px;
         font-size: 14px;
         font-weight: 500;
@@ -271,7 +270,7 @@
     }
 
     .btn-wizard-prev {
-        background: white;
+        background: #80808000;
         border: 1px solid #d9d9e3;
         color: #666;
     }
@@ -1750,7 +1749,7 @@ private async Task ScrollRight()
                         <label class="form-label">Primary Phone</label>
                         <input type="tel" class="form-control"
                                @bind="_model.PrimaryPhone" @bind:event="oninput"
-                               placeholder="+91 98765 43210" maxlength="20" />
+                               placeholder="+91 98765 43210" maxlength="20"       onkeypress="return event.charCode >= 48 && event.charCode <= 57"/>
                     </div>
                 </div>
                 <div class="col-md-6">

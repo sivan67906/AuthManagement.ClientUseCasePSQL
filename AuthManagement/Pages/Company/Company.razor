@@ -134,11 +134,11 @@
         border-radius: 6px;
         padding: 5px;
     }
-    .search-input:focus {
+    /* .search-input:focus {
         outline: none;
         border-color: #7c3aed;
         box-shadow: 0 0 0 0.2rem rgba(124, 58, 237, 0.1);
-    }
+    } */
 
     .search-icon {
         position: absolute;
@@ -670,7 +670,10 @@
                                placeholder="Search by Code, Name, or Country"
                                value="@_searchString"
                                @oninput="@((ChangeEventArgs e) => OnSearchChanged(e.Value?.ToString() ?? string.Empty))" />
-                        <i class="ti tabler-search search-icon"></i>
+                        @if (string.IsNullOrEmpty(_searchString))
+                        {
+                            <i class="ti tabler-search search-icon"></i>
+                        }
                     </div>
                     @if (_canAdd)
                     {
@@ -685,9 +688,10 @@
             <!-- Company Cards -->
 
             <div class="card-body" style="margin-bottom: 28px; padding-top: 28px; padding-left: 22px; padding-right: 22px;">
-                <div class="grid">
-                    @if (_pagedCompanies.Any())
-                    {
+                @if (_pagedCompanies.Any())
+                {
+                    <div class="grid">
+
                         @foreach (var company in _pagedCompanies)
                         {
                             string borderColor = GenerateRandomColor();
@@ -809,17 +813,19 @@
                             
                             </div>
                         }
-                    }
-                    else
-                    {
-                        <div class="col-12">
-                            <div class="no-data">
-                                <i class="ti tabler-building-factory-2"></i>
-                                <p>No companies found</p>
-                            </div>
-                        </div>
-                    }
+                   
+                  
                 </div>
+                }
+                else
+                {
+                <div class="col-12">
+                    <div class="no-data">
+                        <i class="ti tabler-building-factory-2"></i>
+                        <p>No companies found</p>
+                    </div>
+                </div>
+                }
             </div>
 
             <!-- Pagination -->

@@ -30986,6 +30986,30 @@ body:not(.modal-open) .layout-content-navbar .layout-navbar {
 [data-bs-theme=dark] .ProfileRole {
     color: #ffffffb3
 }
+[data-bs-theme=dark] .card-body, [data-bs-theme=dark] .company-container,
+[data-bs-theme=dark] .company-details-page {
+    background: #373b50;
+}
+[data-bs-theme=dark] .project-style-card {
+    background: #373b50;
+    border: 1px solid #ffffff61;
+    padding-bottom: 34px;
+}
+[data-bs-theme=dark] .project-desc span, [data-bs-theme=dark] .list-label, [data-bs-theme=dark] .profile-name,
+[data-bs-theme=dark] .profile-role, [data-bs-theme=dark] .profile-rating span, [data-bs-theme=dark] .meta-item,
+[data-bs-theme=dark] .info-label, [data-bs-theme=dark] .info-value, [data-bs-theme=dark] .timeline-sub,
+[data-bs-theme=dark] .sidebar-title, [data-bs-theme=dark] .sidebar-title p, [data-bs-theme=dark] .personal-info-label, [data-bs-theme=dark] .personal-info-value,
+[data-bs-theme=dark] .summary-label, [data-bs-theme=dark] .summary-value, [data-bs-theme=dark] .summary-title, [data-bs-theme=dark] #EditBreadcrumb {
+    color: white !important
+}
+[data-bs-theme=dark] .profile-card, [data-bs-theme=dark] .section-card, [data-bs-theme=dark] .sidebar-card,
+[data-bs-theme=dark] .summary-section, [data-bs-theme=dark] .logo-upload-container {
+    background: #2f3349;
+    border: 1px solid white;
+}
+[data-bs-theme=dark] .page-content {
+    background: #2f3349;
+}
 .bi-fullscreen-exit {
     color: black
 }

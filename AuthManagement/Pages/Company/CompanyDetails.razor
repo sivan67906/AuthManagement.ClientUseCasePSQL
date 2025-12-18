@@ -162,7 +162,7 @@
     }
 
     .meta-item i {
-        color: #9ca3af;
+            color: #7367f0;
         font-size: 16px;
     }
 
@@ -324,11 +324,17 @@
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
-
-    .info-value {
+        .info-label i{
+            color: #7367f0;
+            font-size: 17px;
+        }
+        .info-value {
         font-size: 14px;
         color: #374151;
         font-weight: 500;
+        white-space: normal;
+        overflow-wrap: anywhere;
+        word-break: break-word;
     }
 
     .info-value.empty {
@@ -580,7 +586,7 @@
                                 }
                             </div>
                             <div class="profile-role">
-                                <i class="ti tabler-building"></i>
+                                <i class="bi bi-building-fill" style="color:#7367f0"></i>
                                 @_company.LegalStructureName
                                 @if (!string.IsNullOrEmpty(_company.TradeName))
                                 {
@@ -608,26 +614,26 @@
                                 @if (!string.IsNullOrEmpty(_company.CityName) || !string.IsNullOrEmpty(_company.CountryName))
                                 {
                                     <div class="meta-item">
-                                        <i class="ti tabler-map-pin"></i>
+                                        <i class="bi bi-geo-alt-fill" ></i>
                                         @(string.Join(", ", new[] { _company.CityName, _company.StateName, _company.CountryName }.Where(x => !string.IsNullOrEmpty(x))))
                                     </div>
                                 }
                                 @if (!string.IsNullOrEmpty(_company.BaseCurrencyCode))
                                 {
                                     <div class="meta-item">
-                                        <i class="ti tabler-currency-dollar"></i>
+                                        <i class="bi bi-currency-exchange"></i>
                                         @_company.BaseCurrencyCode - @_company.BaseCurrencyName
                                     </div>
                                 }
                                 @if (_company.IncorporationDate.HasValue)
                                 {
                                     <div class="meta-item">
-                                        <i class="ti tabler-calendar"></i>
+                                        <i class="bi bi-calendar2-month-fill"></i>
                                         Est. @_company.IncorporationDate.Value.Year
                                     </div>
                                 }
                                 <div class="meta-item">
-                                    <i class="ti tabler-briefcase"></i>
+                                    <i class="bi bi-briefcase-fill"></i>
                                     @_company.LegalStructureName
                                 </div>
                             </div>
@@ -667,42 +673,50 @@
                     </div>
                     <div class="info-grid">
                         <div class="info-item">
-                            <span class="info-label">Company Code</span>
+                            <span class="info-label"><i class="bi bi-file-code-fill"></i> Company Code</span>
                             <span class="info-value">@_company.CompanyCode</span>
                         </div>
                         <div class="info-item">
-                            <span class="info-label">Legal Name</span>
+                            <span class="info-label"><i class="bi bi-person-workspace"></i> Legal Name</span>
                             <span class="info-value">@_company.LegalName</span>
                         </div>
                         @if (!string.IsNullOrEmpty(_company.TradeName))
                         {
                             <div class="info-item">
-                                <span class="info-label">Trade Name</span>
+                                <span class="info-label">
+                                    <i class="bi bi-tag-fill"></i>
+                                     Trade Name
+                                </span>
                                 <span class="info-value">@_company.TradeName</span>
                             </div>
                         }
                         @if (!string.IsNullOrEmpty(_company.ShortName))
                         {
                             <div class="info-item">
-                                <span class="info-label">Short Name</span>
+                                <span class="info-label"><i class="bi bi-person-lines-fill"></i> Short Name</span>
                                 <span class="info-value">@_company.ShortName</span>
                             </div>
                         }
                         <div class="info-item">
-                            <span class="info-label">Legal Structure</span>
+                            <span class="info-label"><i class="bi bi-building-fill"></i> Legal Structure</span>
                             <span class="info-value">@_company.LegalStructureName</span>
                         </div>
                         @if (_company.IncorporationDate.HasValue)
                         {
                             <div class="info-item">
-                                <span class="info-label">Incorporation Date</span>
+                                <span class="info-label">
+                                    <i class=" bi bi-calendar2-day-fill"></i>
+                                    Incorporation Date
+                                </span>
                                 <span class="info-value">@_company.IncorporationDate.Value.ToString("dd MMM yyyy")</span>
                             </div>
                         }
                         @if (!string.IsNullOrEmpty(_company.ParentCompanyName))
                         {
                             <div class="info-item">
-                                <span class="info-label">Parent Company</span>
+                                <span class="info-label">
+                                    <i class="bi bi-buildings-fill"></i> Parent Company
+                                </span>
                                 <span class="info-value">@_company.ParentCompanyName</span>
                             </div>
                         }
@@ -816,14 +830,14 @@
                         @if (!string.IsNullOrEmpty(_company.PrimaryContactName))
                         {
                             <div class="info-item">
-                                <span class="info-label">Primary Contact</span>
+                                <span class="info-label"><i class="bi bi-person-rolodex"></i> Primary Contact</span>
                                 <span class="info-value">@_company.PrimaryContactName</span>
                             </div>
                         }
                         @if (!string.IsNullOrEmpty(_company.PrimaryEmail))
                         {
                             <div class="info-item">
-                                <span class="info-label">Email</span>
+                                <span class="info-label"><i class="bi bi-envelope-fill"></i> Email</span>
                                 <span class="info-value">
                                     <a href="mailto:@_company.PrimaryEmail">@_company.PrimaryEmail</a>
                                 </span>
@@ -832,7 +846,7 @@
                         @if (!string.IsNullOrEmpty(_company.PrimaryPhone))
                         {
                             <div class="info-item">
-                                <span class="info-label">Phone</span>
+                                <span class="info-label"><i class="bi bi-telephone-outbound-fill"></i> Phone</span>
                                 <span class="info-value">
                                     <a href="tel:@_company.PrimaryPhone">@_company.PrimaryPhone</a>
                                 </span>
@@ -841,7 +855,7 @@
                         @if (!string.IsNullOrEmpty(_company.WebsiteUrl))
                         {
                             <div class="info-item">
-                                <span class="info-label">Website</span>
+                                <span class="info-label"><i class="bi bi-globe"></i> Website</span>
                                 <span class="info-value">
                                     <a href="@_company.WebsiteUrl" target="_blank">@_company.WebsiteUrl</a>
                                 </span>
@@ -905,18 +919,28 @@
                         System Features
                     </div>
                     <div class="tools-grid">
-                        <div class="tool-icon @(_company.EnableMultiCurrency ? "active" : "")" title="Multi-Currency">
-                            <i class="ti tabler-currency-dollar"></i>
-                        </div>
-                        <div class="tool-icon @(_company.LockBackDatedPosting ? "active" : "")" title="Back-Date Lock">
-                            <i class="ti tabler-lock"></i>
-                        </div>
-                        <div class="tool-icon @(_company.Status == CompanyStatus.Active ? "success" : "")" title="Active Status">
-                            <i class="ti tabler-check"></i>
-                        </div>
-                        <div class="tool-icon" title="Reports">
-                            <i class="ti tabler-report"></i>
-                        </div>
+                       @if (_company.EnableMultiCurrency)
+{
+    <div class="tool-icon active" title="Multi-Currency">
+        <i class="ti tabler-currency-dollar"></i>
+    </div>
+}
+
+@if (_company.LockBackDatedPosting)
+{
+    <div class="tool-icon active" title="Back-Date Lock">
+        <i class="ti tabler-lock"></i>
+    </div>
+}
+
+@if (_company.Status == CompanyStatus.Active)
+{
+    <div class="tool-icon success" title="Active Status">
+        <i class="ti tabler-check"></i>
+    </div>
+}
+
+                       
                     </div>
                 </div>
 
@@ -1005,7 +1029,7 @@
                 {
                     <div class="sidebar-card">
                         <div class="sidebar-title">
-                            <i class="ti tabler-calendar-check"></i>
+                            <div class="section-icon green"> <i class="ti tabler-calendar-check"></i></div>
                             Posting Controls
                         </div>
                         @if (_company.AllowPostingFromDate.HasValue)
@@ -1034,10 +1058,13 @@
                 {
                     <div class="sidebar-card">
                         <div class="sidebar-title">
-                            <i class="ti tabler-notes"></i>
+                            <div class="section-icon purple"> <i class="ti tabler-notes"></i></div>
+                           
                             Notes
                         </div>
-                        <p style="margin: 0; font-size: 14px; color: #4b5563; line-height: 1.6;">@_company.Notes</p>
+                        <p style="margin: 0; font-size: 14px; color: #4b5563; line-height: 1.6; white-space: normal;
+            overflow-wrap: anywhere;
+            word-break: break-word;">@_company.Notes</p>
                     </div>
                 }
             </div>

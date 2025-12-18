@@ -783,7 +783,18 @@
                     <p><b>Department:</b> @_selectedMapping.DepartmentName</p>
                     <p><b>Role Name:</b> @_selectedMapping.RoleName</p>
                     <p><b>Page Name:</b> @_selectedMapping.PageName</p>
-                    <p><b>Permission:</b> @_selectedMapping.Permissions</p>
+                    <p style="display: flex;gap: 10px;">
+                        <b>Permission:</b>
+                        <div class="permission-badges-container">
+                            @foreach (var perm in _selectedMapping.Permissions.OrderBy(p => GetPermissionOrder(p.PermissionName)))
+                            {
+                                <span class="permission-badge @GetBadgeClass(perm.PermissionName)"
+                                      title="@perm.PermissionName">
+                                    @GetPermissionCode(perm.PermissionName)
+                                </span>
+                            }
+                        </div>
+                    </p>
                 </div>
             </div>
         </div>
