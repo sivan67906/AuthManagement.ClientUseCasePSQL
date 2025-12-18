@@ -192,10 +192,17 @@ else
         try
         {
             _isLoading = true;
+            Logger.LogInformation($"[CompanyForm] Loading company {Id!.Value} for edit");
+            
             var response = await CompanyService.GetCompanyAsync(Id!.Value);
             if (response.Success && response.Data != null)
             {
                 _companyToEdit = response.Data;
+                Logger.LogInformation($"[CompanyForm] Loaded company: {response.Data.LegalName}");
+                Logger.LogInformation($"[CompanyForm] BooksStartDate: {response.Data.BooksStartDate:yyyy-MM-dd}");
+                Logger.LogInformation($"[CompanyForm] Status: {response.Data.Status}");
+                Logger.LogInformation($"[CompanyForm] StateId: {response.Data.StateId}");
+                Logger.LogInformation($"[CompanyForm] CityId: {response.Data.CityId}");
             }
             else
             {

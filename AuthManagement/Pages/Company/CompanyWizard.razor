@@ -735,12 +735,12 @@ private async Task ScrollRight()
         if (IsOpen && IsEditMode && CompanyToEdit != null && !_dataLoaded)
         {
             MapDtoToModel(CompanyToEdit);
-            // Load dependent dropdowns
+            // Load dependent dropdowns with preserveSelection=true to keep existing values
             if (_model.RegistrationCountryId != Guid.Empty)
                 await LoadRegistrationStates(_model.RegistrationCountryId);
             if (_model.AddressCountryId != Guid.Empty)
             {
-                await LoadAddressStates(_model.AddressCountryId);
+                await LoadAddressStates(_model.AddressCountryId, preserveSelection: true);
                 
                 // Load filtered timezones for edit mode
                 var timezonesResponse = await CompanyService.GetTimezonesByCountryAsync(_model.AddressCountryId);
@@ -754,7 +754,7 @@ private async Task ScrollRight()
                 }
             }
             if (_model.AddressStateId != Guid.Empty)
-                await LoadAddressCities(_model.AddressStateId);
+                await LoadAddressCities(_model.AddressStateId, preserveSelection: true);
             
             _dataLoaded = true;
             StateHasChanged();
@@ -784,13 +784,13 @@ private async Task ScrollRight()
         if (IsEditMode && CompanyToEdit != null)
         {
             MapDtoToModel(CompanyToEdit);
-            // Load dependent dropdowns
+            // Load dependent dropdowns with preserveSelection=true to keep existing values
             if (_model.RegistrationCountryId != Guid.Empty)
                 await LoadRegistrationStates(_model.RegistrationCountryId);
             if (_model.AddressCountryId != Guid.Empty)
-                await LoadAddressStates(_model.AddressCountryId);
+                await LoadAddressStates(_model.AddressCountryId, preserveSelection: true);
             if (_model.AddressStateId != Guid.Empty)
-                await LoadAddressCities(_model.AddressStateId);
+                await LoadAddressCities(_model.AddressStateId, preserveSelection: true);
         }
         else
         {
@@ -845,17 +845,32 @@ private async Task ScrollRight()
         }
     }
 
-    private async Task LoadAddressStates(Guid countryId)
+    private async Task LoadAddressStates(Guid countryId, bool preserveSelection = false)
     {
         try
         {
+            // Store current values before loading
+            var currentStateId = _model.AddressStateId;
+            var currentCityId = _model.AddressCityId;
+            
             var response = await CompanyService.GetStatesByCountryAsync(countryId);
             if (response.Success)
             {
                 _addrStates = response.Data ?? [];
                 _addrCities = [];
-                _model.AddressStateId = Guid.Empty;
-                _model.AddressCityId = Guid.Empty;
+                
+                // Only reset if not preserving selection (i.e., user is actively changing country)
+                if (!preserveSelection)
+                {
+                    _model.AddressStateId = Guid.Empty;
+                    _model.AddressCityId = Guid.Empty;
+                }
+                else
+                {
+                    // Restore values if preserving (edit mode initial load)
+                    _model.AddressStateId = currentStateId;
+                    _model.AddressCityId = currentCityId;
+                }
             }
         }
         catch (Exception ex)
@@ -864,15 +879,28 @@ private async Task ScrollRight()
         }
     }
 
-    private async Task LoadAddressCities(Guid stateId)
+    private async Task LoadAddressCities(Guid stateId, bool preserveSelection = false)
     {
         try
         {
+            // Store current value before loading
+            var currentCityId = _model.AddressCityId;
+            
             var response = await CompanyService.GetCitiesByStateAsync(stateId);
             if (response.Success)
             {
                 _addrCities = response.Data ?? [];
-                _model.AddressCityId = Guid.Empty;
+                
+                // Only reset if not preserving selection (i.e., user is actively changing state)
+                if (!preserveSelection)
+                {
+                    _model.AddressCityId = Guid.Empty;
+                }
+                else
+                {
+                    // Restore value if preserving (edit mode initial load)
+                    _model.AddressCityId = currentCityId;
+                }
             }
         }
         catch (Exception ex)
@@ -883,6 +911,12 @@ private async Task ScrollRight()
 
     private void MapDtoToModel(CompanyDto dto)
     {
+        Logger.LogInformation($"[CompanyWizard] Mapping DTO to model");
+        Logger.LogInformation($"[CompanyWizard] DTO BooksStartDate: {dto.BooksStartDate:yyyy-MM-dd}");
+        Logger.LogInformation($"[CompanyWizard] DTO Status: {dto.Status}");
+        Logger.LogInformation($"[CompanyWizard] DTO StateId: {dto.StateId}");
+        Logger.LogInformation($"[CompanyWizard] DTO CityId: {dto.CityId}");
+        
         _model = new CreateCompanyRequest
         {
             CompanyCode = dto.CompanyCode,
@@ -895,15 +929,15 @@ private async Task ScrollRight()
             RegistrationNumber = dto.RegistrationNumber,
             PANNumber = dto.PANNumber,
             GSTIN = dto.GSTIN,
-            TAN = dto.TAN,
-            OtherTaxIdentifier = dto.OtherTaxIdentifier,
+            TANNumber = dto.TANNumber, // Use direct property name
+            OtherTaxId = dto.OtherTaxId, // Use direct property name
             RegistrationCountryId = dto.RegistrationCountryId,
             RegistrationStateId = dto.RegistrationStateId,
             AddressLine1 = dto.AddressLine1,
             AddressLine2 = dto.AddressLine2,
-            AddressCountryId = dto.AddressCountryId,
-            AddressStateId = dto.AddressStateId,
-            AddressCityId = dto.AddressCityId,
+            CountryId = dto.CountryId, // Use direct property name
+            StateId = dto.StateId, // Use direct property name
+            CityId = dto.CityId, // Use direct property name
             PostalCode = dto.PostalCode,
             TimeZoneId = dto.TimeZoneId,
             PrimaryContactName = dto.PrimaryContactName,
@@ -924,6 +958,9 @@ private async Task ScrollRight()
             Notes = dto.Notes,
             Status = dto.Status
         };
+        
+        Logger.LogInformation($"[CompanyWizard] Model BooksStartDate after mapping: {_model.BooksStartDate:yyyy-MM-dd}");
+        Logger.LogInformation($"[CompanyWizard] Model Status after mapping: {_model.Status}");
         
         // Set logo preview if logo URL exists
         if (!string.IsNullOrEmpty(dto.LogoFileUrl))
@@ -1170,7 +1207,19 @@ private async Task ScrollRight()
             if (IsEditMode && CompanyToEdit != null)
             {
                 var updateRequest = MapToUpdateRequest();
+                Logger.LogInformation($"[CompanyWizard] Updating company {CompanyToEdit.Id}");
+                Logger.LogInformation($"[CompanyWizard] Sending BooksStartDate: {updateRequest.BooksStartDate:yyyy-MM-dd}");
+                Logger.LogInformation($"[CompanyWizard] Sending Status: {updateRequest.Status}");
+                Logger.LogInformation($"[CompanyWizard] Sending LegalName: {updateRequest.LegalName}");
+                
                 response = await CompanyService.UpdateCompanyAsync(CompanyToEdit.Id, updateRequest);
+                
+                if (response.Success && response.Data != null)
+                {
+                    Logger.LogInformation($"[CompanyWizard] Update successful");
+                    Logger.LogInformation($"[CompanyWizard] Received BooksStartDate: {response.Data.BooksStartDate:yyyy-MM-dd}");
+                    Logger.LogInformation($"[CompanyWizard] Received Status: {response.Data.Status}");
+                }
             }
             else
             {
@@ -1264,6 +1313,7 @@ private async Task ScrollRight()
     {
         return new UpdateCompanyRequest
         {
+            Id = CompanyToEdit!.Id, // Set the Id for update
             LegalName = _model.LegalName,
             TradeName = _model.TradeName,
             ShortName = _model.ShortName,
@@ -1273,15 +1323,15 @@ private async Task ScrollRight()
             RegistrationNumber = _model.RegistrationNumber,
             PANNumber = _model.PANNumber,
             GSTIN = _model.GSTIN,
-            TAN = _model.TAN,
-            OtherTaxIdentifier = _model.OtherTaxIdentifier,
+            TANNumber = _model.TANNumber, // Use direct property name
+            OtherTaxId = _model.OtherTaxId, // Use direct property name
             RegistrationCountryId = _model.RegistrationCountryId,
             RegistrationStateId = _model.RegistrationStateId,
             AddressLine1 = _model.AddressLine1,
             AddressLine2 = _model.AddressLine2,
-            AddressCountryId = _model.AddressCountryId,
-            AddressStateId = _model.AddressStateId,
-            AddressCityId = _model.AddressCityId,
+            CountryId = _model.CountryId, // Use direct property name
+            StateId = _model.StateId, // Use direct property name
+            CityId = _model.CityId, // Use direct property name
             PostalCode = _model.PostalCode,
             TimeZoneId = _model.TimeZoneId,
             PrimaryContactName = _model.PrimaryContactName,

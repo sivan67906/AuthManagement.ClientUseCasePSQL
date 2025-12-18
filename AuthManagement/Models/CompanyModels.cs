@@ -196,12 +196,14 @@ public class CreateCompanyRequest
     public Guid RegistrationCountryId { get; set; } // Required - changed from nullable
     public Guid? RegistrationStateId { get; set; } // Optional - nullable
 
-    // Aliases for backward compatibility with Razor components
+    // Aliases for backward compatibility with Razor components (excluded from serialization)
+    [System.Text.Json.Serialization.JsonIgnore]
     public string? TAN
     {
         get => TANNumber;
         set => TANNumber = value;
     }
+    [System.Text.Json.Serialization.JsonIgnore]
     public string? OtherTaxIdentifier
     {
         get => OtherTaxId;
@@ -217,17 +219,20 @@ public class CreateCompanyRequest
     public Guid CountryId { get; set; } // Required - changed from nullable
     public Guid TimeZoneId { get; set; } // Required
 
-    // Address aliases for backward compatibility with Razor components
+    // Address aliases for backward compatibility with Razor components (excluded from serialization)
+    [System.Text.Json.Serialization.JsonIgnore]
     public Guid AddressCountryId
     {
         get => CountryId;
         set => CountryId = value;
     }
+    [System.Text.Json.Serialization.JsonIgnore]
     public Guid AddressStateId
     {
         get => StateId;
         set => StateId = value;
     }
+    [System.Text.Json.Serialization.JsonIgnore]
     public Guid AddressCityId
     {
         get => CityId;
@@ -260,77 +265,155 @@ public class CreateCompanyRequest
 // Update Request
 public class UpdateCompanyRequest
 {
+    [System.Text.Json.Serialization.JsonPropertyName("id")]
     public Guid Id { get; set; }
+    
+    [System.Text.Json.Serialization.JsonPropertyName("legalName")]
     public string LegalName { get; set; } = string.Empty;
+    
+    [System.Text.Json.Serialization.JsonPropertyName("tradeName")]
     public string? TradeName { get; set; }
+    
+    [System.Text.Json.Serialization.JsonPropertyName("shortName")]
     public string? ShortName { get; set; }
+    
+    [System.Text.Json.Serialization.JsonPropertyName("legalStructure")]
     public LegalStructure LegalStructure { get; set; }
+    
+    [System.Text.Json.Serialization.JsonPropertyName("incorporationDate")]
     public DateTime? IncorporationDate { get; set; }
+    
+    [System.Text.Json.Serialization.JsonPropertyName("parentCompanyId")]
     public Guid? ParentCompanyId { get; set; }
+    
+    [System.Text.Json.Serialization.JsonPropertyName("status")]
     public CompanyStatus Status { get; set; }
 
+    [System.Text.Json.Serialization.JsonPropertyName("registrationNumber")]
     public string? RegistrationNumber { get; set; }
+    
+    [System.Text.Json.Serialization.JsonPropertyName("panNumber")]
     public string? PANNumber { get; set; }
+    
+    [System.Text.Json.Serialization.JsonPropertyName("gstin")]
     public string? GSTIN { get; set; }
+    
+    [System.Text.Json.Serialization.JsonPropertyName("tanNumber")]
     public string? TANNumber { get; set; }
+    
+    [System.Text.Json.Serialization.JsonPropertyName("otherTaxId")]
     public string? OtherTaxId { get; set; }
+    
+    [System.Text.Json.Serialization.JsonPropertyName("registrationCountryId")]
     public Guid RegistrationCountryId { get; set; }
+    
+    [System.Text.Json.Serialization.JsonPropertyName("registrationStateId")]
     public Guid? RegistrationStateId { get; set; }
 
-    // Aliases for backward compatibility with Razor components
+    // Aliases for backward compatibility with Razor components (excluded from serialization)
+    [System.Text.Json.Serialization.JsonIgnore]
     public string? TAN
     {
         get => TANNumber;
         set => TANNumber = value;
     }
+    
+    [System.Text.Json.Serialization.JsonIgnore]
     public string? OtherTaxIdentifier
     {
         get => OtherTaxId;
         set => OtherTaxId = value;
     }
 
+    [System.Text.Json.Serialization.JsonPropertyName("addressLine1")]
     public string AddressLine1 { get; set; } = string.Empty;
+    
+    [System.Text.Json.Serialization.JsonPropertyName("addressLine2")]
     public string? AddressLine2 { get; set; }
+    
+    [System.Text.Json.Serialization.JsonPropertyName("cityId")]
     public Guid CityId { get; set; }
+    
+    [System.Text.Json.Serialization.JsonPropertyName("stateId")]
     public Guid StateId { get; set; }
+    
+    [System.Text.Json.Serialization.JsonPropertyName("postalCode")]
     public string PostalCode { get; set; } = string.Empty;
+    
+    [System.Text.Json.Serialization.JsonPropertyName("countryId")]
     public Guid CountryId { get; set; }
+    
+    [System.Text.Json.Serialization.JsonPropertyName("timeZoneId")]
     public Guid TimeZoneId { get; set; }
 
-    // Address aliases for backward compatibility with Razor components
+    // Address aliases for backward compatibility with Razor components (excluded from serialization)
+    [System.Text.Json.Serialization.JsonIgnore]
     public Guid AddressCountryId
     {
         get => CountryId;
         set => CountryId = value;
     }
+    
+    [System.Text.Json.Serialization.JsonIgnore]
     public Guid AddressStateId
     {
         get => StateId;
         set => StateId = value;
     }
+    
+    [System.Text.Json.Serialization.JsonIgnore]
     public Guid AddressCityId
     {
         get => CityId;
         set => CityId = value;
     }
 
+    [System.Text.Json.Serialization.JsonPropertyName("primaryContactName")]
     public string? PrimaryContactName { get; set; }
+    
+    [System.Text.Json.Serialization.JsonPropertyName("primaryEmail")]
     public string? PrimaryEmail { get; set; }
+    
+    [System.Text.Json.Serialization.JsonPropertyName("primaryPhone")]
     public string? PrimaryPhone { get; set; }
+    
+    [System.Text.Json.Serialization.JsonPropertyName("websiteUrl")]
     public string? WebsiteUrl { get; set; }
+    
+    [System.Text.Json.Serialization.JsonPropertyName("logoFileUrl")]
     public string? LogoFileUrl { get; set; }
 
+    [System.Text.Json.Serialization.JsonPropertyName("baseCurrencyId")]
     public Guid BaseCurrencyId { get; set; }
+    
+    [System.Text.Json.Serialization.JsonPropertyName("reportingCurrencyId")]
     public Guid? ReportingCurrencyId { get; set; }
+    
+    [System.Text.Json.Serialization.JsonPropertyName("fiscalYearStartMonth")]
     public byte FiscalYearStartMonth { get; set; }
+    
+    [System.Text.Json.Serialization.JsonPropertyName("booksStartDate")]
     public DateTime BooksStartDate { get; set; }
+    
+    [System.Text.Json.Serialization.JsonPropertyName("enableMultiCurrency")]
     public bool EnableMultiCurrency { get; set; }
+    
+    [System.Text.Json.Serialization.JsonPropertyName("roundingPrecision")]
     public byte RoundingPrecision { get; set; }
+    
+    [System.Text.Json.Serialization.JsonPropertyName("roundingMode")]
     public RoundingMode? RoundingMode { get; set; }
 
+    [System.Text.Json.Serialization.JsonPropertyName("allowPostingFromDate")]
     public DateTime? AllowPostingFromDate { get; set; }
+    
+    [System.Text.Json.Serialization.JsonPropertyName("allowPostingToDate")]
     public DateTime? AllowPostingToDate { get; set; }
+    
+    [System.Text.Json.Serialization.JsonPropertyName("lockBackDatedPosting")]
     public bool LockBackDatedPosting { get; set; }
+    
+    [System.Text.Json.Serialization.JsonPropertyName("notes")]
     public string? Notes { get; set; }
 }
 
