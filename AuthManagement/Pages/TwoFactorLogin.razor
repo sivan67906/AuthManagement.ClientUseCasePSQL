@@ -2,6 +2,7 @@
 @using AuthManagement.Shared
 @using AuthManagement.Models
 @using AuthManagement.Services
+@using AuthManagement.Helpers
 @using System.Net.Http.Json
 @using System.Text.RegularExpressions
 @inject HttpClient Http
@@ -438,7 +439,7 @@
             {
                 if (result?.Errors != null && result.Errors.Count > 0)
                 {
-                    message = string.Join(", ", result.Errors);
+                    message = ErrorMessageHelper.FormatErrorsAsBullets(result.Errors);
                 }
                 else
                 {

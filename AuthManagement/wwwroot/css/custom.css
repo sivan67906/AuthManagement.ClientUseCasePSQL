@@ -658,3 +658,45 @@ body.layout-menu-expanded .layout-overlay {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
+
+/* ==========================================
+   TOAST ERROR LIST STYLES
+   ========================================== */
+
+.toast-with-list {
+    max-width: 400px !important;
+    width: auto !important;
+}
+
+.toast-with-list .swal2-html-container {
+    text-align: left !important;
+    margin: 0 !important;
+    padding: 0.5rem 1rem !important;
+}
+
+.toast-error-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    text-align: left;
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+.toast-error-list li {
+    position: relative;
+    padding-left: 1rem;
+    margin-bottom: 0.25rem;
+}
+
+.toast-error-list li:last-child {
+    margin-bottom: 0;
+}
+
+.toast-error-list li::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: currentColor;
+    font-weight: bold;
+}

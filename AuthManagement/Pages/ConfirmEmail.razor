@@ -1,5 +1,8 @@
-﻿@page "/confirm-email"
+@page "/confirm-email"
 @using AuthManagement.Shared
+@using AuthManagement.Models
+@using AuthManagement.Helpers
+@using System.Net.Http.Json
 @inject HttpClient Http
 @inject IJSRuntime JS
 @inject NavigationManager Nav
@@ -96,17 +99,11 @@
                 var result = await response.Content.ReadFromJsonAsync<ApiResponse<object>>();
                 if (result?.Errors != null && result.Errors.Count > 0)
                 {
-                    // Loop through all errors and combine them
-                    var errorMessages = new List<string>();
-                    foreach (var error in result.Errors)
-                    {
-                        errorMessages.Add(error);
-                    }
-                    message = string.Join(", ", errorMessages);
+                    message = ErrorMessageHelper.FormatErrorsAsBullets(result.Errors);
                 }
                 else
                 {
-                    message = result?.Message ?? "Failed to send confirmation email. Please try again.";
+                    message = result?.Message ?? "Failed to confirm email. Please try again.";
                 }
             }
         }

@@ -18,22 +18,37 @@ window.confirmDelete = (title, message) => {
 
 // Toast notifications
 window.showToast = (type, message) => {
+    // Check if message contains HTML (for bullet lists)
+    const containsHtml = /<[^>]+>/.test(message);
+    
     const Toast = Swal.mixin({
         toast: true,
         position: 'top-end',
         showConfirmButton: false,
-        timer: 3000,
+        timer: containsHtml ? 5000 : 3000, // Longer timer for lists
         timerProgressBar: true,
+        customClass: {
+            popup: containsHtml ? 'toast-with-list' : ''
+        },
         didOpen: (toast) => {
             toast.addEventListener('mouseenter', Swal.stopTimer);
             toast.addEventListener('mouseleave', Swal.resumeTimer);
         }
     });
 
-    Toast.fire({
-        icon: type, // 'success', 'error', 'warning', 'info', 'question'
-        title: message
-    });
+    if (containsHtml) {
+        // Use html property for messages containing HTML (like bullet lists)
+        Toast.fire({
+            icon: type,
+            html: message
+        });
+    } else {
+        // Use title for simple text messages
+        Toast.fire({
+            icon: type,
+            title: message
+        });
+    }
 };
 
 // Show loading indicator

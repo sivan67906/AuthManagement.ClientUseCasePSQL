@@ -1,6 +1,7 @@
 @page "/verify-mail"
 @using AuthManagement.Shared
 @using AuthManagement.Models
+@using AuthManagement.Helpers
 @using System.Net.Http.Json
 @inject HttpClient Http
 @inject NavigationManager Nav
@@ -156,22 +157,7 @@
                 }
                 else if (result?.Errors != null && result.Errors.Count > 0)
                 {
-                    // Loop through all errors and combine them
-                    var errorMessages = new List<string>();
-                    foreach (var error in result.Errors)
-                    {
-                        // Check for rate limiting errors
-                        if (error.Contains("wait", StringComparison.OrdinalIgnoreCase) || 
-                            error.Contains("maximum", StringComparison.OrdinalIgnoreCase))
-                        {
-                            errorMessages.Add(error);
-                        }
-                        else
-                        {
-                            errorMessages.Add(error);
-                        }
-                    }
-                    errorMessage = string.Join(", ", errorMessages);
+                    errorMessage = ErrorMessageHelper.FormatErrorsAsBullets(result.Errors);
                     await JS.InvokeVoidAsync("showToast", "error", errorMessage);
                 }
                 else

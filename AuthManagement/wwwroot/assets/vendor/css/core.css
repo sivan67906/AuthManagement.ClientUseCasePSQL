@@ -31283,6 +31283,26 @@ body:not(.modal-open) .layout-content-navbar .layout-navbar {
     color: #333;
 }
 
+/* Toast bullet list styling for multiple errors */
+.toast-message-list {
+    font-size: 14px;
+}
+
+.toast-error-list {
+    margin: 0;
+    padding-left: 18px;
+    list-style-type: disc;
+}
+
+.toast-error-list li {
+    margin-bottom: 4px;
+    line-height: 1.4;
+}
+
+.toast-error-list li:last-child {
+    margin-bottom: 0;
+}
+
 .toast-close {
     background: transparent;
     border: none;
