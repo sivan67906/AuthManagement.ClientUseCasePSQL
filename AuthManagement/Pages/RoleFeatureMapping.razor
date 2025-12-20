@@ -1,5 +1,6 @@
 @page "/rolefeaturemapping"
 @using AuthManagement.Models
+@using AuthManagement.Helpers
 @using AuthManagement.Services
 @using AuthManagement.Shared
 @inject RBACService RBACService
@@ -12,6 +13,7 @@
 @attribute [Authorize]
 @inject IJSRuntime JS
 <PageTitle>Role Feature Mapping</PageTitle>
+<script src="js/InputFocus.js"></script>
 
 <style>
     /* Page Header */
@@ -20,6 +22,11 @@
         justify-content: space-between;
         align-items: center;
         padding-bottom: 0;
+    }
+
+    .mapping-table tbody tr:hover {
+        box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px, rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
+        border-left: 5px solid #7367f0
     }
 
     .page-title {
@@ -248,7 +255,7 @@
     }
 
     .mapping-table td {
-        padding: 5px 16px;
+        padding: 13px 16px;
         font-size: 14px;
         color: #333;
     }
@@ -1113,6 +1120,8 @@
         _mappingModel = new RoleFeatureMappingFormModel();
         _isDialogOpen = true;
         await JS.InvokeVoidAsync("disableScroll");
+        await JS.InvokeVoidAsync("focusInputById", "popupFirstInput");
+
     }
 
     async Task OpenEditDialog(DisplayRoleFeatureMapping mapping)
@@ -1175,7 +1184,7 @@
                 var roleName = _roles.FirstOrDefault(r => r.Id == roleId)?.Name ?? "Unknown Role";
                 var featureName = _features.FirstOrDefault(f => f.Id == featureId)?.Name ?? "Unknown Feature";
                 var deptName = departmentId.HasValue ? _departments.FirstOrDefault(d => d.Id == departmentId.Value)?.Name ?? "Unknown Department" : "No Department";
-                await JS.InvokeVoidAsync("showToast", "error", $"Duplicate mapping: {roleName} - {featureName} - {deptName} already exists", Severity.Warning);
+                await JS.InvokeVoidAsync("showToast", "error", $"Duplicate mapping: {roleName} - {featureName} - {deptName} already exists");
                 _isSaving = false;
                 return;
             }
@@ -1194,13 +1203,13 @@
                 var response = await RBACService.UpdateRoleFeatureMappingAsync(updateRequest);
                 if (response.Success)
                 {
-                    await JS.InvokeVoidAsync("showToast", "success", "Role feature mapping updated successfully", Severity.Success);
+                    await JS.InvokeVoidAsync("showToast", "success", "Role feature mapping updated successfully");
                     await LoadData();
                     CloseDialog();
                 }
                 else
                 {
-                    await JS.InvokeVoidAsync("showToast", "success", response.Message ?? "Failed to update role feature mapping", Severity.Error);
+                    await JS.InvokeVoidAsync("showToast", "success", response.Message ?? "Failed to update role feature mapping");
                 }
             }
             else
@@ -1216,20 +1225,20 @@
                 var response = await RBACService.CreateRoleFeatureMappingAsync(createRequest);
                 if (response.Success)
                 {
-                    await JS.InvokeVoidAsync("showToast", "success", "Role feature mapping created successfully", Severity.Success);
+                    await JS.InvokeVoidAsync("showToast", "success", "Role feature mapping created successfully");
                     await LoadData();
                     CloseDialog();
                 }
                 else
                 {
-                    await JS.InvokeVoidAsync("showToast", "error", response.Message ?? "Failed to create role feature mapping", Severity.Error);
+                    await JS.InvokeVoidAsync("showToast", "error", ErrorMessageHelper.FormatMessageAsBullets(response.Message ?? "Failed to create role feature mapping"));
                 }
             }
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error saving role feature mapping");
-            await JS.InvokeVoidAsync("showToast", "error", $"Error: {ex.Message}", Severity.Error);
+            await JS.InvokeVoidAsync("showToast", "error", $"Error: {ex.Message}");
         }
         finally
         {
@@ -1251,19 +1260,19 @@
                 var response = await RBACService.DeleteRoleFeatureMappingAsync(mapping.Id);
                 if (response.Success)
                 {
-                    await JS.InvokeVoidAsync("showToast", "success", "Role feature mapping deleted successfully", Severity.Success);
+                    await JS.InvokeVoidAsync("showToast", "success", "Role feature mapping deleted successfully");
                     await LoadData();
                 }
                 else
                 {
-                    await JS.InvokeVoidAsync("showToast", "error", response.Message ?? "Failed to delete role feature mapping", Severity.Error);
+                    await JS.InvokeVoidAsync("showToast", "error", ErrorMessageHelper.FormatMessageAsBullets(response.Message ?? "Failed to delete role feature mapping"));
                 }
             }
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error deleting role feature mapping");
-            await JS.InvokeVoidAsync("showToast", "error", $"Error deleting role feature mapping: {ex.Message}", Severity.Error);
+            await JS.InvokeVoidAsync("showToast", "error", $"Error deleting role feature mapping: {ex.Message}");
         }
     }
 }

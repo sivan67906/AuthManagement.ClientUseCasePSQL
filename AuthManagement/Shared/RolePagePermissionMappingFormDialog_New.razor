@@ -326,8 +326,8 @@
 
         <div class="form-group">
             <label class="form-label form-label-required">Department</label>
-            <select class="form-select" 
-                    @bind="_selectedDepartmentId" 
+                    <select class="form-select" id="popupFirstInput"
+                            @bind="_selectedDepartmentId" 
                     @bind:after="OnDepartmentChanged"
                     disabled="@IsEditMode">
                 <option value="">Select Department</option>

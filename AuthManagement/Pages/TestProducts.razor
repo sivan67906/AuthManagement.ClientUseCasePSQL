@@ -1,5 +1,6 @@
 @page "/testproducts"
 @using AuthManagement.Models
+@using AuthManagement.Helpers
 @using AuthManagement.Services
 @using AuthManagement.Shared
 @inject TestEntityService TestEntityService
@@ -1070,13 +1071,13 @@ else
                 var response = await TestEntityService.UpdateProductAsync(_selectedProduct.Id, updateRequest);
                 if (response.Success)
                 {
-                    await JS.InvokeVoidAsync("showToast", "success", "Product updated successfully", Severity.Success);
+                    await JS.InvokeVoidAsync("showToast", "success", "Product updated successfully");
                     await LoadProducts();
                     CloseDialog();
                 }
                 else
                 {
-                    await JS.InvokeVoidAsync("showToast", "error", response.Message ?? "Failed to update product", Severity.Error);
+                    await JS.InvokeVoidAsync("showToast", "error", ErrorMessageHelper.FormatMessageAsBullets(response.Message ?? "Failed to update product"));
                 }
             }
             else
@@ -1093,20 +1094,20 @@ else
                 var response = await TestEntityService.CreateProductAsync(createRequest);
                 if (response.Success)
                 {
-                    await JS.InvokeVoidAsync("showToast", "success", "Product created successfully", Severity.Success);
+                    await JS.InvokeVoidAsync("showToast", "success", "Product created successfully");
                     await LoadProducts();
                     CloseDialog();
                 }
                 else
                 {
-                    await JS.InvokeVoidAsync("showToast", "error", response.Message ?? "Failed to create product", Severity.Error);
+                    await JS.InvokeVoidAsync("showToast", "error", ErrorMessageHelper.FormatMessageAsBullets(response.Message ?? "Failed to create product"));
                 }
             }
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error saving product");
-            await JS.InvokeVoidAsync("showToast", "error", $"Error: {ex.Message}", Severity.Error);
+            await JS.InvokeVoidAsync("showToast", "error", $"Error: {ex.Message}");
         }
         finally
         {
@@ -1127,19 +1128,19 @@ else
                 var response = await TestEntityService.DeleteProductAsync(product.Id);
                 if (response.Success)
                 {
-                    await JS.InvokeVoidAsync("showToast", "success", "Product deleted successfully", Severity.Success);
+                    await JS.InvokeVoidAsync("showToast", "success", "Product deleted successfully");
                     await LoadProducts();
                 }
                 else
                 {
-                    await JS.InvokeVoidAsync("showToast", "error", response.Message ?? "Failed to delete product", Severity.Error);
+                    await JS.InvokeVoidAsync("showToast", "error", ErrorMessageHelper.FormatMessageAsBullets(response.Message ?? "Failed to delete product"));
                 }
             }
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error deleting product");
-            await JS.InvokeVoidAsync("showToast", "error", $"Error deleting product: {ex.Message}", Severity.Error);
+            await JS.InvokeVoidAsync("showToast", "error", $"Error deleting product: {ex.Message}");
         }
     }
 }

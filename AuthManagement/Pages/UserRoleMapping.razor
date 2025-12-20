@@ -1,5 +1,6 @@
 @page "/userrolemapping"
 @using AuthManagement.Models
+@using AuthManagement.Helpers
 @using AuthManagement.Services
 @using AuthManagement.Shared
 @inject RBACService RBACService
@@ -11,6 +12,7 @@
 @inject ISnackbar Snackbar
 @attribute [Authorize]
 @inject IJSRuntime JS
+<script src="js/InputFocus.js"></script>
 
 <PageTitle>User Role Mapping</PageTitle>
 
@@ -21,6 +23,11 @@
         justify-content: space-between;
         align-items: center;
         padding-bottom: 0;
+    }
+
+    .mapping-table tbody tr:hover {
+        box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px, rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
+        border-left: 5px solid #7367f0
     }
 
     .page-title {
@@ -223,7 +230,7 @@
     }
 
     .mapping-table td {
-        padding: 5px 16px;
+        padding: 13px 16px;
         font-size: 14px;
         color: #333;
     }
@@ -981,9 +988,11 @@
         }
     }
 
-    private void OpenAssignRoleDialog(UserWithoutRoleDto user)
+   async Task OpenAssignRoleDialog(UserWithoutRoleDto user)
     {
         _selectedUser = user;
+        await JS.InvokeVoidAsync("focusInputById", "popupFirstInput");
+
         _mappingModel = new MappingFormModel
         {
             UserId = user.Id.ToString()
@@ -1060,7 +1069,7 @@
             var response = await RBACService.CreateUserRoleMappingAsync(createRequest);
             if (response.Success)
             {
-                await JS.InvokeVoidAsync("showToast", "success", "User role assigned successfully", Severity.Success);
+                await JS.InvokeVoidAsync("showToast", "success", "User role assigned successfully");
                 CloseDialog();
 
                 // Reload data with immediate consistency to get updated list from Command DB
@@ -1069,13 +1078,13 @@
             }
             else
             {
-                await JS.InvokeVoidAsync("showToast", "error", response.Message ?? "Failed to assign user role", Severity.Error);
+                await JS.InvokeVoidAsync("showToast", "error", ErrorMessageHelper.FormatMessageAsBullets(response.Message ?? "Failed to assign user role"));
             }
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error assigning user role");
-            await JS.InvokeVoidAsync("showToast", "error", $"Error: {ex.Message}", Severity.Error);
+            await JS.InvokeVoidAsync("showToast", "error", $"Error: {ex.Message}");
         }
         finally
         {

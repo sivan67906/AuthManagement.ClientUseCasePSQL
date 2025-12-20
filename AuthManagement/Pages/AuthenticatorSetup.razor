@@ -2,6 +2,7 @@
 @using AuthManagement.Shared
 @using AuthManagement.Services
 @using AuthManagement.Models
+@using AuthManagement.Helpers
 @using Microsoft.AspNetCore.Authorization
 @using System.Net.Http.Headers
 @using System.Net.Http.Json
@@ -359,7 +360,7 @@
             }
             else
             {
-                await JS.InvokeVoidAsync("showToast", "error", result?.Message ?? "Failed to start setup.");
+                await JS.InvokeVoidAsync("showToast", "error", ErrorMessageHelper.FormatMessageAsBullets(result?.Message ?? "Failed to start setup."));
             }
         }
         catch (Exception ex)
@@ -416,7 +417,7 @@
             }
             else
             {
-                var errorMessage = result?.Errors?.FirstOrDefault() ?? result?.Message ?? "Verification failed. Please try again.";
+                var errorMessage = result?.Errors?.FirstOrDefault() ?? ErrorMessageHelper.FormatMessageAsBullets(result?.Message ?? "Verification failed. Please try again.");
                 await JS.InvokeVoidAsync("showToast", "error", errorMessage);
                 ClearDigits();
             }
@@ -450,7 +451,7 @@
             }
             else
             {
-                await JS.InvokeVoidAsync("showToast", "error", result?.Message ?? "Failed to disable authenticator.");
+                await JS.InvokeVoidAsync("showToast", "error", ErrorMessageHelper.FormatMessageAsBullets(result?.Message ?? "Failed to disable authenticator."));
             }
         }
         catch (Exception ex)

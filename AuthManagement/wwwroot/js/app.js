@@ -16,34 +16,34 @@ window.confirmDelete = (title, message) => {
     });
 };
 
-// Toast notifications
+// Toast notifications with HTML support for bullet lists
 window.showToast = (type, message) => {
-    // Check if message contains HTML (for bullet lists)
-    const containsHtml = /<[^>]+>/.test(message);
+    // Check if message contains HTML (bullet list)
+    const isHtmlContent = message && (message.includes('<ul') || message.includes('<li') || message.includes('<ol'));
+    
+    // Use longer timer for HTML lists (more content to read)
+    const timerDuration = isHtmlContent ? 8000 : 3000;
     
     const Toast = Swal.mixin({
         toast: true,
         position: 'top-end',
         showConfirmButton: false,
-        timer: containsHtml ? 5000 : 3000, // Longer timer for lists
+        timer: timerDuration,
         timerProgressBar: true,
-        customClass: {
-            popup: containsHtml ? 'toast-with-list' : ''
-        },
         didOpen: (toast) => {
             toast.addEventListener('mouseenter', Swal.stopTimer);
             toast.addEventListener('mouseleave', Swal.resumeTimer);
-        }
+        },
+        customClass: isHtmlContent ? { popup: 'toast-with-list' } : {}
     });
 
-    if (containsHtml) {
-        // Use html property for messages containing HTML (like bullet lists)
+    // Use 'html' property for HTML content, 'title' for plain text
+    if (isHtmlContent) {
         Toast.fire({
             icon: type,
             html: message
         });
     } else {
-        // Use title for simple text messages
         Toast.fire({
             icon: type,
             title: message

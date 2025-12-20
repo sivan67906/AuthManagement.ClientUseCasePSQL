@@ -23,7 +23,7 @@
                             <label class="form-label">
                                 Feature<span class="text-danger">*</span>
                             </label>
-                            <select class="form-select" @bind="FormModel.FeatureId" disabled="@IsSaving">
+                            <select class="form-select" id="popupFirstInput" @bind="FormModel.FeatureId" disabled="@IsSaving">
                                 <option value="">Select Feature</option>
                                 @if (Features != null)
                                 {

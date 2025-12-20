@@ -6,6 +6,66 @@ namespace AuthManagement.Helpers;
 public static class ErrorMessageHelper
 {
     /// <summary>
+    /// Parses an error string that may contain multiple errors with various delimiters.
+    /// Handles formats like:
+    /// - "Unable to register user: error1;error2;error3"
+    /// - "error1|||error2|||error3"
+    /// - "error1;error2;error3"
+    /// - "error1\nerror2\nerror3"
+    /// </summary>
+    private static List<string> ParseErrorString(string input)
+    {
+        if (string.IsNullOrWhiteSpace(input))
+            return new List<string>();
+            
+        var workingString = input.Trim();
+        
+        // Check if string has a colon prefix pattern (like "Unable to register user: errors")
+        var colonIndex = workingString.IndexOf(':');
+        if (colonIndex > 0 && colonIndex < workingString.Length - 1)
+        {
+            var afterColon = workingString.Substring(colonIndex + 1).Trim();
+            
+            // Only extract if the part after colon contains delimiters
+            if (afterColon.Contains("|||") || afterColon.Contains(";") || afterColon.Contains("\n"))
+            {
+                workingString = afterColon;
+            }
+        }
+        
+        // Try splitting by different delimiters in order of priority
+        List<string> errors;
+        
+        if (workingString.Contains("|||"))
+        {
+            errors = workingString.Split("|||", StringSplitOptions.RemoveEmptyEntries)
+                .Select(e => e.Trim())
+                .Where(e => !string.IsNullOrEmpty(e))
+                .ToList();
+        }
+        else if (workingString.Contains(";"))
+        {
+            errors = workingString.Split(';', StringSplitOptions.RemoveEmptyEntries)
+                .Select(e => e.Trim())
+                .Where(e => !string.IsNullOrEmpty(e))
+                .ToList();
+        }
+        else if (workingString.Contains("\n"))
+        {
+            errors = workingString.Split('\n', StringSplitOptions.RemoveEmptyEntries)
+                .Select(e => e.Trim())
+                .Where(e => !string.IsNullOrEmpty(e))
+                .ToList();
+        }
+        else
+        {
+            errors = new List<string> { workingString };
+        }
+        
+        return errors;
+    }
+
+    /// <summary>
     /// Formats a list of errors as HTML bullet points for display in toast notifications.
     /// If only one error, returns the error as plain text.
     /// If multiple errors, returns an HTML unordered list with each error as a list item.
@@ -16,51 +76,22 @@ public static class ErrorMessageHelper
         if (errors == null || !errors.Any())
             return string.Empty;
             
-        var errorList = errors.ToList();
-        
-        // If single error contains semicolons or "|||", split it
-        if (errorList.Count == 1)
+        // Expand all errors through ParseErrorString
+        var expandedErrors = new List<string>();
+        foreach (var error in errors)
         {
-            var singleError = errorList[0];
-            
-            // Remove common prefixes like "Unable to register user: "
-            var prefixPatterns = new[] { "Unable to register user: ", "Registration failed: ", "Validation failed: " };
-            foreach (var prefix in prefixPatterns)
-            {
-                if (singleError.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
-                {
-                    singleError = singleError.Substring(prefix.Length);
-                    break;
-                }
-            }
-            
-            // Check for multiple errors in single string
-            if (singleError.Contains("|||"))
-            {
-                errorList = singleError.Split("|||", StringSplitOptions.RemoveEmptyEntries)
-                    .Select(e => e.Trim())
-                    .Where(e => !string.IsNullOrEmpty(e))
-                    .ToList();
-            }
-            else if (singleError.Contains(";"))
-            {
-                errorList = singleError.Split(';', StringSplitOptions.RemoveEmptyEntries)
-                    .Select(e => e.Trim())
-                    .Where(e => !string.IsNullOrEmpty(e))
-                    .ToList();
-            }
-            else
-            {
-                return singleError; // Return single error as-is
-            }
+            expandedErrors.AddRange(ParseErrorString(error));
         }
         
-        if (errorList.Count == 1)
-            return errorList[0];
+        if (expandedErrors.Count == 0)
+            return string.Empty;
+            
+        if (expandedErrors.Count == 1)
+            return expandedErrors[0];
             
         var sb = new System.Text.StringBuilder();
         sb.Append("<ul class=\"toast-error-list\">");
-        foreach (var error in errorList)
+        foreach (var error in expandedErrors)
         {
             sb.Append($"<li>{System.Net.WebUtility.HtmlEncode(error)}</li>");
         }
@@ -76,7 +107,22 @@ public static class ErrorMessageHelper
         if (string.IsNullOrWhiteSpace(message))
             return string.Empty;
             
-        return FormatErrorsAsBullets(new[] { message });
+        var errors = ParseErrorString(message);
+        
+        if (errors.Count == 0)
+            return string.Empty;
+            
+        if (errors.Count == 1)
+            return errors[0];
+            
+        var sb = new System.Text.StringBuilder();
+        sb.Append("<ul class=\"toast-error-list\">");
+        foreach (var error in errors)
+        {
+            sb.Append($"<li>{System.Net.WebUtility.HtmlEncode(error)}</li>");
+        }
+        sb.Append("</ul>");
+        return sb.ToString();
     }
     
     /// <summary>

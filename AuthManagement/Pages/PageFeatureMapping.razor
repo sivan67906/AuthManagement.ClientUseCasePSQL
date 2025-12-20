@@ -1,5 +1,6 @@
 @page "/pagefeaturemapping"
 @using AuthManagement.Models
+@using AuthManagement.Helpers
 @using AuthManagement.Services
 @using AuthManagement.Shared
 @inject RBACService RBACService
@@ -11,6 +12,7 @@
 @inject ISnackbar Snackbar
 @attribute [Authorize]
 @inject IJSRuntime JS
+<script src="js/InputFocus.js"></script>
 
 <PageTitle>Page Feature Mapping</PageTitle>
 
@@ -21,6 +23,11 @@
         justify-content: space-between;
         align-items: center;
         padding-bottom: 0;
+    }
+
+    .mapping-table tbody tr:hover {
+        box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px, rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
+        border-left: 5px solid #7367f0
     }
 
     .page-title {
@@ -249,7 +256,7 @@
     }
 
     .mapping-table td {
-        padding: 5px 16px;
+        padding: 13px 16px;
         font-size: 14px;
         color: #333;
     }
@@ -1091,6 +1098,8 @@
         _mappingModel = new PageFeatureMappingFormDialog.MappingFormModel();
         _isDialogOpen = true;
         await JS.InvokeVoidAsync("disableScroll");
+        await JS.InvokeVoidAsync("focusInputById", "popupFirstInput");
+
     }
 
     async Task OpenEditDialog(DisplayPageFeatureMapping mapping)
@@ -1147,7 +1156,7 @@
             {
                 var pageName = _pages.FirstOrDefault(p => p.Id == pageId)?.Name ?? "Unknown Page";
                 var featureName = _features.FirstOrDefault(f => f.Id == featureId)?.Name ?? "Unknown Feature";
-                await JS.InvokeVoidAsync("showToast", "error", $"Duplicate mapping: {pageName} - {featureName} already exists", Severity.Warning);
+                await JS.InvokeVoidAsync("showToast", "error", $"Duplicate mapping: {pageName} - {featureName} already exists");
                 _isSaving = false;
                 return;
             }
@@ -1164,13 +1173,13 @@
                 var response = await RBACService.UpdatePageFeatureMappingAsync(_selectedMapping.Id, updateRequest);
                 if (response.Success)
                 {
-                    await JS.InvokeVoidAsync("showToast", "success", "Page feature mapping updated successfully", Severity.Success);
+                    await JS.InvokeVoidAsync("showToast", "success", "Page feature mapping updated successfully");
                     await LoadData();
                     CloseDialog();
                 }
                 else
                 {
-                    await JS.InvokeVoidAsync("showToast", "error", response.Message ?? "Failed to update page feature mapping", Severity.Error);
+                    await JS.InvokeVoidAsync("showToast", "error", ErrorMessageHelper.FormatMessageAsBullets(response.Message ?? "Failed to update page feature mapping"));
                 }
             }
             else
@@ -1184,20 +1193,20 @@
                 var response = await RBACService.CreatePageFeatureMappingAsync(createRequest);
                 if (response.Success)
                 {
-                    await JS.InvokeVoidAsync("showToast", "success", "Page feature mapping created successfully", Severity.Success);
+                    await JS.InvokeVoidAsync("showToast", "success", "Page feature mapping created successfully");
                     await LoadData();
                     CloseDialog();
                 }
                 else
                 {
-                    await JS.InvokeVoidAsync("showToast", "error", response.Message ?? "Failed to create page feature mapping", Severity.Error);
+                    await JS.InvokeVoidAsync("showToast", "error", ErrorMessageHelper.FormatMessageAsBullets(response.Message ?? "Failed to create page feature mapping"));
                 }
             }
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error saving page feature mapping");
-            await JS.InvokeVoidAsync("showToast", "error", $"Error: {ex.Message}", Severity.Error);
+            await JS.InvokeVoidAsync("showToast", "error", $"Error: {ex.Message}");
         }
         finally
         {
@@ -1219,19 +1228,19 @@
                 var response = await RBACService.DeletePageFeatureMappingAsync(mapping.Id);
                 if (response.Success)
                 {
-                    await JS.InvokeVoidAsync("showToast", "success", "Page feature mapping deleted successfully", Severity.Success);
+                    await JS.InvokeVoidAsync("showToast", "success", "Page feature mapping deleted successfully");
                     await LoadData();
                 }
                 else
                 {
-                    await JS.InvokeVoidAsync("showToast", "error", response.Message ?? "Failed to delete page feature mapping", Severity.Error);
+                    await JS.InvokeVoidAsync("showToast", "error", ErrorMessageHelper.FormatMessageAsBullets(response.Message ?? "Failed to delete page feature mapping"));
                 }
             }
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error deleting page feature mapping");
-            await JS.InvokeVoidAsync("showToast", "error", $"Error deleting page feature mapping: {ex.Message}", Severity.Error);
+            await JS.InvokeVoidAsync("showToast", "error", $"Error deleting page feature mapping: {ex.Message}");
         }
     }
 }

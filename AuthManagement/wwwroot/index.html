@@ -160,7 +160,7 @@
     <!--<script src="js/toast.js"></script>-->
 
     <script src="assets/js/apexcharts.js"></script>
-    
+
     <!-- Input Sanitizer for Issue #3 -->
     <script src="js/input-sanitizer.js"></script>
 
@@ -217,7 +217,7 @@
            - Pinned (expanded): ti-circle-dot (circle with dot ⊙)
            - Hover (when unpinned): Menu expands but icon STAYS as ti-circle
            - Click: Toggles between pinned/unpinned and updates icon accordingly
-           
+
            CRITICAL: Icon represents PIN STATE, not EXPANDED STATE!
            ========================================================================= */
 
@@ -225,15 +225,15 @@
         window.toggleMenuPin = function () {
             const currentPinned = localStorage.getItem('menuPinned') === 'true';
             const newPinned = !currentPinned;
-            
+
             localStorage.setItem('menuPinned', newPinned.toString());
-            
+
             // Update icon immediately based on new pin state
             window.updatePinIcon(newPinned);
-            
+
             // Update menu state
             window.updateMenuState(newPinned);
-            
+
             console.log('[MenuPin] Toggled to:', newPinned ? 'PINNED (ti-circle-dot)' : 'UNPINNED (ti-circle)');
         };
 
@@ -241,10 +241,10 @@
         window.updatePinIcon = function (isPinned) {
             const toggleIcon = document.getElementById('menuPinIcon');
             if (!toggleIcon) return;
-            
+
             // Remove all possible icon classes first to avoid conflicts
             toggleIcon.classList.remove('ti-circle', 'ti-circle-dot', 'ti-circle-dot-filled', 'ti-circle-filled');
-            
+
             if (isPinned === true) {
                 // PINNED STATE: Show circle with dot
                 toggleIcon.classList.add('ti-circle-dot');
@@ -259,7 +259,7 @@
         // Update menu collapsed/expanded state
         window.updateMenuState = function (isPinned) {
             const body = document.body;
-            
+
             if (isPinned === true) {
                 // Menu is PINNED: stays expanded permanently
                 body.classList.add('layout-menu-pinned');
@@ -275,11 +275,11 @@
         window.initMenuToggle = function () {
             const body = document.body;
             const layoutMenu = document.getElementById('layout-menu');
-            
+
             // Get stored pin state - ONLY 'true' string means pinned, everything else is unpinned
             const storedValue = localStorage.getItem('menuPinned');
             const isMenuPinned = storedValue === 'true';
-            
+
             console.log('[MenuPin] Initializing - localStorage value:', storedValue, '-> isPinned:', isMenuPinned);
 
             // ===== SET INITIAL STATE =====
@@ -295,14 +295,14 @@
                     if (!currentlyPinned) {
                         body.classList.add('layout-menu-hover');
                         body.classList.remove('layout-menu-collapsed');
-                        
+
                         // CRITICAL: Explicitly ensure icon stays as ti-circle on hover
                         const icon = document.getElementById('menuPinIcon');
                         if (icon && !icon.classList.contains('ti-circle-dot')) {
                             icon.classList.remove('ti-circle-dot');
                             icon.classList.add('ti-circle');
                         }
-                        
+
                         console.log('[MenuPin] Hover: Menu expanded, icon stays ti-circle');
                     }
                 });
@@ -313,22 +313,22 @@
                     if (!currentlyPinned) {
                         body.classList.remove('layout-menu-hover');
                         body.classList.add('layout-menu-collapsed');
-                        
+
                         // CRITICAL: Explicitly ensure icon stays as ti-circle after hover
                         const icon = document.getElementById('menuPinIcon');
                         if (icon && !icon.classList.contains('ti-circle-dot')) {
                             icon.classList.remove('ti-circle-dot');
                             icon.classList.add('ti-circle');
                         }
-                        
+
                         console.log('[MenuPin] Hover out: Menu collapsed, icon stays ti-circle');
                     }
                 });
             }
         };
-        
+
         // Helper to reset menu pin state (for debugging/testing)
-        window.resetMenuPinState = function() {
+        window.resetMenuPinState = function () {
             localStorage.removeItem('menuPinned');
             window.initMenuToggle();
             console.log('[MenuPin] State reset to UNPINNED (ti-circle)');
@@ -336,7 +336,7 @@
 
 
 
-        
+
         // Toggle mobile menu
         window.toggleMobileMenu = function () {
             const body = document.body;
@@ -453,15 +453,15 @@
             };
 
             toast.innerHTML = `
-                                                    <div class="custom-toast-icon">${icons[type] || icons.info}</div>
-                                                    <div class="custom-toast-content">
-                                                        <div class="custom-toast-title">${titles[type] || titles.info}</div>
-                                                        <div class="custom-toast-message">${message}</div>
-                                                    </div>
-                                                    <button class="custom-toast-close" onclick="this.parentElement.remove()">
-                                                        <i class="ti tabler-x"></i>
-                                                    </button>
-                                                `;
+                                                        <div class="custom-toast-icon">${icons[type] || icons.info}</div>
+                                                        <div class="custom-toast-content">
+                                                            <div class="custom-toast-title">${titles[type] || titles.info}</div>
+                                                            <div class="custom-toast-message">${message}</div>
+                                                        </div>
+                                                        <button class="custom-toast-close" onclick="this.parentElement.remove()">
+                                                            <i class="ti tabler-x"></i>
+                                                        </button>
+                                                    `;
 
             toastContainer.appendChild(toast);
 

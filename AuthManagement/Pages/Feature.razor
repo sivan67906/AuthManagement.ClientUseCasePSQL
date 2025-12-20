@@ -1,5 +1,6 @@
 ﻿@page "/feature"
 @using AuthManagement.Models
+@using AuthManagement.Helpers
 @using AuthManagement.Services
 @using AuthManagement.Shared
 @inject RBACService RBACService
@@ -13,6 +14,7 @@
 @inject IJSRuntime JS
 
 <PageTitle>Feature Management</PageTitle>
+<script src="js/InputFocus.js"></script>
 
 <style>
     .page-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 0; }
@@ -38,10 +40,17 @@
     .breadcrumb-link { color: #7c3aed; text-decoration: none; }
     .breadcrumb-link:hover { text-decoration: underline; }
     .breadcrumb-current { color: #666; }
-    .feature-container { background: white; border-radius: 8px; overflow: hidden;
-      padding-left: 21px;
-    padding-right: 21px;}
-    .toolbar-container { display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; background: white; border-bottom: 1px solid #f0f0f0; flex-wrap: wrap; gap: 16px; }
+    .feature-container {  border-radius: 8px; overflow: hidden;
+      }
+    .toolbar-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 26px;
+        /* border-bottom: 1px solid #f0f0f0; */
+        flex-wrap: wrap;
+        gap: 16px;
+    }
     .toolbar-left { display: flex; align-items: center; }
     .toolbar-left::before {
     content: "";
@@ -139,6 +148,7 @@
     color: #333;
 }
 
+
 .feature-table tbody tr:last-child {
     border-bottom: none;
 }
@@ -224,10 +234,11 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        padding: 13px 0px;
-        background: white;
-        border-top: 1px solid #80808040;
-        margin-bottom: 1px;
+        padding-top: 71px;
+        /* background: white;
+        border-top: 1px solid #80808040; */
+        margin-bottom: 43px;
+        padding-bottom: 37px;
     }
 
     .pagination-info {
@@ -277,6 +288,8 @@
         cursor: pointer;
         transition: all 0.2s;
         color: #333;
+        background: white;
+        box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
     }
 
         .page-btn:hover:not(:disabled) {
@@ -327,349 +340,339 @@
     }
 </style>
 
+
+<style>
+    .card-me {
+        position: relative;
+        /* overflow: hidden; */
+        border-radius: 8px;
+    }
+
+    /* Contact content layout remains normal */
+    .contact-action {
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Hover buttons (overlay) */
+    .contact-hover-buttons {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        background: rgb(0 0 0 / 21%);
+        opacity: 0;
+        visibility: hidden;
+        transform: scale(1.05);
+        transition: all 0.25s ease-in-out;
+    }
+
+    /* Show on hover */
+    .card-me:hover .contact-hover-buttons {
+        opacity: 1;
+        visibility: visible;
+        transform: scale(1);
+    }
+
+    /* Optional overlay (fade) */
+    .contact-overlay {
+        position: absolute;
+        inset: 0;
+        /* background: rgba(0, 0, 0, 0.25); */
+        opacity: 0;
+        transition: opacity 0.25s;
+    }
+
+    .card-text {
+        color: var(--bs-primary) !important;
+    }
+
+    .card-me:hover .contact-overlay {
+        opacity: 1;
+    }
+
+
+    /* Issue #4: Text Truncation */
+    .feature-table td.feature-name {
+        max-width: 250px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .feature-table td.description-text {
+        max-width: 350px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+</style>
+
+
+<style>
+    .Image {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .Image img {
+            border-radius: 50%;
+            width: 125px;
+            border: 4px solid white;
+            box-shadow: rgb(115 103 240 / 31%) 0px 10px 50px;
+        }
+
+    .Badges {
+        padding-left: 13px;
+        color: white;
+        position: absolute;
+        left: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding-right: 13px;
+        border-radius: 0px 9px 9px 0px;
+        padding-top: 3px;
+        padding-bottom: 4px;
+    }
+
+    .dept-card h2 {
+        font-size: 20px;
+        text-align: center;
+        margin-bottom: 0;
+    }
+
+    .dept-card p {
+        text-align: center;
+        white-space: normal !important;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        width: 100%;
+    }
+
+    .Actions {
+        justify-content: center;
+        display: flex;
+        align-items: center;
+        gap: 22px;
+        color: white;
+        padding-top: 5px;
+        border-radius: 55px;
+        padding-bottom: 4px;
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+        .Actions i {
+            font-size: 23px;
+            cursor: pointer
+        }
+
+
+    .dept-card {
+        background: #fff;
+        height: 100%;
+        border-radius: 10px;
+        padding: 15px;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+    }
+</style>
+
 <div class="flex-grow-1">
+
     @if (_isLoading)
     {
         <LoadingSpinner FullPage="true" />
     }
-    else{
-      <div class="page-header">
-        <h1 class="page-title">Features List</h1>
+    else
+    {
+        <!-- Page Header -->
+        <div class="page-header" >
+            <h1 class="page-title">Features List</h1>
             <nav>
                 <ul class="breadcrumb">
                     <li class="breadcrumb-item">
                         <a href="#" class="breadcrumb-link">
-                        <i class="ti tabler-home"></i>Home
-                    </a>
+                            <i class="ti tabler-home"></i> Home
+                        </a>
                         <span class="breadcrumb-separator">></span>
                     </li>
-                    <li class="">
-                    <span class="breadcrumb-current">Features</span>
+                    <li>
+                        <span class="breadcrumb-current">Features</span>
                     </li>
                 </ul>
             </nav>
         </div>
 
+        <div class="feature-container" id="DepartmentDarktheme">
 
-    <div class="feature-container">
-        <div class="toolbar-container">
-            <div class="toolbar-left">
-                <span class="features-list-label">Features List</span>
-            </div>
-            <div class="toolbar-right">
-                <div class="search-box">
-                    <input type="text" class="search-input" placeholder="Search features..."
-                           value="@_searchString"
-                           @oninput="@((ChangeEventArgs e) => OnSearchChanged(e.Value?.ToString() ?? string.Empty))" />
-                    @if (string.IsNullOrEmpty(_searchString))
-                    {
-                        <i class="ti tabler-search search-icon"></i>
-                    }
-                    @* else
-                    {
-                        <i class="ti tabler-x clear-icon" @onclick="ClearSearch"></i>
-                    } *@
-                </div>
-                @if (_canAdd)
-                {
-                    <button class="add-button" @onclick="OpenAddDialog" disabled="@_isSaving">
-                        <i class="ti tabler-plus"></i><span>Add Feature</span>
-                    </button>
-                }
-            </div>
-        </div>
+            <!-- Toolbar -->
+            <div class="toolbar-container" id="DepartmentDarktheme">
+                <div class="toolbar-right">
+                    <div class="search-box">
+                        <input type="text"
+                               class="search-input"
+                               placeholder="Search features..."
+                               value="@_searchString"
+                               @oninput="e => OnSearchChanged(e.Value?.ToString() ?? string.Empty)" />
 
-           <style>
-            .card-me {
-                position: relative;
-                /* overflow: hidden; */
-                border-radius: 8px;
-            }
-
-            /* Contact content layout remains normal */
-            .contact-action {
-                position: relative;
-                z-index: 1;
-            }
-
-            /* Hover buttons (overlay) */
-            .contact-hover-buttons {
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                gap: 10px;
-                background: rgb(0 0 0 / 21%);
-                opacity: 0;
-                visibility: hidden;
-                transform: scale(1.05);
-                transition: all 0.25s ease-in-out;
-            }
-
-            /* Show on hover */
-            .card-me:hover .contact-hover-buttons {
-                opacity: 1;
-                visibility: visible;
-                transform: scale(1);
-            }
-
-            /* Optional overlay (fade) */
-            .contact-overlay {
-                position: absolute;
-                inset: 0;
-                /* background: rgba(0, 0, 0, 0.25); */
-                opacity: 0;
-                transition: opacity 0.25s;
-            }
-
-            .card-text{
-                color:var(--bs-primary)!important;
-            }
-
-            .card-me:hover .contact-overlay {
-                opacity: 1;
-            }
-        
-
-        /* Issue #4: Text Truncation */
-        .feature-table td.feature-name {
-            max-width: 250px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-        .feature-table td.description-text {
-            max-width: 350px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-    </style>
-
-
-        @if (_isLoading)
-        {
-            <div class="text-center py-5">
-                <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
-                <p class="mt-2">Loading features...</p>
-            </div>
-        }
-        else if (_hasError)
-        {
-                <div class="alert alert-danger m-3" role="alert"><i class="ti tabler-alert-circle me-2"></i>@_errorMessage</div>
-        }
-       
-          else if (_pagedFeatures != null && _pagedFeatures.Any())
+                        @if (string.IsNullOrEmpty(_searchString))
                         {
-            <div class="card-body p-0 " style="    margin-bottom: 28px;
-        margin-top: 28px;">
-                    <div class="row g-3">
-      
-                          @foreach (var feature in _pagedFeatures)
-                            {
-                            string borderColor = GenerateRandomColor();
+                            <i class="ti tabler-search search-icon"></i>
+                        }
+                    </div>
 
-                            <div class="col-12 col-md-6 col-lg-4 custom-border-inline-start">
-                                <div class="card custom-card card-me" style="border-top:2px solid @borderColor !important;height: 100%;">
-                                        <div class="card-body contact-action">
-                                            <!--!-->
-                                            <div class="contact-overlay"></div>
-                                            <div class="d-flex align-items-top position-relative">
-                                                <div class="d-flex align-items-center">
-                                                    <div class="me-3">
-                                                        <span class="avatar avatar-xl">
-                                                        <img src="assets/img/avatars/feature.png"
-                                                            alt="Melissa Jane" style="border-radius: 5px;  width: 97px;">
-                                                        </span>
-                                                    </div><!--!-->
-                                                    <div>
-                                                        <p class="card-text text-info mb-1 fs-14 fw-semibold">@feature.Name</p><!--!-->
-                                                        <div class="card-title fs-12 mb-1">@feature.Description</div>
-                                                    </div>
-                                                </div>
-                                            </div><!--!-->
-                                            <div class="d-flex align-items-center justify-content-center gap-2 contact-hover-buttons">
-                                            <button type="button" class="action-btn view-btn" @onclick="@(() => OpenViewDialog(feature))"
-                                                    title="View" style="font-size:15px;" disabled="@_isDeleting">
-                                                <!--!--><i class="ti tabler-eye"></i>
-                                            </button>
-                                            @if (_canEdit)
-                                            {
-                                            <button class="action-btn edit-btn"
-                                                    @onclick="@(() => OpenEditDialog(feature))"
-                                                    title="Edit" style="font-size:15px;" disabled="@(_isSaving || _isDeleting)">
-
-                                                <i class="ti tabler-edit"></i>
-                                            </button>
-                                            }
-                                            @if (_canDelete)
-                                            {
-                                            <button class="action-btn delete-btn"
-                                                    @onclick="@(() => DeleteFeature(feature))"
-                                                    title="Delete" style="font-size:15px;" disabled="@_isDeleting">
-
-                                                <i class="ti tabler-trash"></i>
-                                            </button>
-                                            }
-
-                                               
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            
-
-                          }
-                    </div><!--!-->
-                 
+                    @if (_canAdd)
+                    {
+                        <button class="add-button"
+                                @onclick="OpenAddDialog"
+                                disabled="@_isSaving">
+                            <i class="ti tabler-plus"></i>
+                            <span>Add Feature</span>
+                        </button>
+                    }
                 </div>
-                
-    @*         <table class="feature-table">
-                <thead>
-                    <tr>
-                                                   <th class="plusHeading"></th>
+            </div>
 
-                        <th style="width: 80px;">No.</th>
-                        <th @onclick="@(() => ToggleSort("name"))">Feature Name</th>
-                        <th @onclick="@(() => ToggleSort("description"))">Description</th>
-                        <th @onclick="@(() => ToggleSort("routeurl"))">Route</th>
-                        <th class="text-center" style="width: 100px;">Main Menu</th>
-                        <th class="text-center" style="width: 150px;">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
+            <!-- Content -->
+            @if (_hasError)
+            {
+                <div class="alert alert-danger m-3" role="alert">
+                    <i class="ti tabler-alert-circle me-2"></i>@_errorMessage
+                </div>
+            }
+            else if (_pagedFeatures != null && _pagedFeatures.Any())
+            {
+                <!-- Cards -->
+                <div class="row g-4">
                     @foreach (var feature in _pagedFeatures)
                     {
-                        <tr>
-                                <td class="details-control" @onclick="@(() => ShowDetails(feature))">
-                                    <div class="plus" style="border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                box-sizing: content-box;
-                border: 2px solid var(--bs-paper-bg);
-                background-color: var(--bs-primary);
-                block-size: .85rem;
-                box-shadow: 0 0 3px var(--bs-gray-800);
-                color: var(--bs-white);    width: 17px;
-    height: 17px;">
-                                        <i class="ti tabler-plus"></i>
-                                    </div>
-                                </td>
+                        var borderColor = GenerateRandomColor();
 
-                            <td class="serial-number">@GetGlobalSerialNumber(feature)</td>
-                            <td class="feature-name" title="@feature.Name">@feature.Name</td>
-                            <td class="description-text" title="@feature.Description">@feature.Description</td>
-                            <td>@(feature.RouteUrl ?? "-")</td>
-                            <td class="text-center">
-                                    <span class="badge @(feature.IsMainMenu ? "bg-success-gradient" : "bg-danger-gradient")">
-                                    @(feature.IsMainMenu ? "Yes" : "No")
-                                </span>
-                            </td>
-                            <td>
-                                <div class="action-buttons">
-                                    @if (_canView)
-                                    {
-                                        <button class="action-btn view-btn" @onclick="@(() => OpenViewDialog(feature))" title="View"><i class="ti tabler-eye"></i></button>
-                                    }
-                                    @if (_canEdit)
-                                    {
-                                        <button class="action-btn edit-btn" @onclick="@(() => OpenEditDialog(feature))" title="Edit"><i class="ti tabler-edit"></i></button>
-                                    }
-                                    @if (_canDelete)
-                                    {
-                                        <button class="action-btn delete-btn" @onclick="@(() => DeleteFeature(feature))" title="Delete"><i class="ti tabler-trash"></i></button>
-                                    }
+                        <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                            <div class="dept-card">
+
+                                <div class="Badges" style="background:@borderColor;">
+                                    @feature.CreatedAt.ToString("MMMdd")
                                 </div>
-                            </td>
-                        </tr>
+
+                                <div class="Image">
+                                    <img src="assets/img/avatars/Department.png" alt="Department" />
+                                </div>
+
+                                <h2 class="dept-name">@feature.Name</h2>
+                                <p class="dept-desc">@feature.Description</p>
+
+                                <div class="Actions" style="background:@borderColor;">
+                                    <i class="ti tabler-eye"
+                                       @onclick="() => OpenViewDialog(feature)"></i>
+                                    <i class="ti tabler-edit"
+                                       @onclick="() => OpenEditDialog(feature)"></i>
+                                    <i class="ti tabler-trash"
+                                       @onclick="() => DeleteFeature(feature)"></i>
+                                </div>
+
+                            </div>
+                        </div>
                     }
-                </tbody>
-            </table> *@
+                </div>
 
+                <!-- Pagination -->
+                <div class="pagination-container" id="DepartmentDarktheme">
+                    <div class="pagination-controls">
 
-              <div class="pagination-container">
-      @* <div class="pagination-info">
-          Showing @GetStartRecord() to @GetEndRecord() of @_totalItems entries
-      </div> *@
-      <div class="pagination-controls">
-        
-          @* mobile  screen *@
+                        <!-- Mobile -->
+                        <div class="pagination-buttons mobile-only">
+                            <button class="page-btn"
+                                    @onclick="() => GoToPage(1)"
+                                    disabled="@(_currentPage == 1)">
+                                <i class="bi bi-chevron-bar-left"></i>
+                            </button>
 
-              @{
-                  var range = GetMobilePageRange();
-              }
+                            <button class="page-btn"
+                                    @onclick="() => GoToPage(_currentPage - 1)"
+                                    disabled="@(_currentPage == 1)">
+                                <i class="ti tabler-chevron-left"></i>
+                            </button>
 
-              <div class="pagination-buttons mobile-only">
+                            <button class="page-btn active">@_currentPage</button>
 
-                  <button class="page-btn" @onclick="() => GoToPage(1)" disabled="@(_currentPage == 1)">
-                      <i class="bi bi-chevron-bar-left"></i>
-                  </button>
+                            <button class="page-btn"
+                                    @onclick="() => GoToPage(_currentPage + 1)"
+                                    disabled="@(_currentPage == _totalPages)">
+                                <i class="ti tabler-chevron-right"></i>
+                            </button>
 
-                  <button class="page-btn" @onclick="() => GoToPage(_currentPage - 1)" disabled="@(_currentPage == 1)">
-                      <i class="ti tabler-chevron-left"></i>
-                  </button>
+                            <button class="page-btn"
+                                    @onclick="() => GoToPage(_totalPages)"
+                                    disabled="@(_currentPage == _totalPages)">
+                                <i class="bi bi-chevron-bar-right"></i>
+                            </button>
+                        </div>
 
-                  <button class="page-btn active">
-                      @_currentPage
-                  </button>
+                        <!-- Web -->
+                        <div class="pagination-buttons web-only">
+                            <button class="page-btn"
+                                    @onclick="() => GoToPage(1)"
+                                    disabled="@(_currentPage == 1)">
+                                <i class="bi bi-chevron-bar-left"></i>
+                            </button>
 
-                  <button class="page-btn" @onclick="() => GoToPage(_currentPage + 1)" disabled="@(_currentPage == _totalPages)">
-                      <i class="ti tabler-chevron-right"></i>
-                  </button>
+                            <button class="page-btn"
+                                    @onclick="() => GoToPage(_currentPage - 1)"
+                                    disabled="@(_currentPage == 1)">
+                                <i class="ti tabler-chevron-left"></i>
+                            </button>
 
-                  <button class="page-btn" @onclick="() => GoToPage(_totalPages)" disabled="@(_currentPage == _totalPages)">
-                      <i class="bi bi-chevron-bar-right"></i>
-                  </button>
+                            @for (int i = GetStartPage(); i <= GetEndPage(); i++)
+                            {
+                                <button class="page-btn @(_currentPage == i ? "active" : "")"
+                                        @onclick="() => GoToPage(i)">
+                                    @i
+                                </button>
+                            }
 
-              </div>
+                            <button class="page-btn"
+                                    @onclick="() => GoToPage(_currentPage + 1)"
+                                    disabled="@(_currentPage == _totalPages)">
+                                <i class="ti tabler-chevron-right"></i>
+                            </button>
 
+                            <button class="page-btn"
+                                    @onclick="() => GoToPage(_totalPages)"
+                                    disabled="@(_currentPage == _totalPages)">
+                                <i class="bi bi-chevron-bar-right"></i>
+                            </button>
+                        </div>
 
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="col-12 p-4">
+                    <NoResultsFound Message="No features found"
+                                    IconClass="ti tabler-folder-off"
+                                    SearchTerm="@_searchString" />
+                </div>
+            }
 
-          <div class="pagination-buttons web-Only">
-              <button class="page-btn" @onclick="() => GoToPage(1)" disabled="@(_currentPage == 1)">
-                      <i class="bi bi-chevron-bar-left"></i>
-              </button>
-              <button class="page-btn" @onclick="() => GoToPage(_currentPage - 1)" disabled="@(_currentPage == 1)">
-                  <i class="ti tabler-chevron-left"></i>
-              </button>
+        </div>
+    }
 
-              @for (int i = GetStartPage(); i <= GetEndPage(); i++)
-              {
-                  var pageNum = i;
-                  <button class="page-btn @(_currentPage == pageNum ? "active" : "")"
-                          @onclick="() => GoToPage(pageNum)">
-                      @pageNum
-                  </button>
-              }
-
-              <button class="page-btn" @onclick="() => GoToPage(_currentPage + 1)" disabled="@(_currentPage == _totalPages)">
-                  <i class="ti tabler-chevron-right"></i>
-              </button>
-              <button class="page-btn" @onclick="() => GoToPage(_totalPages)" disabled="@(_currentPage == _totalPages)">
-                      <i class="bi bi-chevron-bar-right"></i>
-              </button>
-          </div>
-      </div>
-  </div>
-
-
-        }
-        else
-        {
-            @* Issue #3: Show NoResultsFound component when no features match *@
-            <div class="col-12" style="padding: 20px;">
-                <NoResultsFound Message="No features found" 
-                               IconClass="ti tabler-folder-off"
-                               SearchTerm="@_searchString" />
-            </div>
-        }
-    </div>
-}
 </div>
 
 @if (showPopup && selectedFeature != null)
@@ -836,6 +839,8 @@ Features Details
     async Task OpenAddDialog()
     {
          _selectedFeature = null; _isEditMode = false; _featureModel = new FeatureFormDialog.FeatureFormModel(); _isDialogOpen = true; await JS.InvokeVoidAsync("disableScroll");
+        await JS.InvokeVoidAsync("focusInputById", "popupFirstInput");
+
     }
     async Task OpenEditDialog(FeatureDto feature)
     {
@@ -869,13 +874,13 @@ Features Details
 
                 if (response.Success)
                 {
-                    await JS.InvokeVoidAsync("showToast", "success", "Feature updated successfully", Severity.Success);
+                    await JS.InvokeVoidAsync("showToast", "success", "Feature updated successfully");
                     await LoadFeatures();
                     CloseDialog();
                 }
                 else
                 {
-                    await JS.InvokeVoidAsync("showToast", "error", response.Message ?? "Failed to update feature", Severity.Error);
+                    await JS.InvokeVoidAsync("showToast", "error", ErrorMessageHelper.FormatMessageAsBullets(response.Message ?? "Failed to update feature"));
                 }
             }
 
@@ -887,13 +892,13 @@ Features Details
 
                     var response = await RBACService.CreateFeatureAsync(createRequest);
 
-                    if (response.Success) { await JS.InvokeVoidAsync("showToast", "success", "Feature created successfully", Severity.Success); await LoadFeatures(); CloseDialog(); }
+                    if (response.Success) { await JS.InvokeVoidAsync("showToast", "success", "Feature created successfully"); await LoadFeatures(); CloseDialog(); }
 
-                else await JS.InvokeVoidAsync("showToast", "error", response.Message ?? "Failed to create feature", Severity.Error);
+                else await JS.InvokeVoidAsync("showToast", "error", ErrorMessageHelper.FormatMessageAsBullets(response.Message ?? "Failed to create feature"));
 
                 }
             }
-        catch (Exception ex) { Logger.LogError(ex, "Error saving feature"); await JS.InvokeVoidAsync("showToast", "error", $"Error: {ex.Message}", Severity.Error); }
+        catch (Exception ex) { Logger.LogError(ex, "Error saving feature"); await JS.InvokeVoidAsync("showToast", "error", $"Error: {ex.Message}"); }
         finally
         {
             _isSaving = false; await JS.InvokeVoidAsync("enableScroll");
@@ -910,11 +915,11 @@ Features Details
             if (confirmed)
             {
                 var response = await RBACService.DeleteFeatureAsync(feature.Id);
-                if (response.Success) { await JS.InvokeVoidAsync("showToast", "success", "Feature deleted successfully", Severity.Success); await LoadFeatures(); }
-                else await JS.InvokeVoidAsync("showToast", "error", response.Message ?? "Failed to delete feature", Severity.Error);
+                if (response.Success) { await JS.InvokeVoidAsync("showToast", "success", "Feature deleted successfully"); await LoadFeatures(); }
+                else await JS.InvokeVoidAsync("showToast", "error", ErrorMessageHelper.FormatMessageAsBullets(response.Message ?? "Failed to delete feature"));
             }
         }
-        catch (Exception ex) { Logger.LogError(ex, "Error deleting feature"); await JS.InvokeVoidAsync("showToast", "error", $"Error deleting feature: {ex.Message}", Severity.Error); }
+        catch (Exception ex) { Logger.LogError(ex, "Error deleting feature"); await JS.InvokeVoidAsync("showToast", "error", $"Error deleting feature: {ex.Message}"); }
         finally { _isDeleting = false; StateHasChanged(); }
     }
 }

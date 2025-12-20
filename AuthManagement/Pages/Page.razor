@@ -1,5 +1,6 @@
 @page "/page"
 @using AuthManagement.Models
+@using AuthManagement.Helpers
 @using AuthManagement.Services
 @using AuthManagement.Shared
 @inject RBACService RBACService
@@ -13,6 +14,7 @@
 @inject IJSRuntime JS
 
 <PageTitle>Page Management</PageTitle>
+<script src="js/InputFocus.js"></script>
 
 <style>
     /* Reusing same styles from Role/Permission pages */
@@ -128,7 +130,7 @@
     .page-table th.text-center { text-align: center; }
     .page-table tbody tr { transition: background-color 0.2s; border-bottom: 1px solid #0000001f; }
     .page-table td {
-            padding: 5px 16px;
+            padding: 13px 16px;
             font-size: 14px;
             color: #333;
         }
@@ -167,7 +169,10 @@
                 color: white;
             }
 
-
+    .page-table tbody tr:hover {
+        box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px, rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
+        border-left: 5px solid #7367f0
+    }
     /* Pagination */
     .pagination-container {
         display: flex;
@@ -648,6 +653,8 @@ Roles Details
     async Task OpenAddDialog()
     {
         await JS.InvokeVoidAsync("disableScroll");
+        await JS.InvokeVoidAsync("focusInputById", "popupFirstInput");
+
         _selectedPage = null; _isEditMode = false; _pageModel = new PageFormDialog.PageFormModel(); _isDialogOpen = true;
     }
     async Task OpenEditDialog(PageDto page)
@@ -659,6 +666,8 @@ Roles Details
     {
         await JS.InvokeVoidAsync("disableScroll");
         _selectedPage = page; _isOffcanvasOpen = true;
+        await JS.InvokeVoidAsync("focusInputById", "popupFirstInput");
+
     }
     async Task CloseDialog()
     {
@@ -680,18 +689,18 @@ Roles Details
             {
                 var updateRequest = new UpdatePageRequest { Id = _selectedPage.Id, Name = model.Name, Url = model.Url, Description = model.Description, DisplayOrder = model.DisplayOrder, MenuContext = model.MenuContext, IsActive = model.IsActive };
                 var response = await RBACService.UpdatePageAsync(_selectedPage.Id, updateRequest);
-                if (response.Success) { await JS.InvokeVoidAsync("showToast", "success", "Page updated successfully", Severity.Success); await LoadPages(); CloseDialog(); }
-                else await JS.InvokeVoidAsync("showToast", "error", response.Message ?? "Failed to update page", Severity.Error);
+                if (response.Success) { await JS.InvokeVoidAsync("showToast", "success", "Page updated successfully"); await LoadPages(); CloseDialog(); }
+                else await JS.InvokeVoidAsync("showToast", "error", ErrorMessageHelper.FormatMessageAsBullets(response.Message ?? "Failed to update page"));
             }
             else
             {
                 var createRequest = new CreatePageRequest { Name = model.Name, Url = model.Url, Description = model.Description, DisplayOrder = model.DisplayOrder };
                 var response = await RBACService.CreatePageAsync(createRequest);
-                if (response.Success) { await JS.InvokeVoidAsync("showToast", "success", "Page created successfully", Severity.Success); await LoadPages(); CloseDialog(); }
-                else await JS.InvokeVoidAsync("showToast", "error", response.Message ?? "Failed to create page", Severity.Error);
+                if (response.Success) { await JS.InvokeVoidAsync("showToast", "success", "Page created successfully"); await LoadPages(); CloseDialog(); }
+                else await JS.InvokeVoidAsync("showToast", "error", ErrorMessageHelper.FormatMessageAsBullets(response.Message ?? "Failed to create page"));
             }
         }
-        catch (Exception ex) { Logger.LogError(ex, "Error saving page"); await JS.InvokeVoidAsync("showToast", "error", $"Error: {ex.Message}", Severity.Error); }
+        catch (Exception ex) { Logger.LogError(ex, "Error saving page"); await JS.InvokeVoidAsync("showToast", "error", $"Error: {ex.Message}"); }
         finally
         {
             _isSaving = false; await JS.InvokeVoidAsync("enableScroll");
@@ -706,10 +715,10 @@ Roles Details
             if (confirmed)
             {
                 var response = await RBACService.DeletePageAsync(page.Id);
-                if (response.Success) { await JS.InvokeVoidAsync("showToast", "success", "Page deleted successfully", Severity.Success); await LoadPages(); }
-                else await JS.InvokeVoidAsync("showToast", "error", response.Message ?? "Failed to delete page", Severity.Error);
+                if (response.Success) { await JS.InvokeVoidAsync("showToast", "success", "Page deleted successfully"); await LoadPages(); }
+                else await JS.InvokeVoidAsync("showToast", "error", ErrorMessageHelper.FormatMessageAsBullets(response.Message ?? "Failed to delete page"));
             }
         }
-        catch (Exception ex) { Logger.LogError(ex, "Error deleting page"); await JS.InvokeVoidAsync("showToast", "error", $"Error deleting page: {ex.Message}", Severity.Error); }
+        catch (Exception ex) { Logger.LogError(ex, "Error deleting page"); await JS.InvokeVoidAsync("showToast", "error", $"Error deleting page: {ex.Message}"); }
     }
 }

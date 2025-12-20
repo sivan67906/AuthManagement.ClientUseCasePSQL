@@ -1,6 +1,5 @@
 @using AuthManagement.Models
 @using AuthManagement.Services
-@using AuthManagement.Helpers
 @inject CompanyService CompanyService
 @inject IJSRuntime JS
 @inject ILogger<CompanyWizard> Logger
@@ -1252,24 +1251,17 @@ private async Task ScrollRight()
             }
             else
             {
-                // Show detailed error message with bullet points
-                var errorMessage = response.Message ?? "Failed to save company.";
-                var errorHtml = $"<p>{System.Net.WebUtility.HtmlEncode(errorMessage)}</p>";
-                
+                // Show detailed error message
+                var errorMessage = response.Message ?? "Failed to save company";
                 if (response.Errors != null && response.Errors.Any())
                 {
-                    errorHtml += "<ul style='text-align: left; margin-top: 10px;'>";
-                    foreach (var error in response.Errors)
-                    {
-                        errorHtml += $"<li>{System.Net.WebUtility.HtmlEncode(error)}</li>";
-                    }
-                    errorHtml += "</ul>";
+                    errorMessage += "\n\n" + string.Join("\n", response.Errors);
                 }
                 
                 await JS.InvokeVoidAsync("Swal.fire", new
                 {
                     title = "Error",
-                    html = errorHtml,
+                    text = errorMessage,
                     icon = "error"
                 });
             }

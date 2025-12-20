@@ -1,5 +1,6 @@
 @page "/testcategories"
 @using AuthManagement.Models
+@using AuthManagement.Helpers
 @using AuthManagement.Services
 @using AuthManagement.Shared
 @inject TestEntityService TestEntityService
@@ -1077,13 +1078,13 @@ TestCategories Details
                 var response = await TestEntityService.UpdateCategoryAsync(_selectedCategory.Id, updateRequest);
                 if (response.Success)
                 {
-                    await JS.InvokeVoidAsync("showToast", "success", "Category updated successfully", Severity.Success);
+                    await JS.InvokeVoidAsync("showToast", "success", "Category updated successfully");
                     await LoadCategories();
                     CloseDialog();
                 }
                 else
                 {
-                    await JS.InvokeVoidAsync("showToast", "error", response.Message ?? "Failed to update category", Severity.Error);
+                    await JS.InvokeVoidAsync("showToast", "error", ErrorMessageHelper.FormatMessageAsBullets(response.Message ?? "Failed to update category"));
                 }
             }
             else
@@ -1100,20 +1101,20 @@ TestCategories Details
                 var response = await TestEntityService.CreateCategoryAsync(createRequest);
                 if (response.Success)
                 {
-                    await JS.InvokeVoidAsync("showToast", "success", "Category created successfully", Severity.Success);
+                    await JS.InvokeVoidAsync("showToast", "success", "Category created successfully");
                     await LoadCategories();
                     CloseDialog();
                 }
                 else
                 {
-                    await JS.InvokeVoidAsync("showToast", "error", response.Message ?? "Failed to create category", Severity.Error);
+                    await JS.InvokeVoidAsync("showToast", "error", ErrorMessageHelper.FormatMessageAsBullets(response.Message ?? "Failed to create category"));
                 }
             }
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error saving category");
-            await JS.InvokeVoidAsync("showToast", "error", $"Error: {ex.Message}", Severity.Error);
+            await JS.InvokeVoidAsync("showToast", "error", $"Error: {ex.Message}");
         }
         finally
         {
@@ -1134,19 +1135,19 @@ TestCategories Details
                 var response = await TestEntityService.DeleteCategoryAsync(category.Id);
                 if (response.Success)
                 {
-                    await JS.InvokeVoidAsync("showToast", "success", "Category deleted successfully", Severity.Success);
+                    await JS.InvokeVoidAsync("showToast", "success", "Category deleted successfully");
                     await LoadCategories();
                 }
                 else
                 {
-                    await JS.InvokeVoidAsync("showToast", "error", response.Message ?? "Failed to delete category", Severity.Error);
+                    await JS.InvokeVoidAsync("showToast", "error", ErrorMessageHelper.FormatMessageAsBullets(response.Message ?? "Failed to delete category"));
                 }
             }
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error deleting category");
-            await JS.InvokeVoidAsync("showToast", "error", $"Error deleting category: {ex.Message}", Severity.Error);
+            await JS.InvokeVoidAsync("showToast", "error", $"Error deleting category: {ex.Message}");
         }
     }
 }

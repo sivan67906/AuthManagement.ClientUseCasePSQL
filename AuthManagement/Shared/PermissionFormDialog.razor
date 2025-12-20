@@ -20,7 +20,7 @@
                         <DataAnnotationsValidator />
                         <div class="mb-3">
                             <label class="form-label">Permission Name<span class="text-danger">*</span></label>
-                            <input type="text" 
+                            <input type="text" id="popupFirstInput"
                                    class="form-control @(nameValidationError != null ? "is-invalid" : "")" 
                                    placeholder="Enter permission name"
                                    value="@FormModel.Name"

@@ -23,7 +23,7 @@
                             <label class="form-label">
                                 User<span class="text-danger">*</span>
                             </label>
-                            <select class="form-select"
+                            <select class="form-select" 
                                     @bind="FormModel.UserId"
                                     disabled="@IsSaving">
                                 <option value="">Select User</option>
@@ -39,7 +39,7 @@
                             <label class="form-label">
                                 Department<span class="text-danger">*</span>
                             </label>
-                            <select class="form-select"
+                            <select class="form-select" id="popupFirstInput"
                                     @bind="FormModel.DepartmentId"
                                     @bind:after="@(() => OnDepartmentChanged.InvokeAsync(FormModel.DepartmentId))"
                                     disabled="@IsSaving">

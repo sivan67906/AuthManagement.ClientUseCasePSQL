@@ -1,5 +1,6 @@
 @page "/rolepagepermissionmapping"
 @using AuthManagement.Models
+@using AuthManagement.Helpers
 @using AuthManagement.Services
 @using AuthManagement.Shared
 @inject RBACService RBACService
@@ -12,6 +13,7 @@
 @attribute [Authorize]
 @inject IJSRuntime JS
 <PageTitle>Role Page Permission Mapping</PageTitle>
+<script src="js/InputFocus.js"></script>
 
 <style>
     /* Page Header */
@@ -22,6 +24,10 @@
         padding-bottom: 0;
     }
 
+    .mapping-table tbody tr:hover {
+        box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px, rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
+        border-left: 5px solid #7367f0
+    }
     .page-title {
         font-size: 1.125rem;
         font-weight: 600;
@@ -248,7 +254,7 @@
     }
 
     .mapping-table td {
-        padding: 5px 16px;
+        padding: 13px 16px;
         font-size: 14px;
         color: #333;
     }
@@ -945,7 +951,7 @@
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error loading data");
-            await JS.InvokeVoidAsync("showToast", "error", "Error loading data", Severity.Error);
+            await JS.InvokeVoidAsync("showToast", "error", "Error loading data");
         }
         finally
         {
@@ -1084,6 +1090,8 @@
         _isEditMode = false;
         _isDialogOpen = true;
         await JS.InvokeVoidAsync("disableScroll");
+        await JS.InvokeVoidAsync("focusInputById", "popupFirstInput");
+
     }
 
     async Task OpenEditDialog(DisplayRolePagePermissionGroup mapping)
@@ -1099,6 +1107,7 @@
         _selectedMapping = mapping;
         _isOffcanvasOpen = true;
         await JS.InvokeVoidAsync("disableScroll");
+
     }
 
     async Task CloseDialog()
@@ -1154,7 +1163,7 @@
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error saving role page permissions");
-            await JS.InvokeVoidAsync("showToast", "error", $"Error: {ex.Message}", Severity.Error);
+            await JS.InvokeVoidAsync("showToast", "error", $"Error: {ex.Message}");
         }
         finally
         {
@@ -1185,21 +1194,21 @@
                     {
                         if (response.Message != null && response.Message.Contains("Cannot delete View"))
                         {
-                            await JS.InvokeVoidAsync("showToast", "error", response.Message, Severity.Error);
+                            await JS.InvokeVoidAsync("showToast", "error", response.Message);
                             await LoadData();
                             return;
                         }
                     }
                 }
 
-                await JS.InvokeVoidAsync("showToast", "success", "Permissions deleted successfully", Severity.Success);
+                await JS.InvokeVoidAsync("showToast", "success", "Permissions deleted successfully");
                 await LoadData();
             }
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error deleting role page permissions");
-            await JS.InvokeVoidAsync("showToast", "error", $"Error deleting permissions: {ex.Message}", Severity.Error);
+            await JS.InvokeVoidAsync("showToast", "error", $"Error deleting permissions: {ex.Message}");
         }
     }
 

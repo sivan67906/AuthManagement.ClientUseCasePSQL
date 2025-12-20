@@ -660,43 +660,369 @@ body.layout-menu-expanded .layout-overlay {
 }
 
 /* ==========================================
-   TOAST ERROR LIST STYLES
+   SWEETALERT2 TOAST ERROR LIST STYLES
    ========================================== */
 
-.toast-with-list {
-    max-width: 400px !important;
-    width: auto !important;
+/* Toast with list - wider to accommodate bullet points */
+.swal2-popup.swal2-toast.toast-with-list {
+    min-width: 380px;
+    max-width: 500px;
 }
 
-.toast-with-list .swal2-html-container {
-    text-align: left !important;
-    margin: 0 !important;
-    padding: 0.5rem 1rem !important;
-}
-
+/* Error list styling inside toast */
 .toast-error-list {
     margin: 0;
-    padding: 0;
-    list-style: none;
+    padding: 0 0 0 1.25rem;
+    list-style-type: disc;
     text-align: left;
-    font-size: 0.875rem;
-    line-height: 1.5;
 }
 
 .toast-error-list li {
-    position: relative;
-    padding-left: 1rem;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.35rem;
+    line-height: 1.4;
+    font-size: 0.9rem;
+    color: #5a5a5a;
 }
 
 .toast-error-list li:last-child {
     margin-bottom: 0;
 }
 
-.toast-error-list li::before {
-    content: "•";
+/* Ensure HTML content in toast is left-aligned */
+.swal2-popup.swal2-toast .swal2-html-container {
+    text-align: left;
+    margin: 0.5em 0 0 0.5em;
+}
+
+/* Dark theme support for toast list */
+[data-bs-theme="dark"] .toast-error-list li {
+    color: #e1e1e1;
+}
+
+[data-bs-theme="dark"] .swal2-popup.swal2-toast .swal2-html-container {
+    color: #e1e1e1;
+}
+
+/* ==========================================
+   RECAPTCHA PROFESSIONAL STYLING
+   Theme-aware, modern UI design
+   ========================================== */
+
+/* Wrapper */
+.recaptcha-wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+/* Main Card Container */
+.recaptcha-card {
+    width: 100%;
+    max-width: 320px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05),
+                0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.recaptcha-card:hover {
+    border-color: #d1d5db;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08),
+                0 4px 6px -2px rgba(0, 0, 0, 0.04);
+    transform: translateY(-2px);
+}
+
+/* Header with Gradient */
+.recaptcha-header {
+    background: linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #8b5cf6 100%);
+    color: #ffffff;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Animated shine effect on header */
+.recaptcha-header::before {
+    content: '';
     position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+    animation: recaptcha-shine 3s ease-in-out infinite;
+}
+
+@keyframes recaptcha-shine {
+    0% { left: -100%; }
+    50%, 100% { left: 100%; }
+}
+
+.recaptcha-header i {
+    font-size: 18px;
+    opacity: 0.95;
+}
+
+.recaptcha-header span {
+    flex: 1;
+}
+
+/* Security badge indicator */
+.recaptcha-header::after {
+    content: '✓';
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+/* Body Container */
+.recaptcha-body {
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(180deg, #fafafa 0%, #ffffff 100%);
+    min-height: 90px;
+    position: relative;
+}
+
+/* Center the actual reCAPTCHA widget */
+.recaptcha-body > div {
+    transform-origin: center center;
+    transition: transform 0.2s ease;
+}
+
+/* Error Section */
+.recaptcha-error {
+    background: linear-gradient(135deg, #fef2f2 0%, #fff5f5 100%);
+    border-top: 1px solid #fecaca;
+    color: #dc2626;
+    padding: 12px 18px;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+}
+
+.recaptcha-error i {
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+/* ==========================================
+   HIDE GOOGLE'S DEFAULT ERROR/WARNING OVERLAYS
+   ========================================== */
+
+/* Hide the testing mode warning banner */
+.recaptcha-body .rc-anchor-alert,
+.recaptcha-body .rc-anchor-error-msg-container,
+.recaptcha-body .rc-anchor-error-message,
+.recaptcha-body .rc-anchor-error-msg,
+.recaptcha-body div[style*="position: absolute"],
+.recaptcha-body div[style*="background-color: rgb(255, 255, 255)"],
+.recaptcha-body div[style*="background: rgb(255, 255, 255)"] {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    width: 0 !important;
+    overflow: hidden !important;
+    pointer-events: none !important;
+}
+
+/* Target specific Google error elements */
+#recaptcha-register .rc-anchor-error-msg-container,
+#recaptcha-register .rc-anchor-error-message,
+#recaptcha-register .rc-anchor-error-msg,
+#recaptcha-forgot-password .rc-anchor-error-msg-container,
+#recaptcha-forgot-password .rc-anchor-error-message,
+#recaptcha-forgot-password .rc-anchor-error-msg {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+/* Hide overlay warnings from iframe sibling divs */
+.recaptcha-body iframe + div,
+.recaptcha-body > div > div[style*="position"],
+.recaptcha-body > div > div[style*="z-index"] {
+    display: none !important;
+}
+
+/* Ensure container clips overflow */
+.recaptcha-body,
+.recaptcha-body > div {
+    overflow: hidden !important;
+}
+
+/* Keep iframe interactive */
+.recaptcha-body iframe {
+    pointer-events: auto;
+    position: relative;
+    z-index: 1;
+}
+
+/* ==========================================
+   DARK THEME SUPPORT
+   ========================================== */
+
+[data-bs-theme="dark"] .recaptcha-card {
+    background: #1e1e2d;
+    border-color: #2d2d3f;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2),
+                0 2px 4px -1px rgba(0, 0, 0, 0.15);
+}
+
+[data-bs-theme="dark"] .recaptcha-card:hover {
+    border-color: #3d3d5c;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3),
+                0 4px 6px -2px rgba(0, 0, 0, 0.2);
+}
+
+[data-bs-theme="dark"] .recaptcha-header {
+    background: linear-gradient(135deg, #6d28d9 0%, #7c3aed 50%, #8b5cf6 100%);
+}
+
+[data-bs-theme="dark"] .recaptcha-body {
+    background: linear-gradient(180deg, #252536 0%, #1e1e2d 100%);
+}
+
+/* Dark theme for the reCAPTCHA widget itself */
+[data-bs-theme="dark"] .recaptcha-body .rc-anchor-light {
+    filter: invert(0.9) hue-rotate(180deg);
+}
+
+[data-bs-theme="dark"] .recaptcha-error {
+    background: linear-gradient(135deg, #3f1f1f 0%, #2d1515 100%);
+    border-top-color: #5c2a2a;
+    color: #f87171;
+}
+
+/* ==========================================
+   VERIFIED STATE
+   ========================================== */
+
+.recaptcha-card.verified {
+    border-color: #10b981;
+}
+
+.recaptcha-card.verified .recaptcha-header {
+    background: linear-gradient(135deg, #059669 0%, #10b981 50%, #34d399 100%);
+}
+
+.recaptcha-card.verified .recaptcha-header::after {
+    background: rgba(255, 255, 255, 0.3);
+    animation: recaptcha-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes recaptcha-pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.1); opacity: 0.8; }
+}
+
+[data-bs-theme="dark"] .recaptcha-card.verified {
+    border-color: #10b981;
+}
+
+[data-bs-theme="dark"] .recaptcha-card.verified .recaptcha-header {
+    background: linear-gradient(135deg, #047857 0%, #059669 50%, #10b981 100%);
+}
+
+/* ==========================================
+   LOADING STATE
+   ========================================== */
+
+.recaptcha-card.loading .recaptcha-body::before {
+    content: '';
+    position: absolute;
+    top: 0;
     left: 0;
-    color: currentColor;
-    font-weight: bold;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.7);
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+[data-bs-theme="dark"] .recaptcha-card.loading .recaptcha-body::before {
+    background: rgba(30, 30, 45, 0.7);
+}
+
+/* ==========================================
+   RESPONSIVE ADJUSTMENTS
+   ========================================== */
+
+@media (max-width: 400px) {
+    .recaptcha-card {
+        max-width: 100%;
+    }
+    
+    .recaptcha-body > div {
+        transform: scale(0.9);
+    }
+    
+    .recaptcha-body {
+        padding: 16px 12px;
+    }
+    
+    .recaptcha-header {
+        padding: 12px 14px;
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 340px) {
+    .recaptcha-body > div {
+        transform: scale(0.82);
+    }
+    
+    .recaptcha-body {
+        padding: 14px 8px;
+        min-height: 80px;
+    }
+}
+
+/* ==========================================
+   ACCESSIBILITY IMPROVEMENTS
+   ========================================== */
+
+.recaptcha-card:focus-within {
+    outline: 2px solid #7c3aed;
+    outline-offset: 2px;
+}
+
+[data-bs-theme="dark"] .recaptcha-card:focus-within {
+    outline-color: #a855f7;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+    .recaptcha-header::before {
+        animation: none;
+    }
+    
+    .recaptcha-card {
+        transition: none;
+    }
+    
+    .recaptcha-card.verified .recaptcha-header::after {
+        animation: none;
+    }
 }

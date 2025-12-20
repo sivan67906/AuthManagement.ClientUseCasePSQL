@@ -1,5 +1,6 @@
 @page "/department"
 @using AuthManagement.Models
+@using AuthManagement.Helpers
 @using AuthManagement.Services
 @using AuthManagement.Shared
 @inject RBACService RBACService
@@ -13,6 +14,9 @@
 @inject IJSRuntime JS
 
 <PageTitle>Department Management</PageTitle>
+
+<script src="js/InputFocus.js"></script>
+
 
 <style>
     /* Page Header */
@@ -67,7 +71,7 @@
 
     /* Container */
     .department-container {
-        background: white;
+        /* background: white; */
         border-radius: 8px;
         overflow: hidden;
     }
@@ -77,9 +81,9 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 14px 20px;
-        background: white;
-        border-bottom: 1px solid #f0f0f0;
+        padding-bottom: 24px;
+        /* background: white; */
+        /* border-bottom: 1px solid #f0f0f0; */
         flex-wrap: wrap;
         gap: 16px;
     }
@@ -126,6 +130,7 @@
         border: 1px solid #d9d9e3;
         border-radius: 6px;
         font-size: 13px;
+        background:transperent
     }
 
         .search-input:focus {
@@ -370,9 +375,10 @@
         justify-content: center;
         align-items: center;
         padding: 13px 0px;
-        background: white;
-        border-top: 1px solid #80808040;
+        /* background: white; */
+        /* border-top: 1px solid #80808040; */
         margin-bottom: 1px;
+        margin-top: 42px;
     }
 
     .pagination-info {
@@ -422,6 +428,8 @@
         cursor: pointer;
         transition: all 0.2s;
         color: #333;
+        background: white;
+        box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
     }
 
         .page-btn:hover:not(:disabled) {
@@ -487,7 +495,167 @@
     }
 </style>
 
-<div class="flex-grow-1" style="">
+
+<style>
+    .card-me {
+        position: relative;
+        /* overflow: hidden; */
+        border-radius: 8px;
+    }
+
+    /* Contact content layout remains normal */
+    .contact-action {
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Hover buttons (overlay) */
+    .contact-hover-buttons {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        background: rgb(0 0 0 / 21%);
+        opacity: 0;
+        visibility: hidden;
+        transform: scale(1.05);
+        transition: all 0.25s ease-in-out;
+    }
+
+    /* Show on hover */
+    .card-me:hover .contact-hover-buttons {
+        opacity: 1;
+        visibility: visible;
+        transform: scale(1);
+    }
+
+    /* Optional overlay (fade) */
+    .contact-overlay {
+        position: absolute;
+        inset: 0;
+        /* background: rgba(0, 0, 0, 0.25); */
+        opacity: 0;
+        transition: opacity 0.25s;
+    }
+
+    .card-text {
+        color: var(--bs-primary) !important;
+        /* Issue #4: Truncate card text */
+        max-width: 116px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        display: block;
+    }
+
+    .card-title {
+        /* Issue #4: Truncate card description */
+        max-width: 116px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        display: block;
+    }
+
+    .card-me:hover .contact-overlay {
+        opacity: 1;
+    }
+
+    /* @@media(max-width:767px){
+                                .grid{
+                                    grid-template-columns: repeat(auto-fill, minmax(238px, 100%)) !important;
+                                }
+
+                                .toolbar-left, .toolbar-right{
+                                    justify-content: flex-start !important;
+                                }
+                            } */
+</style>
+
+
+<style>
+    .Image {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .Image img {
+            border-radius: 50%;
+            width: 125px;
+            border: 4px solid white;
+            box-shadow: rgb(115 103 240 / 31%) 0px 10px 50px;
+        }
+
+    .Badges {
+        padding-left: 13px;
+        color: white;
+        position: absolute;
+        left: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding-right: 13px;
+        border-radius: 0px 9px 9px 0px;
+        padding-top: 3px;
+        padding-bottom: 4px;
+    }
+
+    .dept-card h2 {
+        font-size: 20px;
+        text-align: center;
+        margin-bottom: 0;
+    }
+
+    .dept-card p {
+        text-align: center;
+        white-space: normal !important;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        width: 100%;
+    }
+
+    .Actions {
+        justify-content: center;
+        display: flex;
+        align-items: center;
+        gap: 22px;
+        color: white;
+        padding-top: 5px;
+        border-radius: 55px;
+        padding-bottom: 4px;
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+        .Actions i {
+            font-size: 23px;
+            cursor: pointer
+        }
+
+
+    .dept-card {
+        background: #fff;
+        height: 100%;
+        border-radius: 10px;
+        padding: 15px;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+    }
+</style>
+<div class="flex-grow-1">
+
     @if (_isLoading)
     {
         <LoadingSpinner FullPage="true" />
@@ -501,134 +669,47 @@
     else
     {
         <!-- Page Header -->
-        <div class="page-header">
+        <div class="page-header" >
             <h1 class="page-title">Departments List</h1>
             <nav>
                 <ul class="breadcrumb">
                     <li class="breadcrumb-item">
-
                         <a href="#" class="breadcrumb-link">
-                            <i class="ti tabler-home"></i>Home
+                            <i class="ti tabler-home"></i> Home
                         </a>
                         <span class="breadcrumb-separator">></span>
                     </li>
-                    <li class="">
+                    <li>
                         <span class="breadcrumb-current">Departments List</span>
                     </li>
                 </ul>
             </nav>
         </div>
 
-
-        <style>
-            .card-me {
-                position: relative;
-                /* overflow: hidden; */
-                border-radius: 8px;
-            }
-
-            /* Contact content layout remains normal */
-            .contact-action {
-                position: relative;
-                z-index: 1;
-            }
-
-            /* Hover buttons (overlay) */
-            .contact-hover-buttons {
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                gap: 10px;
-                background: rgb(0 0 0 / 21%);
-                opacity: 0;
-                visibility: hidden;
-                transform: scale(1.05);
-                transition: all 0.25s ease-in-out;
-            }
-
-            /* Show on hover */
-            .card-me:hover .contact-hover-buttons {
-                opacity: 1;
-                visibility: visible;
-                transform: scale(1);
-            }
-
-            /* Optional overlay (fade) */
-            .contact-overlay {
-                position: absolute;
-                inset: 0;
-                /* background: rgba(0, 0, 0, 0.25); */
-                opacity: 0;
-                transition: opacity 0.25s;
-            }
-
-            .card-text {
-                color: var(--bs-primary) !important;
-                /* Issue #4: Truncate card text */
-                max-width: 116px;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                white-space: nowrap;
-                display: block;
-            }
-            
-            .card-title {
-                /* Issue #4: Truncate card description */
-                max-width: 116px;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                white-space: nowrap;
-                display: block;
-            }
-
-            .card-me:hover .contact-overlay {
-                opacity: 1;
-            }
-
-            /* @@media(max-width:767px){
-                            .grid{
-                                grid-template-columns: repeat(auto-fill, minmax(238px, 100%)) !important;
-                            }
-
-                            .toolbar-left, .toolbar-right{
-                                justify-content: flex-start !important;
-                            }
-                        } */
-        </style>
-
-
         <!-- Data Grid -->
-        <div class="department-container">
-            <!-- Toolbar -->
-            <div class="toolbar-container">
-                <div class="toolbar-left">
-                    <span class="departments-list-label">DEPARTMENTS LIST</span>
-                </div>
+        <div class="department-container" id="DepartmentDarktheme">
 
+            <!-- Toolbar -->
+            <div class="toolbar-container" id="DepartmentDarktheme">
                 <div class="toolbar-right">
                     <div class="search-box">
                         <input type="text"
                                class="search-input"
                                placeholder="Search Department"
                                value="@_searchString"
-                               @oninput="@((ChangeEventArgs e) => OnSearchChanged(e.Value?.ToString() ?? string.Empty))" />
+                               @oninput="e => OnSearchChanged(e.Value?.ToString() ?? string.Empty)" />
+
                         @if (string.IsNullOrEmpty(_searchString))
                         {
                             <i class="ti tabler-search search-icon"></i>
                         }
-                        @* else
-                        {
-                            <i class="ti tabler-x clear-icon" @onclick="ClearSearch"></i>
-                        } *@
                     </div>
+
                     @if (_canAdd)
                     {
-                        <button class="add-button" @onclick="OpenAddDialog" disabled="@_isSaving">
+                        <button class="add-button"
+                                @onclick="OpenAddDialog"
+                                disabled="@_isSaving">
                             <i class="ti tabler-plus"></i>
                             <span>Add Department</span>
                         </button>
@@ -636,166 +717,145 @@
                 </div>
             </div>
 
-            @* Department Restriction Info Banner *@
+            <!-- Restriction Banner -->
             @if (!_isSuperAdmin && _userDepartmentName != null)
             {
-                <div style="margin: 16px 20px; padding: 12px 16px; background-color: #e3f2fd; border-left: 4px solid #2196f3; border-radius: 4px;">
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <i class="ti tabler-info-circle" style="color: #2196f3; font-size: 20px;"></i>
-                        <span style="color: #1976d2; font-size: 14px;">
-                            <strong>Department View Restriction:</strong> You are viewing departments for your department only: <strong>@_userDepartmentName</strong>
+                <div style="margin:16px 20px;padding:12px 16px;background:#e3f2fd;border-left:4px solid #2196f3;border-radius:4px;">
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <i class="ti tabler-info-circle" style="color:#2196f3;font-size:20px;"></i>
+                        <span style="color:#1976d2;font-size:14px;">
+                            <strong>Department View Restriction:</strong>
+                            You are viewing departments for:
+                            <strong>@_userDepartmentName</strong>
                         </span>
                     </div>
                 </div>
             }
 
-            <!-- Table -->
-            <div>
-                <div class="card-body" style="margin-bottom: 28px;
-            padding-top: 28px;
-            padding-left: 22px;
-            padding-right: 22px;">
-                    <div class="row g-3">
-                        @if (_pagedDepartments.Any())
-                        {
-                            @foreach (var department in _pagedDepartments)
-                            {
-                                string borderColor = GenerateRandomColor();
+            <!-- Cards -->
+            <div class="row g-4">
 
-                                <div class="col-12 col-md-6 col-lg-4 custom-border-inline-start">
-                                    <div class="card custom-card card-me" style="border-top:2px solid @borderColor !important;height: 100%;">
-                                        <div class="card-body contact-action">
-                                            <!--!-->
-                                            <div class="contact-overlay"></div>
-                                            <div class="d-flex align-items-top position-relative">
-                                                <div class="d-flex align-items-center">
-                                                    <div class="me-3">
-                                                        <span class="avatar avatar-xl">
-                                                            <img src="assets/img/avatars/Department.png"
-                                                                 alt="Melissa Jane" style="border-radius: 5px;    width: 97px;">
-                                                        </span>
-                                                    </div><!--!-->
-                                                    <div>
-                                                        <p class="card-text text-info mb-1 fs-14 fw-semibold" title="@department.Name">@department.Name</p><!--!-->
-                                                        <div class="card-title fs-12 mb-1" title="@department.Description">@department.Description</div>
-                                                    </div>
-                                                </div>
-                                            </div><!--!-->
-                                            <div class="d-flex align-items-center justify-content-center gap-2 contact-hover-buttons">
-                                                <button type="button" class="action-btn view-btn" @onclick="@(() => OpenViewDialog(department))"
-                                                        title="View" style="font-size:15px;" disabled="@_isDeleting">
-                                                    <!--!--><i class="ti tabler-eye"></i>
-                                                </button><!--!-->
-                                                @if (_canEdit)
-                                                {
-                                                    <button class="action-btn edit-btn"
-                                                            @onclick="@(() => OpenEditDialog(department))"
-                                                            title="Edit" style="font-size:15px;" disabled="@(_isSaving || _isDeleting)">
-                                                        <i class="ti tabler-edit"></i>
-                                                    </button>
-                                                }
+                @if (_pagedDepartments != null && _pagedDepartments.Any())
+                {
+                    @foreach (var department in _pagedDepartments)
+                    {
+                        var borderColor = GenerateRandomColor();
 
-                                                @if (_canDelete)
-                                                {
-                                                    <button class="action-btn delete-btn"
-                                                            @onclick="@(() => DeleteDepartment(department))"
-                                                            title="Delete" style="font-size:15px;" disabled="@_isDeleting">
-                                                        <i class="ti tabler-trash"></i>
-                                                    </button>
-                                                }
+                        <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                            <div class="dept-card">
 
-                                            </div>
-                                        </div>
-                                    </div>
+                                <div class="Badges" style="background:@borderColor;">
+                                    @department.CreatedAt.ToString("MMMdd")
                                 </div>
+
+                                <div class="Image">
+                                    <img src="assets/img/avatars/Department.png" alt="Department" />
+                                </div>
+
+                                <h2 class="dept-name">@department.Name</h2>
+                                <p class="dept-desc">@department.Description</p>
+
+                                <div class="Actions" style="background:@borderColor;">
+                                    <i class="ti tabler-eye"
+                                       @onclick="() => OpenViewDialog(department)"></i>
+                                    <i class="ti tabler-edit"
+                                       @onclick="() => OpenEditDialog(department)"></i>
+                                    <i class="ti tabler-trash"
+                                       @onclick="() => DeleteDepartment(department)"></i>
+                                </div>
+
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="col-12">
+                        <NoResultsFound Message="No departments found"
+                                        IconClass="ti tabler-building-off"
+                                        SearchTerm="@_searchString" />
+                    </div>
+                }
+
+            </div>
+
+            <!-- Pagination (ONLY when data exists) -->
+            @if (_pagedDepartments != null && _pagedDepartments.Any())
+            {
+                <div class="pagination-container" id="DepartmentDarktheme">
+                    <div class="pagination-controls">
+
+                        <!-- Mobile -->
+                        <div class="pagination-buttons mobile-only">
+                            <button class="page-btn"
+                                    @onclick="() => GoToPage(1)"
+                                    disabled="@(_currentPage == 1)">
+                                <i class="bi bi-chevron-bar-left"></i>
+                            </button>
+
+                            <button class="page-btn"
+                                    @onclick="() => GoToPage(_currentPage - 1)"
+                                    disabled="@(_currentPage == 1)">
+                                <i class="ti tabler-chevron-left"></i>
+                            </button>
+
+                            <button class="page-btn active">@_currentPage</button>
+
+                            <button class="page-btn"
+                                    @onclick="() => GoToPage(_currentPage + 1)"
+                                    disabled="@(_currentPage == _totalPages)">
+                                <i class="ti tabler-chevron-right"></i>
+                            </button>
+
+                            <button class="page-btn"
+                                    @onclick="() => GoToPage(_totalPages)"
+                                    disabled="@(_currentPage == _totalPages)">
+                                <i class="bi bi-chevron-bar-right"></i>
+                            </button>
+                        </div>
+
+                        <!-- Web -->
+                        <div class="pagination-buttons web-only">
+                            <button class="page-btn"
+                                    @onclick="() => GoToPage(1)"
+                                    disabled="@(_currentPage == 1)">
+                                <i class="bi bi-chevron-bar-left"></i>
+                            </button>
+
+                            <button class="page-btn"
+                                    @onclick="() => GoToPage(_currentPage - 1)"
+                                    disabled="@(_currentPage == 1)">
+                                <i class="ti tabler-chevron-left"></i>
+                            </button>
+
+                            @for (int i = GetStartPage(); i <= GetEndPage(); i++)
+                            {
+                                <button class="page-btn @(_currentPage == i ? "active" : "")"
+                                        @onclick="() => GoToPage(i)">
+                                    @i
+                                </button>
                             }
 
-                        }
-                        else
-                        {
-                            @* Issue #3: Show NoResultsFound component when no departments match *@
-                            <div class="col-12">
-                                <NoResultsFound Message="No departments found" 
-                                               IconClass="ti tabler-building-off"
-                                               SearchTerm="@_searchString" />
-                            </div>
-                        }
-                    </div><!--!-->
-
-                </div>
-
-            </div>
-
-
-            <div class="pagination-container">
-                @* <div class="pagination-info">
-                    Showing @GetStartRecord() to @GetEndRecord() of @_totalItems entries
-                </div> *@
-                <div class="pagination-controls">
-
-                    @* mobile  screen *@
-
-                    @{
-                        var range = GetMobilePageRange();
-                    }
-
-                    <div class="pagination-buttons mobile-only">
-
-                        <button class="page-btn" @onclick="() => GoToPage(1)" disabled="@(_currentPage == 1)">
-                            <i class="bi bi-chevron-bar-left"></i>
-                        </button>
-
-                        <button class="page-btn" @onclick="() => GoToPage(_currentPage - 1)" disabled="@(_currentPage == 1)">
-                            <i class="ti tabler-chevron-left"></i>
-                        </button>
-
-                        <button class="page-btn active">
-                            @_currentPage
-                        </button>
-
-                        <button class="page-btn" @onclick="() => GoToPage(_currentPage + 1)" disabled="@(_currentPage == _totalPages)">
-                            <i class="ti tabler-chevron-right"></i>
-                        </button>
-
-                        <button class="page-btn" @onclick="() => GoToPage(_totalPages)" disabled="@(_currentPage == _totalPages)">
-                            <i class="bi bi-chevron-bar-right"></i>
-                        </button>
-
-                    </div>
-
-
-
-                    <div class="pagination-buttons web-Only">
-                        <button class="page-btn" @onclick="() => GoToPage(1)" disabled="@(_currentPage == 1)">
-                            <i class="bi bi-chevron-bar-left"></i>
-                        </button>
-                        <button class="page-btn" @onclick="() => GoToPage(_currentPage - 1)" disabled="@(_currentPage == 1)">
-                            <i class="ti tabler-chevron-left"></i>
-                        </button>
-
-                        @for (int i = GetStartPage(); i <= GetEndPage(); i++)
-                        {
-                            var pageNum = i;
-                            <button class="page-btn @(_currentPage == pageNum ? "active" : "")"
-                                    @onclick="() => GoToPage(pageNum)">
-                                @pageNum
+                            <button class="page-btn"
+                                    @onclick="() => GoToPage(_currentPage + 1)"
+                                    disabled="@(_currentPage == _totalPages)">
+                                <i class="ti tabler-chevron-right"></i>
                             </button>
-                        }
 
-                        <button class="page-btn" @onclick="() => GoToPage(_currentPage + 1)" disabled="@(_currentPage == _totalPages)">
-                            <i class="ti tabler-chevron-right"></i>
-                        </button>
-                        <button class="page-btn" @onclick="() => GoToPage(_totalPages)" disabled="@(_currentPage == _totalPages)">
-                            <i class="bi bi-chevron-bar-right"></i>
-                        </button>
+                            <button class="page-btn"
+                                    @onclick="() => GoToPage(_totalPages)"
+                                    disabled="@(_currentPage == _totalPages)">
+                                <i class="bi bi-chevron-bar-right"></i>
+                            </button>
+                        </div>
+
                     </div>
                 </div>
-            </div>
-
-
+            }
 
         </div>
     }
+
 </div>
 
 <!-- Department Form Dialog -->
@@ -876,6 +936,7 @@
     private bool _isSuperAdmin = false;
     private string? _userDepartmentName = null;
     private Random random = new Random();
+  
 
 
     bool showPopup = false;
@@ -991,6 +1052,7 @@
                 _departments = response.Data;
                 Logger.LogInformation("Loaded {Count} departments", _departments.Count);
                 UpdateFilteredDepartments();
+
             }
             else
             {
@@ -1151,6 +1213,9 @@
         _departmentModel = new DepartmentFormDialog.DepartmentFormModel();
         _isDialogOpen = true;
         await JS.InvokeVoidAsync("disableScroll");
+        await JS.InvokeVoidAsync("focusInputById", "popupFirstInput");
+
+
 
     }
 
@@ -1212,13 +1277,13 @@
                 var response = await RBACService.UpdateDepartmentAsync(_selectedDepartment.Id, updateRequest);
                 if (response.Success)
                 {
-                    await JS.InvokeVoidAsync("showToast", "success", "Department updated successfully", Severity.Success);
+                    await JS.InvokeVoidAsync("showToast", "success", "Department updated successfully");
                     await LoadDepartments();
                     CloseDialog();
                 }
                 else
                 {
-                    await JS.InvokeVoidAsync("showToast", "error", response.Message ?? "Failed to update department", Severity.Error);
+                    await JS.InvokeVoidAsync("showToast", "error", ErrorMessageHelper.FormatMessageAsBullets(response.Message ?? "Failed to update department"));
                 }
             }
             else
@@ -1232,20 +1297,20 @@
                 var response = await RBACService.CreateDepartmentAsync(createRequest);
                 if (response.Success)
                 {
-                    await JS.InvokeVoidAsync("showToast", "success", "Department created successfully", Severity.Success);
+                    await JS.InvokeVoidAsync("showToast", "success", "Department created successfully");
                     await LoadDepartments();
                     CloseDialog();
                 }
                 else
                 {
-                    await JS.InvokeVoidAsync("showToast", "error", response.Message ?? "Failed to create department", Severity.Error);
+                    await JS.InvokeVoidAsync("showToast", "error", ErrorMessageHelper.FormatMessageAsBullets(response.Message ?? "Failed to create department"));
                 }
             }
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error saving department");
-            await JS.InvokeVoidAsync("showToast", "error", $"Error: {ex.Message}", Severity.Error);
+            await JS.InvokeVoidAsync("showToast", "error", $"Error: {ex.Message}");
         }
         finally
         {
@@ -1271,19 +1336,19 @@
                 var response = await RBACService.DeleteDepartmentAsync(department.Id);
                 if (response.Success)
                 {
-                    await JS.InvokeVoidAsync("showToast", "success", "Department deleted successfully", Severity.Success);
+                    await JS.InvokeVoidAsync("showToast", "success", "Department deleted successfully");
                     await LoadDepartments();
                 }
                 else
                 {
-                    await JS.InvokeVoidAsync("showToast", "error", response.Message ?? "Failed to delete department", Severity.Error);
+                    await JS.InvokeVoidAsync("showToast", "error", ErrorMessageHelper.FormatMessageAsBullets(response.Message ?? "Failed to delete department"));
                 }
             }
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error deleting department");
-            await JS.InvokeVoidAsync("showToast", "error", $"Error deleting department: {ex.Message}", Severity.Error);
+            await JS.InvokeVoidAsync("showToast", "error", $"Error deleting department: {ex.Message}");
         }
         finally
         {

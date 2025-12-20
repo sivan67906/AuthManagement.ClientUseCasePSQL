@@ -1,5 +1,6 @@
 @page "/rolehierarchymapping"
 @using AuthManagement.Models
+@using AuthManagement.Helpers
 @using AuthManagement.Services
 @using AuthManagement.Shared
 @inject RBACService RBACService
@@ -12,6 +13,7 @@
 @attribute [Authorize]
 @inject IJSRuntime JS
 <PageTitle>Role Hierarchy Mapping</PageTitle>
+<script src="js/InputFocus.js"></script>
 
 <style>
     /* Page Header */
@@ -22,6 +24,10 @@
         padding-bottom: 0;
     }
 
+    .mapping-table tbody tr:hover {
+        box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px, rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
+        border-left: 5px solid #7367f0
+    }
     .page-title {
         font-size: 1.125rem;
         font-weight: 600;
@@ -251,7 +257,7 @@
     }
 
     .mapping-table td {
-        padding: 5px 16px;
+        padding: 13px 16px;
         font-size: 14px;
         color: #333;
     }
@@ -1096,6 +1102,8 @@ RoleHierarchyMappingDto? selectedFeature;
         _filteredRoles = new List<RoleDto>();
         _isDialogOpen = true;
         await JS.InvokeVoidAsync("disableScroll");
+        await JS.InvokeVoidAsync("focusInputById", "popupFirstInput");
+
     }
 
     async Task OpenEditDialog(RoleHierarchyMappingDto mapping)
@@ -1172,7 +1180,7 @@ RoleHierarchyMappingDto? selectedFeature;
 
             if (parentRoleId == childRoleId)
             {
-                await JS.InvokeVoidAsync("showToast", "error", "Parent and child roles cannot be the same", Severity.Error);
+                await JS.InvokeVoidAsync("showToast", "error", "Parent and child roles cannot be the same");
                 _isSaving = false;
                 return;
             }
@@ -1187,7 +1195,7 @@ RoleHierarchyMappingDto? selectedFeature;
             {
                 var parentName = _roles.FirstOrDefault(r => r.Id == parentRoleId)?.Name ?? "Unknown Parent Role";
                 var childName = _roles.FirstOrDefault(r => r.Id == childRoleId)?.Name ?? "Unknown Child Role";
-                await JS.InvokeVoidAsync("showToast", "error", $"Duplicate hierarchy mapping: {parentName} → {childName} already exists", Severity.Warning);
+                await JS.InvokeVoidAsync("showToast", "error", $"Duplicate hierarchy mapping: {parentName} → {childName} already exists");
                 _isSaving = false;
                 return;
             }
@@ -1205,13 +1213,13 @@ RoleHierarchyMappingDto? selectedFeature;
                 var response = await RBACService.UpdateRoleHierarchyMappingAsync(_selectedMapping.Id, updateRequest);
                 if (response.Success)
                 {
-                    await JS.InvokeVoidAsync("showToast", "success", "Role hierarchy mapping updated successfully", Severity.Success);
+                    await JS.InvokeVoidAsync("showToast", "success", "Role hierarchy mapping updated successfully");
                     await LoadData();
                     CloseDialog();
                 }
                 else
                 {
-                    await JS.InvokeVoidAsync("showToast", "error", response.Message ?? "Failed to update role hierarchy mapping", Severity.Error);
+                    await JS.InvokeVoidAsync("showToast", "error", ErrorMessageHelper.FormatMessageAsBullets(response.Message ?? "Failed to update role hierarchy mapping"));
                 }
             }
             else
@@ -1226,20 +1234,20 @@ RoleHierarchyMappingDto? selectedFeature;
                 var response = await RBACService.CreateRoleHierarchyMappingAsync(createRequest);
                 if (response.Success)
                 {
-                    await JS.InvokeVoidAsync("showToast", "success", "Role hierarchy mapping created successfully", Severity.Success);
+                    await JS.InvokeVoidAsync("showToast", "success", "Role hierarchy mapping created successfully");
                     await LoadData();
                     CloseDialog();
                 }
                 else
                 {
-                    await JS.InvokeVoidAsync("showToast", "error", response.Message ?? "Failed to create role hierarchy mapping", Severity.Error);
+                    await JS.InvokeVoidAsync("showToast", "error", ErrorMessageHelper.FormatMessageAsBullets(response.Message ?? "Failed to create role hierarchy mapping"));
                 }
             }
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error saving role hierarchy mapping");
-            await JS.InvokeVoidAsync("showToast", "error", $"Error: {ex.Message}", Severity.Error);
+            await JS.InvokeVoidAsync("showToast", "error", $"Error: {ex.Message}");
         }
         finally
         {
@@ -1261,19 +1269,19 @@ RoleHierarchyMappingDto? selectedFeature;
                 var response = await RBACService.DeleteRoleHierarchyMappingAsync(mapping.Id);
                 if (response.Success)
                 {
-                    await JS.InvokeVoidAsync("showToast", "success", "Role hierarchy mapping deleted successfully", Severity.Success);
+                    await JS.InvokeVoidAsync("showToast", "success", "Role hierarchy mapping deleted successfully");
                     await LoadData();
                 }
                 else
                 {
-                    await JS.InvokeVoidAsync("showToast", "error", response.Message ?? "Failed to delete role hierarchy mapping", Severity.Error);
+                    await JS.InvokeVoidAsync("showToast", "error", ErrorMessageHelper.FormatMessageAsBullets(response.Message ?? "Failed to delete role hierarchy mapping"));
                 }
             }
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error deleting role hierarchy mapping");
-            await JS.InvokeVoidAsync("showToast", "error", $"Error deleting role hierarchy mapping: {ex.Message}", Severity.Error);
+            await JS.InvokeVoidAsync("showToast", "error", $"Error deleting role hierarchy mapping: {ex.Message}");
         }
     }
 }

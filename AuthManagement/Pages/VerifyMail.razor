@@ -160,9 +160,14 @@
                     errorMessage = ErrorMessageHelper.FormatErrorsAsBullets(result.Errors);
                     await JS.InvokeVoidAsync("showToast", "error", errorMessage);
                 }
+                else if (!string.IsNullOrEmpty(result?.Message))
+                {
+                    errorMessage = ErrorMessageHelper.FormatMessageAsBullets(result.Message);
+                    await JS.InvokeVoidAsync("showToast", "error", errorMessage);
+                }
                 else
                 {
-                    errorMessage = result?.Message ?? "Failed to resend confirmation email. Please try again.";
+                    errorMessage = "Failed to resend confirmation email. Please try again.";
                     await JS.InvokeVoidAsync("showToast", "error", errorMessage);
                 }
             }

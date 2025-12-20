@@ -21,9 +21,9 @@
 
         <div class="offcanvas-body">
             <div class="detail-section">
-                <h6 class="detail-section-title">
+                <h6 class="detail-section-title" style="    display: flex !important;  align-items: center;">
                     <i class="ti tabler-building"></i>
-                    Department Information
+                    <span>Department Information</span>
                 </h6>
                 <div class="detail-row">
                     <span class="detail-label">Department:</span>
@@ -48,9 +48,9 @@
             </div>
 
             <div class="detail-section">
-                <h6 class="detail-section-title">
+                <h6 class="detail-section-title" style="    display: flex !important;  align-items: center;">
                     <i class="ti tabler-user-check"></i>
-                    Role Information
+                    <span>Role Information</span>
                 </h6>
                 <div class="detail-row">
                     <span class="detail-label">Role Name:</span>
@@ -59,9 +59,9 @@
             </div>
 
             <div class="detail-section">
-                <h6 class="detail-section-title">
+                <h6 class="detail-section-title" style="    display: flex !important;  align-items: center;">
                     <i class="ti tabler-file"></i>
-                    Page Information
+                    <span>Page Information</span>
                 </h6>
                 <div class="detail-row">
                     <span class="detail-label">Page Name:</span>
@@ -77,9 +77,9 @@
             </div>
 
             <div class="detail-section">
-                <h6 class="detail-section-title">
+                <h6 class="detail-section-title" style="    display: flex !important;  align-items: center;">
                     <i class="ti tabler-key"></i>
-                    Permissions (@Mapping.Permissions.Count)
+                    <span>Permissions (@Mapping.Permissions.Count)</span>
                 </h6>
                 <div class="permissions-container">
                     @foreach (var permission in Mapping.Permissions.OrderBy(p => GetPermissionOrder(p.PermissionName)))
@@ -95,13 +95,13 @@
             </div>
 
             <div class="detail-section">
-                <h6 class="detail-section-title">
+                <h6 class="detail-section-title" style="    display: flex !important;  align-items: center;">
                     <i class="ti tabler-eye"></i>
-                    Access Control Summary
+                    <span>Access Control Summary</span>
                 </h6>
-                <div class="alert alert-warning" style="font-size: 12px; padding: 12px;">
+                <div class="alert alert-warning mt-3" style="font-size: 12px; padding: 12px;">
                     <strong>What these permissions allow:</strong>
-                    <ul style="margin: 8px 0 0 0; padding-left: 20px;">
+                    <ul style="margin: 8px 0 0 0; padding-left: 20px;    list-style: circle;">
                         <li>Users with role <strong>@Mapping.RoleName</strong> @(Mapping.DepartmentId.HasValue ? $"in {Mapping.DepartmentName} department" : "(all departments)") have the following access to <strong>@Mapping.PageName</strong>:</li>
                         @foreach (var permission in Mapping.Permissions.OrderBy(p => GetPermissionOrder(p.PermissionName)))
                         {
@@ -112,9 +112,9 @@
             </div>
 
             <div class="detail-section">
-                <h6 class="detail-section-title">
+                <h6 class="detail-section-title" style="    display: flex !important;  align-items: center;">
                     <i class="ti tabler-clock"></i>
-                    Audit Information
+                    <span>Audit Information</span>
                 </h6>
                 <div class="detail-row">
                     <span class="detail-label">Created At:</span>
@@ -208,8 +208,8 @@
     }
 
     .detail-section {
-        margin-bottom: 24px;
-        padding-bottom: 24px;
+        margin-bottom: 18px;
+        padding-bottom: 10px;
         border-bottom: 1px solid #f0f0f0;
     }
 

@@ -10,16 +10,16 @@
         <div class="offcanvas-header">
             <div style="display: flex; align-items: center; gap: 16px; width: calc(100% - 40px); min-width: 0;width: 100%;">
                 <div class="avatar-container">
-                    <i class="ti tabler-building" style="font-size: 32px; color: white;"></i>
+                    <i class="ti tabler-building" style="font-size: 32px; color: white;    margin-right: 0;"></i>
                 </div>
                 <div style="width: 219px;">
                     <h5 class="header-title" title="@Department?.Name"                      style="    white-space: normal !important;
                 word-wrap: break-word !important;    max-width: 100% !important;">
                         @Department?.Name
                     </h5> &nbsp;
-                    <p class="header-subtitle">
+                    @* <p class="header-subtitle">
                         @(Department?.IsActive == true ? "Active" : "Inactive") Department
-                    </p>
+                    </p> *@
                 </div>
                 <button type="button" class="btn-close btn-close-white" @onclick="Close"></button>
 
@@ -196,8 +196,9 @@
     }
 
     .info-section {
-        padding: 24px;
+        padding-top: 14px;
         border-bottom: 1px solid #e9ecef;
+        padding-bottom: 14px;
     }
 
     .section-title {
