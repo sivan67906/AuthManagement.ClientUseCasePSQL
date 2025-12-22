@@ -596,6 +596,7 @@
                                     <img src="assets/img/avatars/Department.png" alt="Department" />
                                 </div>
 
+                                <span class="dept-code" style="font-size:11px;color:#666;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">@feature.Code</span>
                                 <h2 class="dept-name">@feature.Name</h2>
                                 <p class="dept-desc">@feature.Description</p>
 
@@ -749,7 +750,7 @@ Features Details
     private FeatureFormDialog.FeatureFormModel _featureModel = new();
     private bool _isLoading = true, _isSaving = false, _hasError = false, _isDialogOpen = false, _isOffcanvasOpen = false, _isEditMode = false;
     private string _errorMessage = string.Empty, _searchString = string.Empty, _sortColumn = "", _sortDirection = "";
-    private int _currentPage = 1, _pageSize = 9, _totalItems = 0, _totalPages = 1; // Issue #5: Changed from 10 to 9
+    private int _currentPage = 1, _pageSize = 8, _totalItems = 0, _totalPages = 1; 
     private bool _canView, _canAdd, _canEdit, _canDelete;
     private bool _isDeleting = false; // Issue #6: Button disable state
 
@@ -844,6 +845,8 @@ Features Details
         _filteredFeatures = string.IsNullOrWhiteSpace(_searchString) ? _features.ToList() : _features.Where(f => FilterFunc(f)).ToList();
         _filteredFeatures = (_sortColumn, _sortDirection) switch
         {
+            ("code", "asc") => _filteredFeatures.OrderBy(f => f.Code).ToList(),
+            ("code", "desc") => _filteredFeatures.OrderByDescending(f => f.Code).ToList(),
             ("name", "asc") => _filteredFeatures.OrderBy(f => f.Name).ToList(),
             ("name", "desc") => _filteredFeatures.OrderByDescending(f => f.Name).ToList(),
             ("description", "asc") => _filteredFeatures.OrderBy(f => f.Description ?? string.Empty).ToList(),
@@ -870,7 +873,7 @@ Features Details
     private void ClearSearch() { _searchString = string.Empty; _currentPage = 1; UpdateFilteredFeatures(); StateHasChanged(); }
     
     private void ToggleSort(string column) { if (_sortColumn == column) _sortDirection = _sortDirection == "asc" ? "desc" : "asc"; else { _sortColumn = column; _sortDirection = "asc"; } UpdateFilteredFeatures(); StateHasChanged(); }
-    private bool FilterFunc(FeatureDto feature) => string.IsNullOrWhiteSpace(_searchString) || feature.Name.ToLower().Contains(_searchString.ToLower()) || (feature.Description?.ToLower().Contains(_searchString.ToLower()) ?? false) || (feature.RouteUrl?.ToLower().Contains(_searchString.ToLower()) ?? false);
+    private bool FilterFunc(FeatureDto feature) => string.IsNullOrWhiteSpace(_searchString) || feature.Code.ToLower().Contains(_searchString.ToLower()) || feature.Name.ToLower().Contains(_searchString.ToLower()) || (feature.Description?.ToLower().Contains(_searchString.ToLower()) ?? false) || (feature.RouteUrl?.ToLower().Contains(_searchString.ToLower()) ?? false);
     private int GetGlobalSerialNumber(FeatureDto feature) => _filteredFeatures.IndexOf(feature) + 1;
     private string TruncateDescription(string? description) => string.IsNullOrEmpty(description) ? "-" : description.Length <= 50 ? description : description.Substring(0, 50) + "...";
     private int GetStartRecord() => _totalItems > 0 ? (_currentPage - 1) * _pageSize + 1 : 0;
@@ -888,7 +891,7 @@ Features Details
     {
         await JS.InvokeVoidAsync("disableScroll");
 
-        _selectedFeature = feature; _isEditMode = true; _featureModel = new FeatureFormDialog.FeatureFormModel { Name = feature.Name, Description = feature.Description, RouteUrl = feature.RouteUrl, IsMainMenu = feature.IsMainMenu, ParentFeatureId = feature.ParentFeatureId, DisplayOrder = feature.DisplayOrder, Level = feature.Level, Icon = feature.Icon }; _isDialogOpen = true; }
+        _selectedFeature = feature; _isEditMode = true; _featureModel = new FeatureFormDialog.FeatureFormModel { Code = feature.Code, Name = feature.Name, Description = feature.Description, RouteUrl = feature.RouteUrl, IsMainMenu = feature.IsMainMenu, ParentFeatureId = feature.ParentFeatureId, DisplayOrder = feature.DisplayOrder, Level = feature.Level, Icon = feature.Icon }; _isDialogOpen = true; }
     async Task OpenViewDialog(FeatureDto feature)
     {
         await JS.InvokeVoidAsync("disableScroll");
@@ -930,7 +933,7 @@ Features Details
 
                 {
 
-                    var createRequest = new CreateFeatureRequest { Name = model.Name, Description = model.Description, RouteUrl = model.RouteUrl, IsMainMenu = model.IsMainMenu, ParentFeatureId = model.ParentFeatureId, DisplayOrder = model.DisplayOrder, Level = model.Level, Icon = model.Icon };
+                    var createRequest = new CreateFeatureRequest { Code = model.Code, Name = model.Name, Description = model.Description, RouteUrl = model.RouteUrl, IsMainMenu = model.IsMainMenu, ParentFeatureId = model.ParentFeatureId, DisplayOrder = model.DisplayOrder, Level = model.Level, Icon = model.Icon };
 
                     var response = await RBACService.CreateFeatureAsync(createRequest);
 

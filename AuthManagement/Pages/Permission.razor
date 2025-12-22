@@ -502,6 +502,7 @@
                             <th class="plusHeading"></th>
 
                         <th style="width: 80px;">#</th>
+                        <th @onclick="@(() => ToggleSort("code"))">Code</th>
                         <th @onclick="@(() => ToggleSort("name"))">Permission Name</th>
                         <th @onclick="@(() => ToggleSort("description"))">Description</th>
                         <th class="text-center" style="width: 100px;">Status</th>
@@ -529,6 +530,7 @@
                                 </td>
 
                             <td class="serial-number">@GetGlobalSerialNumber(permission)</td>
+                            <td class="permission-code" style="font-weight:600;color:#666;">@permission.Code</td>
                             <td class="permission-name" title="@permission.Name">@permission.Name</td>
                             <td class="description-text" title="@permission.Description">@permission.Description</td>
                             <td class="text-center">
@@ -674,7 +676,7 @@ Permission Details
     private PermissionFormDialog.PermissionFormModel _permissionModel = new();
     private bool _isLoading = true, _isSaving = false, _hasError = false, _isDialogOpen = false, _isOffcanvasOpen = false, _isEditMode = false;
     private string _errorMessage = string.Empty, _searchString = string.Empty, _sortColumn = "", _sortDirection = "";
-    private int _currentPage = 1, _pageSize = 9, _totalItems = 0, _totalPages = 1;
+    private int _currentPage = 1, _pageSize = 10, _totalItems = 0, _totalPages = 1;
     private bool _canView, _canAdd, _canEdit, _canDelete;
 
 
@@ -756,6 +758,8 @@ PermissionDto? selectedFeature;
         _filteredPermissions = string.IsNullOrWhiteSpace(_searchString) ? _permissions.ToList() : _permissions.Where(p => FilterFunc(p)).ToList();
         _filteredPermissions = (_sortColumn, _sortDirection) switch
         {
+            ("code", "asc") => _filteredPermissions.OrderBy(p => p.Code).ToList(),
+            ("code", "desc") => _filteredPermissions.OrderByDescending(p => p.Code).ToList(),
             ("name", "asc") => _filteredPermissions.OrderBy(p => p.Name).ToList(),
             ("name", "desc") => _filteredPermissions.OrderByDescending(p => p.Name).ToList(),
             ("description", "asc") => _filteredPermissions.OrderBy(p => p.Description ?? string.Empty).ToList(),
@@ -772,7 +776,7 @@ PermissionDto? selectedFeature;
     // Issue #3: Clear search method for X icon
     private void ClearSearch() { _searchString = string.Empty; _currentPage = 1; UpdateFilteredPermissions(); StateHasChanged(); }
     private void ToggleSort(string column) { if (_sortColumn == column) _sortDirection = _sortDirection == "asc" ? "desc" : "asc"; else { _sortColumn = column; _sortDirection = "asc"; } UpdateFilteredPermissions(); StateHasChanged(); }
-    private bool FilterFunc(PermissionDto permission) => string.IsNullOrWhiteSpace(_searchString) || permission.Name.ToLower().Contains(_searchString.ToLower()) || (permission.Description?.ToLower().Contains(_searchString.ToLower()) ?? false);
+    private bool FilterFunc(PermissionDto permission) => string.IsNullOrWhiteSpace(_searchString) || permission.Code.ToLower().Contains(_searchString.ToLower()) || permission.Name.ToLower().Contains(_searchString.ToLower()) || (permission.Description?.ToLower().Contains(_searchString.ToLower()) ?? false);
     private int GetGlobalSerialNumber(PermissionDto permission) => _filteredPermissions.IndexOf(permission) + 1;
     private string TruncateDescription(string? description) => string.IsNullOrEmpty(description) ? "-" : description.Length <= 50 ? description : description.Substring(0, 50) + "...";
     private int GetStartRecord() => _totalItems > 0 ? (_currentPage - 1) * _pageSize + 1 : 0;
@@ -785,7 +789,7 @@ PermissionDto? selectedFeature;
         await JS.InvokeVoidAsync("focusInputById", "popupFirstInput");
 
     _selectedPermission = null; _isEditMode = false; _permissionModel = new PermissionFormDialog.PermissionFormModel(); _isDialogOpen = true; }
-     async Task OpenEditDialog(PermissionDto permission) { await JS.InvokeVoidAsync("disableScroll"); _selectedPermission = permission; _isEditMode = true; _permissionModel = new PermissionFormDialog.PermissionFormModel { Name = permission.Name, Description = permission.Description }; _isDialogOpen = true; }
+     async Task OpenEditDialog(PermissionDto permission) { await JS.InvokeVoidAsync("disableScroll"); _selectedPermission = permission; _isEditMode = true; _permissionModel = new PermissionFormDialog.PermissionFormModel { Code = permission.Code, Name = permission.Name, Description = permission.Description }; _isDialogOpen = true; }
     async Task OpenViewDialog(PermissionDto permission) { await JS.InvokeVoidAsync("disableScroll"); _selectedPermission = permission; _isOffcanvasOpen = true; }
     async Task CloseDialog() { await JS.InvokeVoidAsync("enableScroll"); _isDialogOpen = false; _selectedPermission = null; _permissionModel = new PermissionFormDialog.PermissionFormModel(); _isEditMode = false; }
     async Task CloseOffcanvas() { await JS.InvokeVoidAsync("enableScroll"); _isOffcanvasOpen = false; _selectedPermission = null; }
@@ -804,7 +808,7 @@ PermissionDto? selectedFeature;
             }
             else
             {
-                var createRequest = new CreatePermissionRequest { Name = model.Name, Description = model.Description };
+                var createRequest = new CreatePermissionRequest { Code = model.Code, Name = model.Name, Description = model.Description };
                 var response = await RBACService.CreatePermissionAsync(createRequest);
                 if (response.Success) { await JS.InvokeVoidAsync("showToast", "success", "Permission created successfully"); await LoadPermissions(); CloseDialog(); }
                 else await JS.InvokeVoidAsync("showToast", "error", ErrorMessageHelper.FormatMessageAsBullets(response.Message ?? "Failed to create permission"));

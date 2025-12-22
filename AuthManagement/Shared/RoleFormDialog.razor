@@ -38,9 +38,33 @@
                         
                         <div class="mb-3">
                             <label class="form-label">
-                                Role Name<span class="text-danger">*</span>
+                                Code<span class="text-danger">*</span>
                             </label>
                             <input type="text" id="popupFirstInput"
+                                   class="form-control @(codeValidationError != null ? "is-invalid" : "")" 
+                                   placeholder="Enter code (e.g., FIN_MGR, HR_ADM)"
+                                   value="@FormModel.Code"
+                                   data-input-type="code"
+                                   @oninput="OnCodeInput"
+                                   disabled="@(IsSaving || IsEditMode)"
+                                   maxlength="10"
+                                   style="text-transform: uppercase;" />
+                            @if (codeValidationError != null)
+                            {
+                                <div class="invalid-feedback d-block">@codeValidationError</div>
+                            }
+                            @if (IsEditMode)
+                            {
+                                <small class="text-muted">Code cannot be changed after creation</small>
+                            }
+                            <ValidationMessage For="@(() => FormModel.Code)" class="text-danger" />
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">
+                                Role Name<span class="text-danger">*</span>
+                            </label>
+                            <input type="text"
                                    class="form-control @(nameValidationError != null ? "is-invalid" : "")" 
                                    placeholder="Enter role name"
                                    value="@FormModel.Name"
@@ -258,8 +282,27 @@
     public EventCallback<RoleFormModel> OnSubmit { get; set; }
 
     // Issue #2: Validation error messages
+    private string? codeValidationError;
     private string? nameValidationError;
     private string? descriptionValidationError;
+
+    // Real-time input validation for Code field
+    private void OnCodeInput(ChangeEventArgs e)
+    {
+        var rawValue = e.Value?.ToString()?.ToUpper() ?? string.Empty;
+        var (isValid, errorMessage) = InputValidationHelper.ValidateInput(rawValue, InputTypeEnum.Code, required: true);
+        
+        if (!isValid)
+        {
+            codeValidationError = errorMessage;
+            FormModel.Code = InputValidationHelper.FilterInput(rawValue, InputTypeEnum.Code);
+        }
+        else
+        {
+            codeValidationError = null;
+            FormModel.Code = rawValue;
+        }
+    }
 
     // Issue #2: Real-time input validation for Name field
     private void OnNameInput(ChangeEventArgs e)
@@ -299,13 +342,14 @@
 
     private bool HasValidationErrors()
     {
-        return nameValidationError != null || descriptionValidationError != null;
+        return codeValidationError != null || nameValidationError != null || descriptionValidationError != null;
     }
 
     private async Task HandleCancel()
     {
         if (!IsSaving)
         {
+            codeValidationError = null;
             nameValidationError = null;
             descriptionValidationError = null;
             await OnCancel.InvokeAsync();
@@ -317,18 +361,24 @@
     private async Task HandleValidSubmit()
     {
         // Issue #2: Final validation before submit
+        var (codeValid, codeError) = IsEditMode ? (true, null) : InputValidationHelper.ValidateInput(FormModel.Code, InputTypeEnum.Code, required: true);
         var (nameValid, nameError) = InputValidationHelper.ValidateInput(FormModel.Name, InputTypeEnum.Name, required: true);
         var (descValid, descError) = InputValidationHelper.ValidateInput(FormModel.Description, InputTypeEnum.Description, required: false);
         
+        codeValidationError = codeError;
         nameValidationError = nameError;
         descriptionValidationError = descError;
         
-        if (!nameValid || !descValid)
+        if (!codeValid || !nameValid || !descValid)
         {
             return;
         }
         
         // Sanitize before submit
+        if (!IsEditMode)
+        {
+            FormModel.Code = FormModel.Code.ToUpper();
+        }
         FormModel.Name = InputValidationHelper.Sanitize(FormModel.Name);
         FormModel.Description = InputValidationHelper.SanitizeText(FormModel.Description);
         
@@ -339,6 +389,11 @@
 
     public class RoleFormModel
     {
+        [Required(ErrorMessage = "Code is required")]
+        [StringLength(10, ErrorMessage = "Code cannot exceed 10 characters")]
+        [RegularExpression(@"^[A-Z0-9\-_]+$", ErrorMessage = "Code must contain only uppercase letters, numbers, hyphens, and underscores")]
+        public string Code { get; set; } = string.Empty;
+
         [Required(ErrorMessage = "Role Name is required")]
         [StringLength(100, ErrorMessage = "Name cannot exceed 100 characters")]
         public string Name { get; set; } = string.Empty;

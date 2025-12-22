@@ -362,6 +362,7 @@
                             <th class="plusHeading"></th>
 
                         <th style="width: 80px;">#</th>
+                        <th @onclick="@(() => ToggleSort("code"))">Code</th>
                         <th @onclick="@(() => ToggleSort("name"))">Page Name</th>
                         <th @onclick="@(() => ToggleSort("url"))">URL</th>
                         <th @onclick="@(() => ToggleSort("description"))">Description</th>
@@ -390,6 +391,7 @@
                                 </td>
 
                             <td class="serial-number">@GetGlobalSerialNumber(pageItem)</td>
+                            <td class="page-code" style="font-weight:600;color:#666;">@pageItem.Code</td>
                             <td class="page-name" title="@pageItem.Name">@pageItem.Name</td>
                             <td>@pageItem.Url</td>
                             <td>@pageItem.Description</td>
@@ -537,7 +539,7 @@ Roles Details
     private PageFormDialog.PageFormModel _pageModel = new();
     private bool _isLoading = true, _isSaving = false, _hasError = false, _isDialogOpen = false, _isOffcanvasOpen = false, _isEditMode = false;
     private string _errorMessage = string.Empty, _searchString = string.Empty, _sortColumn = "", _sortDirection = "";
-    private int _currentPage = 1, _pageSize = 9, _totalItems = 0, _totalPages = 1;
+    private int _currentPage = 1, _pageSize = 10, _totalItems = 0, _totalPages = 1;
     private bool _canView, _canAdd, _canEdit, _canDelete;
 
 
@@ -618,6 +620,8 @@ Roles Details
         _filteredPages = string.IsNullOrWhiteSpace(_searchString) ? _pages.ToList() : _pages.Where(p => FilterFunc(p)).ToList();
         _filteredPages = (_sortColumn, _sortDirection) switch
         {
+            ("code", "asc") => _filteredPages.OrderBy(p => p.Code).ToList(),
+            ("code", "desc") => _filteredPages.OrderByDescending(p => p.Code).ToList(),
             ("name", "asc") => _filteredPages.OrderBy(p => p.Name).ToList(),
             ("name", "desc") => _filteredPages.OrderByDescending(p => p.Name).ToList(),
             ("url", "asc") => _filteredPages.OrderBy(p => p.Url).ToList(),
@@ -636,7 +640,7 @@ Roles Details
     // Issue #3: Clear search method for X icon
     private void ClearSearch() { _searchString = string.Empty; _currentPage = 1; UpdateFilteredPages(); StateHasChanged(); }
     private void ToggleSort(string column) { if (_sortColumn == column) _sortDirection = _sortDirection == "asc" ? "desc" : "asc"; else { _sortColumn = column; _sortDirection = "asc"; } UpdateFilteredPages(); StateHasChanged(); }
-    private bool FilterFunc(PageDto page) => string.IsNullOrWhiteSpace(_searchString) || page.Name.ToLower().Contains(_searchString.ToLower()) || page.Url.ToLower().Contains(_searchString.ToLower()) || (page.Description?.ToLower().Contains(_searchString.ToLower()) ?? false);
+    private bool FilterFunc(PageDto page) => string.IsNullOrWhiteSpace(_searchString) || page.Code.ToLower().Contains(_searchString.ToLower()) || page.Name.ToLower().Contains(_searchString.ToLower()) || page.Url.ToLower().Contains(_searchString.ToLower()) || (page.Description?.ToLower().Contains(_searchString.ToLower()) ?? false);
     private int GetGlobalSerialNumber(PageDto page) => _filteredPages.IndexOf(page) + 1;
     private string TruncateDescription(string? description) => string.IsNullOrEmpty(description) ? "-" : description.Length <= 50 ? description : description.Substring(0, 50) + "...";
     private int GetStartRecord() => _totalItems > 0 ? (_currentPage - 1) * _pageSize + 1 : 0;
@@ -654,7 +658,7 @@ Roles Details
     async Task OpenEditDialog(PageDto page)
     {
         await JS.InvokeVoidAsync("disableScroll");
-        _selectedPage = page; _isEditMode = true; _pageModel = new PageFormDialog.PageFormModel { Name = page.Name, Url = page.Url, Description = page.Description, DisplayOrder = page.DisplayOrder, MenuContext = page.MenuContext, IsActive = page.IsActive }; _isDialogOpen = true;
+        _selectedPage = page; _isEditMode = true; _pageModel = new PageFormDialog.PageFormModel { Code = page.Code, Name = page.Name, Url = page.Url, Description = page.Description, DisplayOrder = page.DisplayOrder, MenuContext = page.MenuContext, IsActive = page.IsActive }; _isDialogOpen = true;
     }
     async Task OpenViewDialog(PageDto page)
     {
@@ -688,7 +692,7 @@ Roles Details
             }
             else
             {
-                var createRequest = new CreatePageRequest { Name = model.Name, Url = model.Url, Description = model.Description, DisplayOrder = model.DisplayOrder };
+                var createRequest = new CreatePageRequest { Code = model.Code, Name = model.Name, Url = model.Url, Description = model.Description, DisplayOrder = model.DisplayOrder };
                 var response = await RBACService.CreatePageAsync(createRequest);
                 if (response.Success) { await JS.InvokeVoidAsync("showToast", "success", "Page created successfully"); await LoadPages(); CloseDialog(); }
                 else await JS.InvokeVoidAsync("showToast", "error", ErrorMessageHelper.FormatMessageAsBullets(response.Message ?? "Failed to create page"));

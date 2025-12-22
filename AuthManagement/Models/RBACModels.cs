@@ -4,6 +4,7 @@ namespace AuthManagement.Models;
 public class DepartmentDto
 {
     public Guid Id { get; set; }
+    public string Code { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
     public bool IsActive { get; set; }
@@ -15,6 +16,7 @@ public class DepartmentDto
 
 public class CreateDepartmentRequest
 {
+    public string Code { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
 }
@@ -30,6 +32,7 @@ public class UpdateDepartmentRequest
 public class RoleDto
 {
     public Guid Id { get; set; }
+    public string? Code { get; set; }
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
     public Guid? DepartmentId { get; set; }
@@ -42,6 +45,7 @@ public class RoleDto
 
 public class CreateRoleRequest
 {
+    public string Code { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
     public Guid? DepartmentId { get; set; }
@@ -51,6 +55,7 @@ public class CreateRoleRequest
 public class PermissionDto
 {
     public Guid Id { get; set; }
+    public string Code { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
     public bool IsActive { get; set; }
@@ -62,6 +67,7 @@ public class PermissionDto
 
 public class CreatePermissionRequest
 {
+    public string Code { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
 }
@@ -77,6 +83,7 @@ public class UpdatePermissionRequest
 public class FeatureDto
 {
     public Guid Id { get; set; }
+    public string Code { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
     public string? RouteUrl { get; set; }
@@ -97,6 +104,7 @@ public class FeatureDto
 public class FeatureWithHierarchyDto
 {
     public Guid Id { get; set; }
+    public string Code { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
     public bool IsMainMenu { get; set; }
@@ -113,6 +121,7 @@ public class FeatureWithHierarchyDto
 
 public class CreateFeatureRequest
 {
+    public string Code { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
     public string? RouteUrl { get; set; }
@@ -140,6 +149,7 @@ public class UpdateFeatureRequest
 public class PageDto
 {
     public Guid Id { get; set; }
+    public string Code { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public string Url { get; set; } = string.Empty;
     public string? Description { get; set; }
@@ -154,6 +164,7 @@ public class PageDto
 
 public class CreatePageRequest
 {
+    public string Code { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public string Url { get; set; } = string.Empty;
     public string? Description { get; set; }

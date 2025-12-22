@@ -19,8 +19,29 @@
                     <EditForm Model="@FormModel" OnValidSubmit="HandleValidSubmit">
                         <DataAnnotationsValidator />
                         <div class="mb-3">
-                            <label class="form-label">Permission Name<span class="text-danger">*</span></label>
+                            <label class="form-label">Code<span class="text-danger">*</span></label>
                             <input type="text" id="popupFirstInput"
+                                   class="form-control @(codeValidationError != null ? "is-invalid" : "")" 
+                                   placeholder="Enter code (e.g., CREATE, VIEW)"
+                                   value="@FormModel.Code"
+                                   data-input-type="code"
+                                   @oninput="OnCodeInput"
+                                   disabled="@(IsSaving || IsEditMode)"
+                                   maxlength="10"
+                                   style="text-transform: uppercase;" />
+                            @if (codeValidationError != null)
+                            {
+                                <div class="invalid-feedback d-block">@codeValidationError</div>
+                            }
+                            @if (IsEditMode)
+                            {
+                                <small class="text-muted">Code cannot be changed after creation</small>
+                            }
+                            <ValidationMessage For="@(() => FormModel.Code)" class="text-danger" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Permission Name<span class="text-danger">*</span></label>
+                            <input type="text"
                                    class="form-control @(nameValidationError != null ? "is-invalid" : "")" 
                                    placeholder="Enter permission name"
                                    value="@FormModel.Name"
@@ -97,8 +118,17 @@
     [Parameter] public EventCallback<PermissionFormModel> OnSubmit { get; set; }
 
     // Issue #2: Validation error messages
+    private string? codeValidationError;
     private string? nameValidationError;
     private string? descriptionValidationError;
+
+    private void OnCodeInput(ChangeEventArgs e)
+    {
+        var rawValue = e.Value?.ToString()?.ToUpper() ?? string.Empty;
+        var (isValid, errorMessage) = InputValidationHelper.ValidateInput(rawValue, InputTypeEnum.Code, required: true);
+        if (!isValid) { codeValidationError = errorMessage; FormModel.Code = InputValidationHelper.FilterInput(rawValue, InputTypeEnum.Code); }
+        else { codeValidationError = null; FormModel.Code = rawValue; }
+    }
 
     private void OnNameInput(ChangeEventArgs e)
     {
@@ -116,19 +146,21 @@
         else { descriptionValidationError = null; FormModel.Description = rawValue; }
     }
 
-    private bool HasValidationErrors() => nameValidationError != null || descriptionValidationError != null;
+    private bool HasValidationErrors() => codeValidationError != null || nameValidationError != null || descriptionValidationError != null;
 
     private async Task HandleCancel() 
     { 
-        if (!IsSaving) { nameValidationError = null; descriptionValidationError = null; await OnCancel.InvokeAsync(); }
+        if (!IsSaving) { codeValidationError = null; nameValidationError = null; descriptionValidationError = null; await OnCancel.InvokeAsync(); }
     }
     
     private async Task HandleValidSubmit()
     {
+        var (codeValid, codeError) = IsEditMode ? (true, null) : InputValidationHelper.ValidateInput(FormModel.Code, InputTypeEnum.Code, required: true);
         var (nameValid, nameError) = InputValidationHelper.ValidateInput(FormModel.Name, InputTypeEnum.Name, required: true);
         var (descValid, descError) = InputValidationHelper.ValidateInput(FormModel.Description, InputTypeEnum.Description, required: false);
-        nameValidationError = nameError; descriptionValidationError = descError;
-        if (!nameValid || !descValid) return;
+        codeValidationError = codeError; nameValidationError = nameError; descriptionValidationError = descError;
+        if (!codeValid || !nameValid || !descValid) return;
+        if (!IsEditMode) { FormModel.Code = FormModel.Code.ToUpper(); }
         FormModel.Name = InputValidationHelper.Sanitize(FormModel.Name);
         FormModel.Description = InputValidationHelper.SanitizeText(FormModel.Description);
         await OnSubmit.InvokeAsync(FormModel);
@@ -136,6 +168,10 @@
 
     public class PermissionFormModel
     {
+        [Required(ErrorMessage = "Code is required")]
+        [StringLength(10, ErrorMessage = "Code cannot exceed 10 characters")]
+        [RegularExpression(@"^[A-Z0-9\-_]+$", ErrorMessage = "Code must contain only uppercase letters, numbers, hyphens, and underscores")]
+        public string Code { get; set; } = string.Empty;
         [Required(ErrorMessage = "Name is required")]
         [StringLength(100, ErrorMessage = "Name cannot exceed 100 characters")]
         public string Name { get; set; } = string.Empty;

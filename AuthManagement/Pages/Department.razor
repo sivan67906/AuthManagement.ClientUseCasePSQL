@@ -777,6 +777,7 @@
                                     <img src="assets/img/avatars/Department.png" alt="Department" />
                                 </div>
 
+                                <span class="dept-code" style="font-size:11px;color:#666;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">@department.Code</span>
                                 <h2 class="dept-name">@department.Name</h2>
                                 <p class="dept-desc">@department.Description</p>
 
@@ -956,7 +957,7 @@
 
     // Pagination
     private int _currentPage = 1;
-    private int _pageSize = 9; // Issue #5: Changed from 10 to 9 for 3 cards per row × 3 rows
+    private int _pageSize = 8; 
     private int _totalPages = 1;
     private int _totalItems = 0;
 
@@ -1131,6 +1132,8 @@
         {
             ("no", "asc") => _filteredDepartments.OrderBy(d => _departments.IndexOf(d)).ToList(),
             ("no", "desc") => _filteredDepartments.OrderByDescending(d => _departments.IndexOf(d)).ToList(),
+            ("code", "asc") => _filteredDepartments.OrderBy(d => d.Code).ToList(),
+            ("code", "desc") => _filteredDepartments.OrderByDescending(d => d.Code).ToList(),
             ("name", "asc") => _filteredDepartments.OrderBy(d => d.Name).ToList(),
             ("name", "desc") => _filteredDepartments.OrderByDescending(d => d.Name).ToList(),
             ("description", "asc") => _filteredDepartments.OrderBy(d => d.Description ?? string.Empty).ToList(),
@@ -1203,7 +1206,8 @@
             return true;
 
         var searchLower = _searchString.ToLower();
-        return department.Name.ToLower().Contains(searchLower) ||
+        return department.Code.ToLower().Contains(searchLower) ||
+               department.Name.ToLower().Contains(searchLower) ||
                (department.Description?.ToLower().Contains(searchLower) ?? false);
     }
 
@@ -1275,6 +1279,7 @@
 
         _departmentModel = new DepartmentFormDialog.DepartmentFormModel
         {
+            Code = department.Code,
             Name = department.Name,
             Description = department.Description
         };
@@ -1338,6 +1343,7 @@
             {
                 var createRequest = new CreateDepartmentRequest
                 {
+                    Code = model.Code,
                     Name = model.Name,
                     Description = model.Description
                 };

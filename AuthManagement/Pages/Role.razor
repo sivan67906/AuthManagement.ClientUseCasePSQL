@@ -528,6 +528,7 @@
 
                             <th style="width: 80px;">#</th>
                             <th @onclick="@(() => ToggleSort("department"))">Department</th>
+                            <th @onclick="@(() => ToggleSort("code"))">Code</th>
                             <th @onclick="@(() => ToggleSort("name"))">Role Name</th>
                             <th @onclick="@(() => ToggleSort("description"))">Description</th>
                             <th class="text-center" style="width: 150px;">Actions</th>
@@ -566,6 +567,7 @@
                                         <span class="badge bg-secondary">Global</span>
                                     }
                                 </td>
+                                <td class="role-code" style="font-weight:600;color:#666;">@role.Code</td>
                                 <td class="role-name" title="@role.Name">@role.Name</td>
                                 <td class="description-text" title="@role.Description">@role.Description</td>
                                 <td>
@@ -741,7 +743,7 @@ Role Details
     // Search and Pagination
     private string _searchString = string.Empty;
     private int _currentPage = 1;
-    private int _pageSize = 9;
+    private int _pageSize = 10;
     private int _totalItems = 0;
     private int _totalPages = 1;
 
@@ -899,6 +901,8 @@ Role Details
         {
             ("no", "asc") => _filteredRoles.OrderBy(r => _roles.IndexOf(r)).ToList(),
             ("no", "desc") => _filteredRoles.OrderByDescending(r => _roles.IndexOf(r)).ToList(),
+            ("code", "asc") => _filteredRoles.OrderBy(r => r.Code ?? string.Empty).ToList(),
+            ("code", "desc") => _filteredRoles.OrderByDescending(r => r.Code ?? string.Empty).ToList(),
             ("name", "asc") => _filteredRoles.OrderBy(r => r.Name).ToList(),
             ("name", "desc") => _filteredRoles.OrderByDescending(r => r.Name).ToList(),
             ("department", "asc") => _filteredRoles.OrderBy(r => r.DepartmentName ?? string.Empty).ToList(),
@@ -964,7 +968,8 @@ Role Details
             return true;
 
         var searchLower = _searchString.ToLower();
-        return role.Name.ToLower().Contains(searchLower) ||
+        return (role.Code?.ToLower().Contains(searchLower) ?? false) ||
+               role.Name.ToLower().Contains(searchLower) ||
                (role.Description?.ToLower().Contains(searchLower) ?? false) ||
                (role.DepartmentName?.ToLower().Contains(searchLower) ?? false);
     }
@@ -1036,6 +1041,7 @@ Role Details
 
         _roleModel = new RoleFormDialog.RoleFormModel
             {
+                Code = role.Code ?? string.Empty,
                 Name = role.Name,
                 Description = role.Description,
                 DepartmentId = role.DepartmentId
@@ -1114,6 +1120,7 @@ Role Details
             {
                 var createRequest = new CreateRoleRequest
                     {
+                        Code = model.Code,
                         Name = model.Name,
                         Description = model.Description,
                         DepartmentId = model.DepartmentId

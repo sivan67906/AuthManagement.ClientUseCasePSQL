@@ -30,6 +30,9 @@ public static class InputValidationHelper
     private static readonly Regex SafeTextPattern = new(@"^[a-zA-Z0-9\s.,!?;:()\-'""\/\n\r&@#%*+=\[\]]+$", RegexOptions.Compiled);
     private static readonly Regex SafeNamePattern = new(@"^[a-zA-Z0-9\s\-_.']+$", RegexOptions.Compiled);
     private static readonly Regex UrlPattern = new(@"^[a-zA-Z0-9\s\-_./:\?=&#%]+$", RegexOptions.Compiled);
+    
+    // Code pattern: uppercase letters, numbers, hyphens, underscores only
+    private static readonly Regex CodePattern = new(@"^[A-Z0-9\-_]+$", RegexOptions.Compiled);
 
     /// <summary>
     /// Issue #2: Validates and returns error message if input contains dangerous characters
@@ -61,6 +64,7 @@ public static class InputValidationHelper
             InputTypeEnum.Description => ValidateDescription(input),
             InputTypeEnum.Url => ValidateUrl(input),
             InputTypeEnum.Alphanumeric => ValidateAlphanumeric(input),
+            InputTypeEnum.Code => ValidateCode(input),
             _ => ValidateGeneralText(input)
         };
     }
@@ -112,6 +116,19 @@ public static class InputValidationHelper
         if (!AlphanumericPattern.IsMatch(input))
         {
             return (false, "Only letters, numbers, and spaces are allowed.");
+        }
+        return (true, null);
+    }
+    
+    private static (bool, string?) ValidateCode(string input)
+    {
+        if (input.Length > 10)
+        {
+            return (false, "Code must be 10 characters or less.");
+        }
+        if (!CodePattern.IsMatch(input.ToUpper()))
+        {
+            return (false, "Code must contain only uppercase letters, numbers, hyphens (-), and underscores (_).");
         }
         return (true, null);
     }
@@ -295,6 +312,10 @@ public static class InputValidationHelper
                 // Allow hash and percent for URLs
                 return Regex.Replace(input, @"[^a-zA-Z0-9\-_./:\?=&#%]+", string.Empty);
             
+            case InputTypeEnum.Code:
+                // Only uppercase letters, numbers, hyphens, underscores - auto convert to uppercase
+                return Regex.Replace(input.ToUpper(), @"[^A-Z0-9\-_]", string.Empty);
+            
             case InputTypeEnum.Description:
                 // Only remove XSS-dangerous characters, keep punctuation and quotes
                 string filtered = HtmlPattern.Replace(input, string.Empty);
@@ -329,5 +350,6 @@ public enum InputTypeEnum
     Alphanumeric,
     Description,
     Url,
+    Code,
     General
 }

@@ -40,6 +40,16 @@
             <div class="info-section">
                 <h6 class="section-title">DETAILS</h6>
                 <div class="details-list">
+                    <div class="detail-item">
+                        <div class="detail-icon">
+                            <i class="ti tabler-hash" style="color: #667eea;"></i>
+                        </div>
+                        <div class="detail-content">
+                            <div class="detail-label">Code</div>
+                            <div class="detail-value">@(Role?.Code ?? "-")</div>
+                        </div>
+                    </div>
+                    
                     @if (!string.IsNullOrEmpty(Role?.DepartmentName))
                     {
                         <div class="detail-item">
