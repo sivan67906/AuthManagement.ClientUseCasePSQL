@@ -6,7 +6,7 @@
 {
     <div class="offcanvas-backdrop @(IsOpen ? "show" : "")" @onclick:stopPropagation="true"></div>
     
-    <div class="offcanvas offcanvas-end @(IsOpen ? "show" : "")" tabindex="-1" @onclick:stopPropagation="true">
+    <div class="offcanvas offcanvas-end animate__animated animate__fadeInRight @(IsOpen ? "show" : "")" tabindex="-1" @onclick:stopPropagation="true">
         <div class="offcanvas-header">
             <div style="display: flex; align-items: center; gap: 16px; width: calc(100% - 40px); min-width: 0;">
                 <div class="avatar-container">

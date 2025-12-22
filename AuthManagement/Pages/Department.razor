@@ -629,18 +629,38 @@
         align-items: center;
         gap: 22px;
         color: white;
-        padding-top: 5px;
+        padding-top: 0px;
         border-radius: 55px;
-        padding-bottom: 4px;
-        padding-left: 16px;
-        padding-right: 16px;
+        padding-bottom: 0px;
+        padding-left: 0px;
     }
 
-        .Actions i {
-            font-size: 23px;
-            cursor: pointer
+    .action-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+        .action-icon i {
+            color: #fff;
+            font-size: 18px;
+            transition: color 0.25s ease;
         }
 
+        .action-icon:hover {
+            background-color: #fff;
+            transform: scale(1.15);
+        }
+
+            /* icon color change to card color */
+            .action-icon:hover i {
+                color: var(--accent-color);
+            }
 
     .dept-card {
         background: #fff;
@@ -739,7 +759,12 @@
                 {
                     @foreach (var department in _pagedDepartments)
                     {
-                        var borderColor = GenerateRandomColor();
+                        @* var borderColor = GenerateRandomColor(); *@
+
+                        var borderColor = departmentColors.TryGetValue(department.Id, out var color)
+                        ? color
+                        : "rgb(200,200,200)";
+
 
                         <div class="col-12 col-sm-6 col-md-4 col-lg-3">
                             <div class="dept-card">
@@ -755,14 +780,26 @@
                                 <h2 class="dept-name">@department.Name</h2>
                                 <p class="dept-desc">@department.Description</p>
 
-                                <div class="Actions" style="background:@borderColor;">
-                                    <i class="ti tabler-eye"
-                                       @onclick="() => OpenViewDialog(department)"></i>
-                                    <i class="ti tabler-edit"
-                                       @onclick="() => OpenEditDialog(department)"></i>
-                                    <i class="ti tabler-trash"
-                                       @onclick="() => DeleteDepartment(department)"></i>
+                                <div class="Actions"
+                                     style="--accent-color:@borderColor; background:@borderColor;">
+
+                                    <div class="action-icon">
+                                        <i class="ti tabler-eye"
+                                           @onclick="() => OpenViewDialog(department)"></i>
+                                    </div>
+
+                                    <div class="action-icon">
+                                        <i class="ti tabler-edit"
+                                           @onclick="() => OpenEditDialog(department)"></i>
+                                    </div>
+
+                                    <div class="action-icon">
+                                        <i class="ti tabler-trash"
+                                           @onclick="() => DeleteDepartment(department)"></i>
+                                    </div>
+
                                 </div>
+
 
                             </div>
                         </div>
@@ -976,6 +1013,8 @@
         // Alternative: Generate RGB color
         return $"rgb({random.Next(256)}, {random.Next(256)}, {random.Next(256)})";
     }
+    private Dictionary<Guid, string> departmentColors = new();
+
 
 
     // pagination
@@ -1115,6 +1154,15 @@
             .Skip((_currentPage - 1) * _pageSize)
             .Take(_pageSize)
             .ToList();
+
+
+        foreach (var dept in _pagedDepartments)
+        {
+            if (!departmentColors.ContainsKey(dept.Id))
+            {
+                departmentColors[dept.Id] = GenerateRandomColor();
+            }
+        }
     }
 
     private void OnSearchChanged(string value)

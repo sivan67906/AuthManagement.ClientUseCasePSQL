@@ -40,8 +40,14 @@
                                     <div class="user-profile-info">
                                         <h4 class="mb-2 mt-lg-6">@profile.FirstName @profile.LastName</h4>
                                         <ul class="list-inline mb-0 d-flex align-items-center flex-wrap justify-content-sm-start justify-content-center gap-4 my-2">
-                                            <li class="list-inline-item d-flex gap-2 align-items-center"><i class="icon-base ti tabler-mail icon-lg"></i><span class="fw-medium">@profile.Email</span></li>
-                                            <li class="list-inline-item d-flex gap-2 align-items-center"><i class="icon-base ti tabler-user  icon-lg"></i><span class="fw-medium"> @profile.FirstName @profile.LastName</span></li>
+                                            <li class="list-inline-item d-flex gap-2 align-items-center">
+                                                <i class="bi bi-envelope-fill" style="color: #0014d0;
+        font-size: 23px;"></i><span class="fw-medium mt-1">@profile.Email</span>
+                                            </li>
+                                            <li class="list-inline-item d-flex gap-2 align-items-center">
+                                                <i class="bi bi-person-fill" style="color: #0014d0;
+        font-size: 23px;"></i><span class="fw-medium mt-1"> @profile.FirstName @profile.LastName</span>
+                                            </li>
                                         </ul>
                                     </div>
                                     <a href="/change-password" class="btn btn-primary mb-1">
@@ -80,17 +86,25 @@
                         <div class="card-body">
                             <p class="card-text text-uppercase text-body-secondary small mb-0">About</p>
                             <ul class="list-unstyled my-3 py-1">
-                                <li class="d-flex align-items-center mb-4"><i class="icon-base ti tabler-user icon-lg" style="color:#ed0000"></i><span class="fw-medium mx-2">Email confirmed:</span> <span>@(profile.EmailConfirmed ? "Yes" : "No")</span></li>
-                                <li class="d-flex align-items-center mb-4"><i class="icon-base ti tabler-check icon-lg" style="color:#ed0000"></i><span class="fw-medium mx-2">Two-factor enabled:</span> <span>@(profile.TwoFactorEnabled ? "Yes" : "No")</span></li>
+                                <li class="d-flex align-items-end  mb-4">
+                                    <i class="bi bi-person-fill" style="color: #0014d0;
+                font-size: 20px;"></i><span class="fw-medium mx-2">Email confirmed:</span> <span>@(profile.EmailConfirmed ? "Yes" : "No")</span>
+                                </li>
+                                <li class="d-flex align-items-end  mb-4">
+                                    <i class="bi bi-check-circle-fill" style="color: #0014d0;
+                font-size: 20px;"></i><span class="fw-medium mx-2">Two-factor enabled:</span> <span>@(profile.TwoFactorEnabled ? "Yes" : "No")</span>
+                                </li>
                             </ul>
                             <p class="card-text text-uppercase text-body-secondary small mb-0">Contacts</p>
                             <ul class="list-unstyled my-3 py-1">
-                                <li class="d-flex align-items-center mb-4">
-                                    <i class="icon-base ti tabler-phone-call icon-lg" style="color: #1b00ff;"></i><span class="fw-medium mx-2">Contact:</span>
+                                <li class="d-flex align-items-end  mb-4">
+                                    <i class="bi bi-telephone-outbound-fill" style="color: #0014d0;
+                font-size: 20px;"></i><span class="fw-medium mx-2">Contact:</span>
                                     <span>(123) 456-7890</span>
                                 </li>
-                                <li class="d-flex align-items-center mb-4">
-                                    <i class="icon-base ti tabler-mail icon-lg" style="color: #1b00ff;"></i><span class="fw-medium mx-2">Email:</span>
+                                <li class="d-flex align-items-end  mb-4">
+                                    <i class="bi bi-envelope-at-fill" style="color: #0014d0;
+                font-size: 20px;"></i><span class="fw-medium mx-2">Email:</span>
                                     <span>@profile.Email</span>
                                 </li>
                             </ul>
@@ -124,13 +138,14 @@
 
                         <div class="card-body pt-3">
                             <ul class="timeline mb-0">
-                                <li class="timeline-item timeline-item-transparent h-50">
+                                <li class="timeline-item timeline-item-transparent" style="    height: 68px;">
                                     <span class="timeline-point timeline-point-primary" style="    inset-block-start: 5px;
     "></span>
 
                                     <div class="info-row d-flex align-item-center justify-content-between">
-                                        <div class="info-label d-flex">
-                                            <i class="bi bi-envelope-check"></i>
+                                        <div class="info-label d-flex align-items-end">
+                                            <i class="bi bi-envelope-check-fill" style="color: #0014d0;
+            font-size: 23px;"></i>
                                             <p class="ms-2 mb-0">Email Verification</p>
                                         </div>
                                         @if (profile.EmailConfirmed)
@@ -149,17 +164,18 @@
     "></span>
 
                                     <div class="info-row d-flex align-item-center justify-content-between">
-                                        <div class="info-label d-flex">
-                                            <i class="bi bi-shield-lock"></i>
+                                        <div class="info-label d-flex align-items-end">
+                                            <i class="bi bi-shield-fill-exclamation" style="color: #0014d0;
+            font-size: 23px;"></i>
                                             <p class="ms-2 mb-0">Two-Factor Authentication</p>
                                         </div>
                                         @if (profile.TwoFactorEnabled)
                                         {
-                                            <span class="badge bg-success">Enabled</span>
+                                            <span class="badge bg-success d-flex align-items-center">Enabled</span>
                                         }
                                         else
                                         {
-                                            <span class="badge bg-danger">Disabled</span>
+                                            <span class="badge bg-danger d-flex align-items-center">Disabled</span>
                                         }
                                     </div>
                                 </li>

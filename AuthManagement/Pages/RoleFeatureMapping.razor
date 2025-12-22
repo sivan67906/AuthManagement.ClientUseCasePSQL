@@ -24,10 +24,16 @@
         padding-bottom: 0;
     }
 
-    .mapping-table tbody tr:hover {
-        box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px, rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
-        border-left: 5px solid #7367f0
+    .mapping-table tbody tr {
+        transition: box-shadow 0.3s ease, border-left 0.3s ease, transform 0.3s ease;
     }
+
+        .mapping-table tbody tr:hover {
+            box-shadow: rgba(0, 0, 0, 0.15) 0px 15px 25px, rgba(0, 0, 0, 0.05) 0px 5px 10px;
+            border-left: 5px solid #7367f0;
+            transform: translateY(-2px); /* optional nice lift */
+        }
+
 
     .page-title {
         font-size: 1.125rem;
