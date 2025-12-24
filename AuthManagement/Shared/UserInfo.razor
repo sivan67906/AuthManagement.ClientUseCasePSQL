@@ -1,17 +1,68 @@
-@using AuthManagement.Services
+﻿@using AuthManagement.Services
 @using Microsoft.AspNetCore.Components.Authorization
 @using System.Security.Claims
 @inject JwtAuthenticationStateProvider AuthProvider
 @inject HttpClient Http
 @inject NavigationManager Nav
 
+
+<style>
+    .avatar-tooltip {
+        position: relative;
+        display: inline-flex;
+        cursor: pointer;
+    }
+
+    /* Tooltip box – BOTTOM */
+    .tooltip-box {
+        position: absolute;
+        top: 120%; /* 👈 bottom side */
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: #111827;
+        color: #fff;
+        padding: 6px 10px;
+        border-radius: 6px;
+        font-size: 12px;
+        white-space: nowrap;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.2s ease;
+        z-index: 1000;
+    }
+
+        /* Arrow – TOP side pointing up */
+        .tooltip-box::after {
+            content: "";
+            position: absolute;
+            bottom: 100%; /* 👈 arrow top */
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 6px;
+            border-style: solid;
+            border-color: transparent transparent #111827 transparent;
+        }
+
+    /* Show on hover */
+    .avatar-tooltip:hover .tooltip-box {
+        opacity: 1;
+        visibility: visible;
+    }
+</style>
 <AuthorizeView>
     <Authorized>
         <li class="nav-item navbar-dropdown dropdown-user dropdown">
             <a class="nav-link dropdown-toggle hide-arrow p-0 d-flex align-items-center gap-2" href="javascript:void(0);" data-bs-toggle="dropdown">
-                <div class="avatar avatar-online">
-                    <div class="avatar-initial rounded-circle bg-label-primary">@AvatarInitials</div>
+                <div class="avatar avatar-online avatar-tooltip">
+                    <div class="avatar-initial rounded-circle bg-label-primary">
+                        @AvatarInitials
+                    </div>
+
+                    <span class="tooltip-box">
+                        Profile
+                    </span>
                 </div>
+
 
                 @* <div style="display: flex;align-items: flex-start;flex-direction: column;">
                     <h2 style="font-size: 15px;margin-bottom: 0;line-height: 1;">
@@ -61,7 +112,7 @@
                     </a>
                 </li>
                 <li>
-                    <a class="dropdown-item" href="/change-password">
+                    <a class="dropdown-item" href="/profile?tab=security">
                         <i class="icon-base ti tabler-key me-3 icon-md"></i>
                         <span class="align-middle">Change Password</span>
                     </a>

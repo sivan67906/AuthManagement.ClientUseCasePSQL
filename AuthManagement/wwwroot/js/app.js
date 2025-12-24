@@ -8,7 +8,7 @@ window.confirmDelete = (title, message) => {
             showCancelButton: true,
             confirmButtonColor: '#d33',
             cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Yes, delete it!',
+            confirmButtonText: 'Yes, delete',
             cancelButtonText: 'Cancel'
         }).then((result) => {
             resolve(result.isConfirmed);
@@ -98,7 +98,7 @@ window.showDeleteConfirmation = (title, message) => {
             showCancelButton: true,
             confirmButtonColor: '#d33',
             cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Yes, delete it!',
+            confirmButtonText: 'Yes, delete',
             cancelButtonText: 'Cancel',
             reverseButtons: true
         }).then((result) => {

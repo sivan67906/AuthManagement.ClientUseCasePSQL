@@ -1,4 +1,4 @@
-@page "/company"
+﻿@page "/company"
 @using AuthManagement.Models
 @using AuthManagement.Services
 @using AuthManagement.Shared
@@ -1101,21 +1101,37 @@
             title = "Delete Company?",
             text = $"Are you sure you want to delete '{company.LegalName}'? This action cannot be undone.",
             icon = "warning",
+
             showCancelButton = true,
-            confirmButtonColor = "#d33",
-            cancelButtonColor = "#3085d6",
-            confirmButtonText = "Yes, delete it!",
-            cancelButtonText = "Cancel"
+
+            reverseButtons = true,
+
+            cancelButtonText = "Cancel",
+            confirmButtonText = "Yes, delete",
+            // Colors (optional)
+            confirmButtonColor = "#dc3545",
+            cancelButtonColor = "#f8f9fa",
+
+            // ✅ Correct C# syntax
+            customClass = new
+            {
+                confirmButton = "btn btn-danger ms-2",
+                cancelButton = "btn btn-label-secondary"
+            },
+
+            buttonsStyling = false   // IMPORTANT
         });
 
-        // Check if user confirmed (clicked "Yes, delete it!")
-        bool confirmed = result.TryGetProperty("isConfirmed", out var isConfirmedProp) && isConfirmedProp.GetBoolean();
+        bool confirmed =
+            result.TryGetProperty("isConfirmed", out var isConfirmedProp)
+            && isConfirmedProp.GetBoolean();
 
         if (confirmed)
         {
             await DeleteCompany(company);
         }
     }
+
 
     private async Task DeleteCompany(CompanyDto company)
     {

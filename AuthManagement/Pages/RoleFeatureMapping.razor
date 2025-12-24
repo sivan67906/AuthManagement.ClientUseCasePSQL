@@ -25,14 +25,35 @@
     }
 
     .mapping-table tbody tr {
-        transition: box-shadow 0.3s ease, border-left 0.3s ease, transform 0.3s ease;
+        transition: box-shadow 0.3s ease;
     }
 
-        .mapping-table tbody tr:hover {
-            box-shadow: rgba(0, 0, 0, 0.15) 0px 15px 25px, rgba(0, 0, 0, 0.05) 0px 5px 10px;
-            border-left: 5px solid #7367f0;
-            transform: translateY(-2px); /* optional nice lift */
+        .mapping-table tbody tr td:first-child {
+            position: relative;
         }
+
+            .mapping-table tbody tr td:first-child::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 5px;
+                height: 100%;
+                background: linear-gradient(to bottom, #26bf9491 50%, #97959e8a 50%);
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            }
+
+        /* HOVER */
+        .mapping-table tbody tr:hover {
+            box-shadow: inset 5px 0 0 #47cfc4, rgba(0, 0, 0, 0.15) 0px 15px 25px;
+        }
+
+
+            .mapping-table tbody tr:hover td:first-child::before {
+                opacity: 1;
+            }
+
 
 
     .page-title {
@@ -601,7 +622,7 @@
                             <th class="plusHeading"></th>
 
                             <th class="sortable" @onclick='() => ToggleSort("no")'>
-                                NO.
+                                #
                                 <span class="sort-indicator">
                                     <span class="sort-arrow up @(_sortColumn == "no" && _sortDirection == "asc" ? "active" : "")"></span>
                                     <span class="sort-arrow down @(_sortColumn == "no" && _sortDirection == "desc" ? "active" : "")"></span>

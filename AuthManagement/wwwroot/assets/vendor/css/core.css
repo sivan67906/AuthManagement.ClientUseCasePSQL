@@ -31347,3 +31347,25 @@ body:not(.layout-menu-pinned)
 #layout-menu .ti-circle {
     display: inline-block !important;
 }
+
+
+
+@media(max-width:964px) {
+    #mobileScreenWrap {
+        flex-wrap: wrap;
+    }
+}
+
+@media(max-width:787px) {
+    .container1 {
+        flex-wrap: wrap;
+    }
+
+    .profile-card1 {
+        width: 100% !important
+    }
+
+    #formWidth {
+        width: 100%
+    }
+}

@@ -527,7 +527,34 @@ else
                 <h5 class="wizard-title">@(IsEditMode ? "Edit Company" : "Add New Company")</h5>
                 <p class="wizard-subtitle">@GetStepDescription()</p>
             </div> *@
+<style>
+    /* Error step circle */
+    .step.error .bs-stepper-circle {
+        background-color: #dc3545 !important;
+        color: #ffffff;
+        border: 2px solid #dc3545;
+    }
 
+        /* Error icon size & alignment */
+        .step.error .bs-stepper-circle i {
+        color:white !important
+        }
+
+    /* Title text danger color */
+    .step.error .bs-stepper-title {
+        color: #dc3545;
+        font-weight: 600;
+    }
+
+    .step.completed .bs-stepper-circle {
+        background-color: green !important;
+        @* border: 2px solid #dc3545; *@
+    }
+
+        .step.completed .bs-stepper-circle i {
+        color: white !important
+    }
+</style>
 @code {
     RenderFragment WizardContent => @<text>
             <!-- Header -->
@@ -557,7 +584,7 @@ else
                             var isCompleted = _currentStep > stepIndex;
                             var hasError = _stepErrors.Contains(stepIndex);
 
-                        <div class="step @(isActive ? "active" : "")
+                        <div id="step-@stepIndex" class="step @(isActive ? "active" : "")
                                          @(isCompleted ? "completed" : "")
                                          @(hasError ? "error" : "")">
 
@@ -567,11 +594,15 @@ else
 
                                 <!-- CIRCLE -->
                                 <span class="bs-stepper-circle">
-                                    @if (isCompleted)
+                                    @if (hasError)
                                                                         {
-                                    <i class="ti tabler-check"></i>
+                                    <i class="ti tabler-alert-triangle text-danger"></i>
                                                                         }
-                                                                        else
+                                                                        else if (isCompleted)
+                                    {
+                                        <i class="ti tabler-check"></i>
+                                    }
+                                    else
                                     {
                                         @(stepIndex + 1)
                                     }
@@ -982,19 +1013,27 @@ private async Task ScrollRight()
 
     private async Task NextStep()
     {
+        // 1️⃣ Validation
         if (!ValidateCurrentStep())
         {
-            _stepErrors.Add(_currentStep); // mark step error
-            return; // STOP navigation
+            _stepErrors.Add(_currentStep);
+            return;
         }
 
         _stepErrors.Remove(_currentStep);
 
+        // 2️⃣ Move to next step
         if (_currentStep < _steps.Length - 1)
         {
             _currentStep++;
 
+            // 3️⃣ UI render
+            await InvokeAsync(StateHasChanged);
+
+            // 4️⃣ DOM ready
             await Task.Delay(50);
+
+            // 5️⃣ Scroll to next step
             await JS.InvokeVoidAsync(
                 "scrollStepIntoView",
                 $"step-{_currentStep}"

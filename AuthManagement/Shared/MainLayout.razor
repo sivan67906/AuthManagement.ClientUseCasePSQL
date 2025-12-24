@@ -17,7 +17,184 @@
 <ConfirmDialog />
 @* <script src="assets/js/main.js"></script> *@
 
+<style>
+	.icon-tooltip {
+		position: relative;
+		display: inline-flex;
+		cursor: pointer;
+	}
 
+	/* Tooltip box */
+	.tooltip-box {
+		position: absolute;
+		padding: 6px 10px;
+		font-size: 12px;
+		border-radius: 6px;
+		white-space: nowrap;
+		background-color: #111827; /* dark */
+		color: #fff;
+		opacity: 0;
+		visibility: hidden;
+		transition: all 0.2s ease;
+		z-index: 1000;
+	}
+
+		/* Bottom position */
+		.tooltip-box.bottom {
+			top: 130%;
+			left: 50%;
+			transform: translateX(-50%);
+		}
+
+			/* Arrow (top side) */
+			.tooltip-box.bottom::after {
+				content: "";
+				position: absolute;
+				bottom: 100%;
+				left: 50%;
+				transform: translateX(-50%);
+				border-width: 6px;
+				border-style: solid;
+				border-color: transparent transparent #111827 transparent;
+			}
+
+	/* Show on hover */
+	.icon-tooltip:hover .tooltip-box {
+		opacity: 1;
+		visibility: visible;
+	}
+
+
+	/* Wrapper */
+.custom-tooltip-wrapper {
+    position: relative;
+    display: inline-flex;
+    cursor: pointer;
+}
+
+/* Tooltip box */
+.custom-tooltip-box {
+    position: absolute;
+    top: 125%;              /* 👈 bottom */
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #111827;
+    color: #fff;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s ease;
+    z-index: 1000;
+}
+
+/* Arrow (TOP arrow, because tooltip bottom) */
+.custom-tooltip-box::after {
+    content: "";
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 6px;
+    border-style: solid;
+    border-color: transparent transparent #111827 transparent;
+}
+
+/* Show on hover */
+.custom-tooltip-wrapper:hover .custom-tooltip-box {
+    opacity: 1;
+    visibility: visible;
+}
+	.custom-tooltip-wrapper {
+		position: relative;
+		display: inline-flex;
+		align-items: center;
+		cursor: pointer;
+	}
+
+	/* Tooltip box */
+	.custom-tooltip {
+		position: absolute;
+		top: 120%; /* 👈 bottom side */
+		left: 50%;
+		transform: translateX(-50%);
+		background-color: #111827;
+		color: #fff;
+		padding: 6px 10px;
+		border-radius: 6px;
+		font-size: 12px;
+		white-space: nowrap;
+		opacity: 0;
+		visibility: hidden;
+		transition: all 0.2s ease;
+		z-index: 9999;
+	}
+
+		/* Arrow (top pointing) */
+		.custom-tooltip::after {
+			content: "";
+			position: absolute;
+			bottom: 100%;
+			left: 50%;
+			transform: translateX(-50%);
+			border-width: 6px;
+			border-style: solid;
+			border-color: transparent transparent #111827 transparent;
+		}
+
+	/* Show on hover */
+	.custom-tooltip-wrapper:hover .custom-tooltip {
+		opacity: 1;
+		visibility: visible;
+	}
+	.tooltip-wrapper {
+		position: relative;
+		display: inline-flex;
+		align-items: center;
+	}
+
+	/* Tooltip box */
+	.tooltip-box {
+		position: absolute;
+		background-color: #111827;
+		color: #fff;
+		padding: 6px 10px;
+		border-radius: 6px;
+		font-size: 12px;
+		white-space: nowrap;
+		opacity: 0;
+		visibility: hidden;
+		transition: all 0.2s ease;
+		z-index: 9999;
+	}
+
+	/* Bottom position */
+	.tooltip-bottom {
+		top: 120%;
+		left: 50%;
+		transform: translateX(-50%);
+	}
+
+		/* Arrow */
+		.tooltip-bottom::after {
+			content: "";
+			position: absolute;
+			bottom: 100%;
+			left: 50%;
+			transform: translateX(-50%);
+			border-width: 6px;
+			border-style: solid;
+			border-color: transparent transparent #111827 transparent;
+		}
+
+	/* Show on hover */
+	.tooltip-wrapper:hover .tooltip-box {
+		opacity: 1;
+		visibility: visible;
+	}
+</style>
 <div class="layout-wrapper layout-content-navbar">
 	<div class="layout-container">
 		<!-- Left Sidebar Navigation Menu -->
@@ -40,30 +217,55 @@
 					<ul class="navbar-nav flex-row align-items-center ms-md-auto gap-2">
 						<!-- Theme Toggle -->
 						<li class="nav-item dropdown me-2">
-							<a href="javascript:void(0);" class="header-link layout-setting" @onclick="ToggleTheme">
+							<a href="javascript:void(0);"
+							   class="header-link layout-setting tooltip-wrapper"
+							   @onclick="ToggleTheme">
+
 								<span class="light-layout" style="@LightStyle">
-									<i class="bi bi-moon header-link-icon" style="font-size: 18px;"></i>
+									<i class="bi bi-moon header-link-icon" style="font-size:18px;"></i>
 								</span>
+
 								<span class="dark-layout" style="@DarkStyle">
-									<i class="bi bi-brightness-high header-link-icon" style="font-size: 18px; color: white;"></i>
+									<i class="bi bi-brightness-high header-link-icon"
+									   style="font-size:18px;color:white;"></i>
 								</span>
+
+								<!-- TOOLTIP -->
+								<span class="tooltip-box tooltip-bottom">
+									@(isDark ? "Switch to Light Mode" : "Switch to Dark Mode")
+								</span>
+
 							</a>
+
 						</li>
 						<li class="nav-item dropdown">
 							<a href="javascript:void(0);" class="header-link layout-setting" id="themeToggleBtn1">
 								<span class="light-layout">
-									<i id="fsIcon" class="bi bi-fullscreen" style="font-size:18px;"></i>
+									<span class="custom-tooltip-wrapper">
+										<i id="fsIcon" class="bi bi-fullscreen" style="font-size:18px;"></i>
+										<span class="custom-tooltip-box">Fullscreen</span>
+									</span>
 								</span>
 							</a>
 
 						</li>
 
+
+						
 
 						<!-- Notification -->
 						<li class="nav-item dropdown-notifications navbar-dropdown dropdown ">
 							<a class="nav-link dropdown-toggle hide-arrow btn btn-icon  rounded-pill" href="javascript:void(0);" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
 								<span class="position-relative">
-									<i class="ti tabler-bell" style="color:#7367f0"></i>
+									<span class="icon-tooltip">
+										<i class="ti tabler-bell" style="color:#7367f0"></i>
+
+										<span class="tooltip-box bottom">
+											Notification
+										</span>
+									</span>
+
+
 									<span class="badge rounded-pill bg-danger badge-dot badge-notifications border"
 										  style="    width: 16px;
     height: 16px;

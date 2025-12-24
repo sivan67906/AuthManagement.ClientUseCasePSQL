@@ -5,11 +5,11 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-    <title>Auth Management System</title>
+    <title>Gishur Auth Management System</title>
     <base href="/" />
 
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <link rel="icon" type="image/x-icon" href="favicon.png" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
     <!-- Fonts -->
@@ -176,15 +176,15 @@
 
     <script>
 
-        window.scrollStepIntoView = (id) => {
-            const el = document.getElementById(id);
-            if (el) {
-                el.scrollIntoView({
-                    behavior: "smooth",
-                    inline: "center",
-                    block: "nearest"
-                });
-            }
+        window.scrollStepIntoView = (stepId) => {
+            const el = document.getElementById(stepId);
+            if (!el) return;
+
+            el.scrollIntoView({
+                behavior: "smooth",
+                inline: "center",
+                block: "nearest"
+            });
         };
 
         window.scrollStepper = (id, amount) => {
@@ -407,7 +407,7 @@
                 showCancelButton: true,
                 confirmButtonColor: '#d33',
                 cancelButtonColor: '#6c757d',
-                confirmButtonText: 'Yes, delete it!',
+                confirmButtonText: 'Yes, delete',
                 cancelButtonText: 'Cancel',
                 reverseButtons: true,
                 allowOutsideClick: false,
@@ -454,15 +454,15 @@
             };
 
             toast.innerHTML = `
-                                                        <div class="custom-toast-icon">${icons[type] || icons.info}</div>
-                                                        <div class="custom-toast-content">
-                                                            <div class="custom-toast-title">${titles[type] || titles.info}</div>
-                                                            <div class="custom-toast-message">${message}</div>
-                                                        </div>
-                                                        <button class="custom-toast-close" onclick="this.parentElement.remove()">
-                                                            <i class="ti tabler-x"></i>
-                                                        </button>
-                                                    `;
+                                                            <div class="custom-toast-icon">${icons[type] || icons.info}</div>
+                                                            <div class="custom-toast-content">
+                                                                <div class="custom-toast-title">${titles[type] || titles.info}</div>
+                                                                <div class="custom-toast-message">${message}</div>
+                                                            </div>
+                                                            <button class="custom-toast-close" onclick="this.parentElement.remove()">
+                                                                <i class="ti tabler-x"></i>
+                                                            </button>
+                                                        `;
 
             toastContainer.appendChild(toast);
 
