@@ -31028,6 +31028,12 @@ body:not(.modal-open) .layout-content-navbar .layout-navbar {
 .ProfileRole {
   color: #536485
 }
+[data-bs-theme=dark] .content-card {
+    background: #373b50;
+}
+[data-bs-theme=dark] .profile-card1 {
+    background: #373b50;
+}
 /*.layout-menu-horizontal {
     width: 100%;
     position: fixed;

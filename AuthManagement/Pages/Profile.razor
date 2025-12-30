@@ -12,355 +12,64 @@
 @inject JwtAuthenticationStateProvider AuthProvider
 @inject NavigationManager Nav
 
-
-<div class="flex-grow-1 mt-3">
-    <div class="profile-card">
-
-        @if (profile is null)
-        {
-            <LoadingSpinner FullPage="true" />
-        }
-        else
-        {
-
-            <style>
-                /* Wrapper */
-                .icon-tooltip-wrapper {
-                    position: relative;
-                    display: inline-flex;
-                    align-items: center;
-                    cursor: pointer;
-                }
-
-                /* Tooltip box */
-                .custom-tooltip {
-                    position: absolute;
-                    top: -35px;
-                    left: 50%;
-                    transform: translateX(-50%);
-                    padding: 6px 12px;
-                    border-radius: 6px;
-                    font-size: 12px;
-                    font-weight: 500;
-                    color: #fff;
-                    white-space: nowrap;
-                    opacity: 0;
-                    visibility: hidden;
-                    transition: all 0.2s ease;
-                    z-index: 1000;
-                }
-
-                    /* Arrow */
-                    .custom-tooltip::after {
-                        content: "";
-                        position: absolute;
-                        top: 100%;
-                        left: 50%;
-                        transform: translateX(-50%);
-                        border-width: 6px;
-                        border-style: solid;
-                    }
-
-                /* SUCCESS */
-                .tooltip-success {
-                    background-color: #22c55e;
-                }
-
-                    .tooltip-success::after {
-                        border-color: #22c55e transparent transparent transparent;
-                    }
-
-                /* DANGER */
-                .tooltip-danger {
-                    background-color: #ef4444;
-                }
-
-                    .tooltip-danger::after {
-                        border-color: #ef4444 transparent transparent transparent;
-                    }
-
-                /* Show tooltip on hover */
-                .icon-tooltip-wrapper:hover .custom-tooltip {
-                    opacity: 1;
-                    visibility: visible;
-                }
-
-            </style>
-         
-            <!-- Cover -->
-            <div class="cover">
-                <div class="user-profile-header-banner">
-                    <img src="assets/img/avatars/profile-banner.png" alt="Banner image" class="rounded-top">
-                </div>
-            </div>
-
-            <div class="container1">
-
-                <!-- Left Profile Card -->
-                <div class="profile-card1">
-                    <img src="assets/img/avatars/1.png" class="avatar1" />
-                    <h3 style="margin-bottom: 0;margin-top: 16px;font-size: 20px;">@profile.FirstName @profile.LastName</h3>
-                    <p class="company">Microsoft Inc</p>
-
-                    <div class="stats">
-                        <div>
-                            @profile.Email <span>
-                                <i class="bi bi-envelope-fill" style="color: #7367f0;"></i>
-                            </span>
-                        </div>
-                        <div>
-                            Email confirmed:
-                            <span class="icon-tooltip-wrapper">
-
-                                @if (profile.EmailConfirmed)
-                                {
-                                    <i class="bi bi-check-circle-fill text-success"></i>
-
-                                    <span class="custom-tooltip tooltip-success">
-                                        Active
-                                    </span>
-                                }
-                                else
-                                {
-                                    <i class="bi bi-x-circle-fill text-danger"></i>
-
-                                    <span class="custom-tooltip tooltip-danger">
-                                        InActive
-                                    </span>
-                                }
-
-                            </span>
-
-                        </div>
-                        <div>
-                            Two-factor enabled:   
-                            <span class="icon-tooltip-wrapper">
-
-                                @if (profile.TwoFactorEnabled)
-                                {
-                                    <i class="bi bi-check-circle-fill text-success"></i>
-                                    <span class="custom-tooltip tooltip-success">
-                                        Enabled
-                                    </span>
-                                }
-                                else
-                                {
-                                    <i class="bi bi-x-circle-fill text-danger"></i>
-                                    <span class="custom-tooltip tooltip-danger">
-                                        Disabled
-                                    </span>
-                                }
-                        </span>
-                        </div>
-                    </div>
-
-                    @* <button class="outline-btn">View Public Profile</button> *@
-                 
-                </div>
-
-                <!-- Right Content -->
-                <div class="content-card">
-                    <div class="tabs">
-                        <span class="tab @(activeTab == "account" ? "active" : "")"
-                              @onclick='() => ChangeTab("account")'>
-                            Account
-                        </span>
-
-                        <span class="tab @(activeTab == "security" ? "active" : "")"
-                              @onclick='() => ChangeTab("security")'>
-                            Security
-                        </span>
-
-                        <span class="tab @(activeTab == "billing" ? "active" : "")"
-                              @onclick='() => ChangeTab("billing")'>
-                            Billing
-                        </span>
-
-                        <span class="tab @(activeTab == "notifications" ? "active" : "")"
-                              @onclick='() => ChangeTab("notifications")'>
-                            Notifications
-                        </span>
-                    </div>
-
-
-               @* TAB 1 *@
-                    @if (activeTab == "account")
-                    {
-                        <div class="col-12 content" id="account">
-                            <div class="card-action mb-6 h-100">
-                                <div class="card-header align-items-center">
-                                    <h5 class="card-action-title mb-0"><i class="icon-base ti tabler-chart-bar-popular icon-lg me-4" style="color: #ff00b1;"></i>Activity</h5>
-                                    <div class="card-action-element">
-                                        <div class="dropdown">
-                                            <button type="button" class="btn dropdown-toggle hide-arrow p-0 text-body-secondary" data-bs-toggle="dropdown" aria-expanded="false"></button>
-                                            <ul class="dropdown-menu dropdown-menu-end">
-                                                <li><a class="dropdown-item" href="javascript:void(0);">Share timeline</a></li>
-                                                <li><a class="dropdown-item" href="javascript:void(0);">Suggest edits</a></li>
-                                                <li>
-                                                    <hr class="dropdown-divider">
-                                                </li>
-                                                <li><a class="dropdown-item" href="javascript:void(0);">Report bug</a></li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-
-
-
-
-
-
-                                <div class="card-body pt-3">
-                                    <ul class="timeline mb-0">
-                                        <li class="timeline-item timeline-item-transparent" style="    height: 68px;">
-                                            <span class="timeline-point timeline-point-primary" style="    inset-block-start: 11px;
-                                            "></span>
-
-                                            <div class="info-row d-flex align-item-center justify-content-between">
-                                                <div class="info-label d-flex align-items-end">
-                                                    <i class="bi bi-envelope-check-fill" style="    color: #7367f0;
-        font-size: 19px;"></i>
-                                                    <p class="ms-2 mb-0">Email Verification</p>
-                                                </div>
-                                                @if (profile.EmailConfirmed)
-                                                {
-                                                    <span class="badge bg-success">Verified</span>
-                                                }
-                                                else
-                                                {
-                                                    <span class="badge bg-warning">Not Verified</span>
-                                                }
-                                            </div>
-                                        </li>
-
-                                        <li class="timeline-item timeline-item-transparent">
-                                            <span class="timeline-point timeline-point-primary" style="    inset-block-start: 11px;
-                                            "></span>
-
-                                            <div class="info-row d-flex align-item-center justify-content-between">
-                                                <div class="info-label d-flex align-items-end">
-                                                    <i class="bi bi-shield-fill-exclamation" style="    color: #7367f0;
-        font-size: 19px;"></i>
-                                                    <p class="ms-2 mb-0">Two-Factor Authentication</p>
-                                                </div>
-                                                @if (profile.TwoFactorEnabled)
-                                                {
-                                                    <span class="badge bg-success d-flex align-items-center">Enabled</span>
-                                                }
-                                                else
-                                                {
-                                                    <span class="badge bg-danger d-flex align-items-center">Disabled</span>
-                                                }
-                                            </div>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    }
-                    @if (activeTab == "security")
-                    {
-                        <ChangePassword/>
-                    }
-
-                    @if (activeTab == "billing")
-                    {
-                        <div class="content active">
-                            <div class="mb-6">
-                                <!-- Current Plan -->
-                                <h5 class="card-header">Current Plan</h5>
-                                <div class="card-body">
-                                    <div class="row row-gap-6">
-                                        <div class="col-md-12 mb-1">
-                                            <div class="mb-6">
-                                                <h6 class="mb-1">Your Current Plan is Basic</h6>
-                                                <p>A simple start for everyone</p>
-                                            </div>
-                                            <div class="mb-6">
-                                                <h6 class="mb-1">Active until Dec 09, 2021</h6>
-                                                <p>We will send you a notification upon Subscription expiration</p>
-                                            </div>
-                                            <div>
-                                                <h6 class="mb-1"><span class="me-1">$199 Per Month</span> <span class="badge bg-label-primary rounded-pill">Popular</span></h6>
-                                                <p class="mb-1">Standard plan for small to medium businesses</p>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-12">
-                                            <div class="alert alert-warning mb-6" role="alert">
-                                                <h5 class="alert-heading mb-1 d-flex align-items-center">
-                                                    <span class="alert-icon rounded"><i class="icon-base ti tabler-alert-triangle icon-md" style="margin-right: 0;"></i></span>
-                                                    <span>We need your attention!</span>
-                                                </h5>
-                                                <span class="ms-11 ps-1">Your plan requires update</span>
-                                            </div>
-                                            <div class="plan-statistics">
-                                                <div class="d-flex justify-content-between">
-                                                    <h6 class="mb-1">Days</h6>
-                                                    <h6 class="mb-1">12 of 30 Days</h6>
-                                                </div>
-                                                <div class="progress rounded mb-1">
-                                                    <div class="progress-bar w-25 rounded" role="progressbar" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
-                                                </div>
-                                                <small>18 days remaining until your plan requires update</small>
-                                            </div>
-                                        </div>
-                                        <div class="col-12 d-flex gap-2 flex-wrap">
-                                            <button class="btn btn-primary me-2 waves-effect waves-light" data-bs-toggle="modal" data-bs-target="#pricingModal">Upgrade Plan</button>
-                                            <button class="btn btn-label-danger cancel-subscription waves-effect">Cancel Subscription</button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- /Current Plan -->
-                            </div>
-                        </div>
-                    }
-
-                    @if (activeTab == "notifications")
-                    {
-                        <div class="content active">
-                            <div class="empty-state-container mb-3">
-                                <div class="p-5 empty-card" style="justify-items: center;">
-                                    <div class="icon-box">
-                                        <img src="assets/img/bell.gif" style="width: 101px;" />
-            @*                             <i class="bi bi-bell" style="font-size: 114px;
-            color: #80808052;"></i> *@
-                                    </div>
-
-                                    <h2 style="    font-size: 21px;
-            color: #80808091;    margin-bottom: 0;">
-                                        No Notifications Yet
-                                    </h2>
-                                    <p>
-                                        You don’t have any notifications right now.
-                                        Check back later!
-                                    </p>
-
-                                </div>
-                            </div>
-                        </div>
-                    }
-
-
-                </div>
-          
-            </div>
-
-
-
-        }
-
-        @if (!string.IsNullOrEmpty(message))
-        {
-            <div class="alert alert-danger mt-3" role="alert">@message</div>
-        }
-    </div>
-</div>
-
-
-
-
 <style>
-    .tabs {
+    .profile-card {
+        background: transparent;
+        box-shadow: none;
+    }
+    .icon-tooltip-wrapper {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        cursor: pointer;
+    }
+    /* Tooltip box */
+    .custom-tooltip {
+        position: absolute;
+        top: -35px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 500;
+        color: #fff;
+        white-space: nowrap;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.2s ease;
+        z-index: 1000;
+    }
+        /* Arrow */
+        .custom-tooltip::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 6px;
+            border-style: solid;
+        }
+    /* SUCCESS */
+    .tooltip-success {
+        background-color: #22c55e;
+    }
+        .tooltip-success::after {
+            border-color: #22c55e transparent transparent transparent;
+        }
+    /* DANGER */
+    .tooltip-danger {
+        background-color: #ef4444;
+    }
+        .tooltip-danger::after {
+            border-color: #ef4444 transparent transparent transparent;
+        }
+    /* Show tooltip on hover */
+    .icon-tooltip-wrapper:hover .custom-tooltip {
+        opacity: 1;
+        visibility: visible;
+    }
+     .tabs {
         display: flex;
         gap: 20px;
         border-bottom: 2px solid #eee;
@@ -525,8 +234,253 @@
         cursor: pointer;
     }
 
- 
 </style>
+
+<div class="flex-grow-1 mt-3">
+    <div class="profile-card">
+
+        @if (profile is null)
+        {
+            <LoadingSpinner FullPage="true" />
+        }
+        else
+        {
+            <!-- Cover -->
+            <div class="cover">
+                <div class="user-profile-header-banner">
+                    <img src="assets/img/avatars/profile-banner.png" alt="Banner image" class="rounded-top">
+                </div>
+            </div>
+            <div class="container1">
+                <!-- Left Profile Card -->
+                <div class="profile-card1">
+                    <img src="assets/img/avatars/1.png" class="avatar1" />
+                    <h3 style="margin-bottom: 0;margin-top: 16px;font-size: 20px;">@profile.FirstName @profile.LastName</h3>
+                    <p class="company">Microsoft Inc</p>
+                    <div class="stats">
+                        <div>
+                            @profile.Email <span>
+                                <i class="bi bi-envelope-fill" style="color: #7367f0;"></i>
+                            </span>
+                        </div>
+                        <div>
+                            Email confirmed:
+                            <span class="icon-tooltip-wrapper">
+
+                                @if (profile.EmailConfirmed)
+                                {
+                                    <i class="bi bi-check-circle-fill text-success"></i>
+
+                                    <span class="custom-tooltip tooltip-success">
+                                        Active
+                                    </span>
+                                }
+                                else
+                                {
+                                    <i class="bi bi-x-circle-fill text-danger"></i>
+
+                                    <span class="custom-tooltip tooltip-danger">
+                                        InActive
+                                    </span>
+                                }
+
+                            </span>
+                        </div>
+                        <div>
+                            Two-factor enabled:   
+                            <span class="icon-tooltip-wrapper">
+
+                                @if (profile.TwoFactorEnabled)
+                                {
+                                    <i class="bi bi-check-circle-fill text-success"></i>
+                                    <span class="custom-tooltip tooltip-success">
+                                        Enabled
+                                    </span>
+                                }
+                                else
+                                {
+                                    <i class="bi bi-x-circle-fill text-danger"></i>
+                                    <span class="custom-tooltip tooltip-danger">
+                                        Disabled
+                                    </span>
+                                }
+                        </span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Right Content -->
+                <div class="content-card">
+                    <div class="tabs">
+                        <span class="tab @(activeTab == "account" ? "active" : "")"
+                              @onclick='() => ChangeTab("account")'>
+                            Account
+                        </span>
+                        <span class="tab @(activeTab == "security" ? "active" : "")"
+                              @onclick='() => ChangeTab("security")'>
+                            Security
+                        </span>
+                        <span class="tab @(activeTab == "billing" ? "active" : "")"
+                              @onclick='() => ChangeTab("billing")'>
+                            Billing
+                        </span>
+                        <span class="tab @(activeTab == "notifications" ? "active" : "")"
+                              @onclick='() => ChangeTab("notifications")'>
+                            Notifications
+                        </span>
+                    </div>
+               @* TAB 1 *@
+                    @if (activeTab == "account")
+                    {
+                        <div class="col-12 content" id="account">
+                            <div class="card-action mb-6 h-100">
+                                <div class="card-header align-items-center">
+                                    <h5 class="card-action-title mb-0"><i class="icon-base ti tabler-chart-bar-popular icon-lg me-4" style="color: #ff00b1;"></i>Activity</h5>
+                                    <div class="card-action-element">
+                                        <div class="dropdown">
+                                            <button type="button" class="btn dropdown-toggle hide-arrow p-0 text-body-secondary" data-bs-toggle="dropdown" aria-expanded="false"></button>
+                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                <li><a class="dropdown-item" href="javascript:void(0);">Share timeline</a></li>
+                                                <li><a class="dropdown-item" href="javascript:void(0);">Suggest edits</a></li>
+                                                <li>
+                                                    <hr class="dropdown-divider">
+                                                </li>
+                                                <li><a class="dropdown-item" href="javascript:void(0);">Report bug</a></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body pt-3">
+                                    <ul class="timeline mb-0">
+                                        <li class="timeline-item timeline-item-transparent" style="height: 51px;">
+                                            <span class="timeline-point timeline-point-primary" style="    inset-block-start: 20px;
+                                            "></span>
+                                            <div class="info-row d-flex align-item-center justify-content-between gap-3">
+                                                <div class="info-label d-flex align-items-end mt-4">
+                                                    <i class="bi bi-envelope-check-fill" style="color: #7367f0;font-size: 19px;margin-top: -10px;"></i>
+                                                    <p class="ms-2 mb-0">Email Verification</p>
+                                                </div>
+                                                @if (profile.EmailConfirmed)
+                                                {
+                                                    <span class="badge bg-success">Verified</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-warning">Not Verified</span>
+                                                }
+                                            </div>
+                                        </li>
+                                        <li class="timeline-item timeline-item-transparent" style="height: 51px;">
+                                            <span class="timeline-point timeline-point-primary" style="    inset-block-start: 20px;
+                                            "></span>
+
+                                            <div class="info-row d-flex align-item-center justify-content-between gap-3">
+                                                <div class="info-label d-flex align-items-end mt-4">
+                                                    <i class="bi bi-shield-fill-exclamation" style="color: #7367f0;font-size: 19px;margin-top: -10px;"></i>
+                                                    <p class="ms-2 mb-0">Two-Factor Authentication</p>
+                                                </div>
+                                                @if (profile.TwoFactorEnabled)
+                                                {
+                                                    <span class="badge bg-success d-flex align-items-center" style="padding: 4px 5px 6px 6px;">Enabled</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-danger d-flex align-items-center" style="padding: 4px 5px 6px 6px;">Disabled</span>
+                                                }
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    @if (activeTab == "security")
+                    {
+                        <ChangePassword/>
+                    }
+
+                    @if (activeTab == "billing")
+                    {
+                        <div class="content active">
+                            <div class="mb-6">
+                                <!-- Current Plan -->
+                                <h5 class="card-header">Current Plan</h5>
+                                <div class="card-body">
+                                    <div class="row row-gap-6">
+                                        <div class="col-md-12 mb-1">
+                                            <div class="mb-6">
+                                                <h6 class="mb-1">Your Current Plan is Basic</h6>
+                                                <p>A simple start for everyone</p>
+                                            </div>
+                                            <div class="mb-6">
+                                                <h6 class="mb-1">Active until Dec 09, 2021</h6>
+                                                <p>We will send you a notification upon Subscription expiration</p>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-1"><span class="me-1">$199 Per Month</span> <span class="badge bg-label-primary rounded-pill">Popular</span></h6>
+                                                <p class="mb-1">Standard plan for small to medium businesses</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <div class="alert alert-warning mb-6" role="alert">
+                                                <h5 class="alert-heading mb-1 d-flex align-items-center">
+                                                    <span class="alert-icon rounded"><i class="icon-base ti tabler-alert-triangle icon-md" style="margin-right: 0;"></i></span>
+                                                    <span>We need your attention!</span>
+                                                </h5>
+                                                <span class="ms-11 ps-1">Your plan requires update</span>
+                                            </div>
+                                            <div class="plan-statistics">
+                                                <div class="d-flex justify-content-between">
+                                                    <h6 class="mb-1">Days</h6>
+                                                    <h6 class="mb-1">12 of 30 Days</h6>
+                                                </div>
+                                                <div class="progress rounded mb-1">
+                                                    <div class="progress-bar w-25 rounded" role="progressbar" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                                                </div>
+                                                <small>18 days remaining until your plan requires update</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-12 d-flex gap-2 flex-wrap">
+                                            <button class="btn btn-primary me-2 waves-effect waves-light" data-bs-toggle="modal" data-bs-target="#pricingModal">Upgrade Plan</button>
+                                            <button class="btn btn-label-danger cancel-subscription waves-effect">Cancel Subscription</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- /Current Plan -->
+                            </div>
+                        </div>
+                    }
+
+                    @if (activeTab == "notifications")
+                    {
+                        <div class="content active">
+                            <div class="empty-state-container mb-3">
+                                <div class="p-5 empty-card" style="justify-items: center;">
+                                    <div class="icon-box" style="display: flex;
+          align-content: center;
+          justify-content: center;">
+                                        <img src="assets/img/bell.gif" style="width: 101px;" />
+                                    </div>
+                                    <h2 style="text-align: center;  font-size: 21px;color: #80808091;margin-bottom: 0;">
+                                        No Notifications Yet
+                                    </h2>
+                                    <p style="text-align: center;">
+                                        You don’t have any notifications right now.
+                                        Check back later!
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(message))
+        {
+            <div class="alert alert-danger mt-3" role="alert">@message</div>
+        }
+    </div>
+</div>
 
 @code {
 
@@ -534,22 +488,15 @@
     {
         if (firstRender)
         {
-            // Initialize input sanitization and search clear buttons
             await JS.InvokeVoidAsync("InputSanitizer.initializeAllInputs");
             await JS.InvokeVoidAsync("InputSanitizer.initializeAllSearchBoxes");
 
         }
     }
-
-
-
     protected override void OnInitialized()
     {
         var uri = new Uri(Nav.Uri);
-
-        // ?tab=security
         var query = uri.Query.Replace("?", "");
-
         foreach (var item in query.Split('&', StringSplitOptions.RemoveEmptyEntries))
         {
             var parts = item.Split('=');
@@ -562,16 +509,13 @@
 
     private ProfileDto? profile;
     private string? message;
-
     private string activeTab = "account";
-
     void ChangeTab(string tab)
     {
         activeTab = tab;
         Nav.NavigateTo($"/profile?tab={tab}", replace: true);
 
     }
-
     protected override async Task OnInitializedAsync()
     {
         var token = await AuthProvider.GetTokenAsync();

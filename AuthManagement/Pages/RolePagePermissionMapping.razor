@@ -13,302 +13,30 @@
 @attribute [Authorize]
 @inject IJSRuntime JS
 <PageTitle>Role Page Permission Mapping</PageTitle>
+
 <script src="js/InputFocus.js"></script>
-
 <style>
-    /* Page Header */
-    .page-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding-bottom: 0;
-    }
-
-    .mapping-table tbody tr {
-        transition: box-shadow 0.3s ease;
-    }
-
-        .mapping-table tbody tr td:first-child {
-            position: relative;
-        }
-
-            .mapping-table tbody tr td:first-child::before {
-                content: "";
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 5px;
-                height: 100%;
-                background: linear-gradient(to bottom, #26bf9491 50%, #97959e8a 50%);
-                opacity: 0;
-                transition: opacity 0.3s ease;
-            }
-
-        /* HOVER */
-        .mapping-table tbody tr:hover {
-            box-shadow: inset 5px 0 0 #47cfc4, rgba(0, 0, 0, 0.15) 0px 15px 25px;
-        }
-
-
-            .mapping-table tbody tr:hover td:first-child::before {
-                opacity: 1;
-            }
-
-
-
-    .page-title {
-        font-size: 1.125rem;
-        font-weight: 600;
-        color: #333;
-        margin: 0;
-    }
-
-    .breadcrumb {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 15px;
-        color: #666;
-        margin: 0;
-        padding: 0;
-        list-style: none;
-    }
-
-    .breadcrumb-item {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .breadcrumb-separator {
-        color: #999;
-    }
-
-    .breadcrumb-link {
-        color: #7c3aed;
-        text-decoration: none;
-    }
-
-        .breadcrumb-link:hover {
-            text-decoration: underline;
-        }
-
-    .breadcrumb-current {
-        color: #666;
-    }
-
-    /* Container */
-    .mapping-container {
-        background: white;
-        border-radius: 8px;
-        overflow: hidden;
-        padding-left: 21px;
-        padding-right: 21px;
-        padding-bottom: 21px;
-    }
-
-    /* Toolbar */
-    .toolbar-container {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 14px 0px;
-        background: white;
-        border-bottom: 1px solid #f0f0f0;
-        flex-wrap: wrap;
-        gap: 16px;
-    }
-
-    .toolbar-left {
-        display: flex;
-        align-items: center;
-    }
-
-        .toolbar-left::before {
-            content: "";
-            height: 21px;
-            width: 0.2rem;
-            inset-block-start: 0.15rem;
-            inset-inline-start: -0.65rem;
-            background: linear-gradient(to bottom, #26bf9491 50%, #97959e8a 50%);
-            border-radius: 0.5rem;
-        }
-
-    .mappings-list-label {
-        font-size: 14px;
-        font-weight: 600;
-        color: #333;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        padding-left: 7px;
-    }
-
-    .toolbar-right {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        /* margin-left: auto; */
-    }
-
-    .search-box {
-        position: relative;
-        min-width: auto;
-    }
-
-    .search-input {
-        width: 100%;
-        padding: 8px 12px 8px 11px;
-        border: 1px solid #d9d9e3;
-        font-size: 14px;
-        /* padding-left: 39px; */
-        border-radius: 0.25rem;
-        padding-top: 5px;
-        padding-bottom: 7px;
-    }
-
-        .search-input:focus {
-            outline: none;
-            border-color: #7c3aed;
-            box-shadow: 0 0 0 0.2rem rgba(124, 58, 237, 0.1);
-        }
-
-    .search-icon {
-        position: absolute;
-        right: 12px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #999;
-        font-size: 18px;
-        cursor: pointer;
-    }
-
-    .add-button {
-        background-color: var(--bs-primary) !important;
-        color: white;
-        border: none;
-        font-weight: 500;
-        cursor: pointer !important;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        white-space: nowrap;
-        font-size: 0.75rem;
-        padding: 0.42rem 0.5rem !important;
-        border-radius: 0.25rem;
-    }
-
-        .add-button:hover {
-            background-color: #6d28d9;
-        }
-
-        .add-button i {
-            font-size: 18px;
-        }
-
-    /* Table */
-    .mapping-table {
-        width: 100%;
-        border-collapse: collapse;
-        border: 1px solid #80808054;
-    }
-
-        .mapping-table thead {
-            background-color: #fafafa;
-        }
-
-        .mapping-table th {
-            padding: 7px 16px;
-            text-align: left;
-            font-weight: 600;
-            font-size: 13px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            border-bottom: 1px solid #f0f0f0;
-            cursor: pointer;
-            user-select: none;
-            color: black;
-            background: white;
-        }
-
-            .mapping-table th:last-child {
-                border-right: none;
-            }
-
-            .mapping-table th.sortable {
-                position: relative;
-                padding-right: 30px;
-            }
-
-    .sort-indicator {
-        position: absolute;
-        right: 8px;
-        top: 50%;
-        transform: translateY(-50%);
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-    }
-
-    .sort-arrow {
-        width: 0;
-        height: 0;
-        border-left: 4px solid transparent;
-        border-right: 4px solid transparent;
-    }
-
-        .sort-arrow.up {
-            border-bottom: 5px solid #ccc;
-        }
-
-            .sort-arrow.up.active {
-                border-bottom-color: #7c3aed;
-            }
-
-        .sort-arrow.down {
-            border-top: 5px solid #ccc;
-        }
-
-            .sort-arrow.down.active {
-                border-top-color: #7c3aed;
-            }
-
-    .mapping-table th.text-center {
+    .empty-state {
         text-align: center;
+        padding: 60px 20px;
+        color: #999;
     }
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.3;
+        }
+        .empty-state p {
+            font-size: 16px;
+            margin: 0;
+        }
 
-    .mapping-table tbody tr {
-        transition: background-color 0.2s;
-        border-bottom: 1px solid #00000024;
-    }
-
-    .mapping-table td {
-        padding: 13px 16px;
-        font-size: 14px;
-        color: #333;
-    }
-
-    .mapping-table tbody tr:last-child {
-        border-bottom: none;
-    }
-
-    .serial-number {
-        color: #666;
-        font-weight: 500;
-    }
-
-    .mapping-name {
-        color: #333;
-        font-weight: 600;
-    }
-
-    /* Permission Badges */
     .permission-badges-container {
         display: flex;
         flex-wrap: wrap;
         gap: 4px;
         align-items: center;
     }
-
     .permission-badge {
         display: inline-flex;
         align-items: center;
@@ -321,222 +49,24 @@
         color: white;
         text-transform: uppercase;
     }
-
     .badge-view {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     }
-
     .badge-create {
         background: linear-gradient(135deg, #10b981 0%, #059669 100%);
     }
-
     .badge-update {
         background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
     }
-
     .badge-delete {
         background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
     }
-
     .badge-default {
         background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
     }
-
-    /* Action Buttons */
-    .action-buttons {
-        display: flex;
-        gap: 6px;
-        justify-content: center;
-        align-items: center;
-    }
-
-    .action-btn {
-        width: 32px;
-        height: 32px;
-        border: none;
-        background: #f5f5f5;
-        border-radius: 6px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.2s;
-        color: #666;
-        font-size: 18px;
-    }
-
-        .action-btn i {
-            font-size: 14px;
-            display: block;
-            line-height: 1;
-        }
-
-        .action-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-        }
-
-        .action-btn.view-btn {
-            background-color: #e3f2fdcf;
-            color: #2196f3;
-        }
-
-
-            .action-btn.view-btn:hover {
-                background-color: #2196f3;
-                color: white;
-            }
-
-        .action-btn.edit-btn {
-            background-color: #fff3e0ad;
-            color: #ff9800;
-        }
-
-            .action-btn.edit-btn:hover {
-                background-color: #ff9800;
-                color: white;
-            }
-
-        .action-btn.delete-btn {
-            background-color: #ffebee94;
-            color: #f44336;
-        }
-
-
-            .action-btn.delete-btn:hover {
-                background-color: #f44336;
-                color: white;
-            }
-
-    /* Pagination */
-    .pagination-container {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 13px 0px;
-        background: white;
-        border-left: 1px solid #80808047;
-        margin-bottom: 1px;
-        border-right: 1px solid #80808047;
-        border-bottom: 1px solid #80808047;
-    }
-
-
-    .pagination-info {
-        font-size: 14px;
-        color: #666;
-    }
-
-    .pagination-controls {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .page-size-selector {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin-right: 16px;
-    }
-
-        .page-size-selector label {
-            font-size: 14px;
-            color: #666;
-        }
-
-        .page-size-selector select {
-            padding: 4px 8px;
-            border: 1px solid #d9d9e3;
-            border-radius: 4px;
-            font-size: 14px;
-            cursor: pointer;
-        }
-
-    .pagination-buttons {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-    }
-
-    .page-btn {
-        min-width: 40px;
-        height: 40px;
-        padding: 0 8px;
-        border: 1px solid #d9d9e373;
-        border-radius: 50%;
-        font-size: 18px;
-        cursor: pointer;
-        transition: all 0.2s;
-        color: #333;
-    }
-
-        .page-btn:hover:not(:disabled) {
-            background: #f5f5f5;
-            border-color: var(--bs-primary);
-            color: var(--bs-primary) !important;
-        }
-
-        .page-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .page-btn.active {
-            color: white;
-            border-color: var(--bs-primary);
-            font-weight: 700;
-            background: var(--bs-primary);
-        }
-
-    /* Loading spinner */
-    .loading-spinner {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 40px;
-    }
-
-    .spinner {
-        border: 4px solid #f3f3f3;
-        border-top: 4px solid #7c3aed;
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
-        animation: spin 1s linear infinite;
-    }
-
-    @@keyframes spin {
-        0% {
-            transform: rotate(0deg);
-        }
-
-        100% {
-            transform: rotate(360deg);
-        }
-    }
-
-    /* Empty state */
-    .empty-state {
-        text-align: center;
-        padding: 60px 20px;
-        color: #999;
-    }
-
-        .empty-state i {
-            font-size: 48px;
-            margin-bottom: 16px;
-            opacity: 0.3;
-        }
-
-        .empty-state p {
-            font-size: 16px;
-            margin: 0;
-        }
 </style>
 
 <div class="container-fluid p-0 p-sm-2">
-   
       <div class="page-header">
         <h1 class="page-title">Role Page Permission Mapping</h1>
         <nav>
@@ -555,12 +85,7 @@
         </nav>
     </div>
 
-
-
-
-    <!-- Main Container -->
     <div class="mapping-container">
-        <!-- Toolbar -->
         <div class="toolbar-container">
             <div class="toolbar-left">
                 <span class="mappings-list-label">Mappings List</span>
@@ -576,10 +101,6 @@
                     {
                         <i class="ti tabler-search search-icon"></i>
                     }
-                    else
-                    {
-                        <i class="bi bi-x-lg search-icon" @onclick="ClearSearch" style="cursor: pointer;"></i>
-                    }
                 </div>
                 <button class="add-button" @onclick="OpenAddDialog">
                     <i class="ti tabler-plus"></i>
@@ -589,7 +110,6 @@
             </div>
         </div>
 
-        <!-- Table -->
         @if (_isLoading)
         {
             <LoadingSpinner FullPage="true" />
@@ -696,16 +216,10 @@
                     }
                 </tbody>
             </table>
-
             <!-- Pagination -->
             <div class="pagination-container">
-                @* <div class="pagination-info">
-          Showing @GetStartRecord() to @GetEndRecord() of @_totalItems entries
-      </div> *@
                 <div class="pagination-controls">
-
                     @* mobile  screen *@
-
                     @{
                         var range = GetMobilePageRange();
                     }
@@ -733,8 +247,6 @@
                         </button>
 
                     </div>
-
-
 
                     <div class="pagination-buttons web-Only">
                         <button class="page-btn" @onclick="() => GoToPage(1)" disabled="@(_currentPage == 1)">
@@ -796,13 +308,8 @@
         OnClose="CloseOffcanvas" />
 }
 
-
-
-
-
 @if (showPopup && _selectedMapping != null)
 {
-
     <div class="modal-backdrop show" @onclick:stopPropagation="true"></div>
     <div class="modal show d-block" tabindex="-1" @onclick:stopPropagation="true">
         <div class="modal-dialog modal-dialog-top">
@@ -833,14 +340,9 @@
             </div>
         </div>
     </div>
-
-
 }
 
-
-
 @code {
-    // Data lists
     private List<RolePagePermissionGroupDto> _groupedMappings = new();
     private List<DisplayRolePagePermissionGroup> _displayMappings = new();
     private List<DisplayRolePagePermissionGroup> _filteredMappings = new();
@@ -849,30 +351,22 @@
     private List<PageDto> _pages = new();
     private List<DepartmentDto> _departments = new();
     private string _sortDirection = "";
- 
-    // Dialog and offcanvas
     private RolePagePermissionMappingFormDialog_New? _formDialog;
     private RolePagePermissionMappingDetailsOffcanvas? _detailsOffcanvas;
     private bool _isDialogOpen = false;
     private bool _isOffcanvasOpen = false;
     private bool _isEditMode = false;
     private DisplayRolePagePermissionGroup? _selectedMapping;
-
-    // Search and pagination
     private string _searchString = string.Empty;
     private int _currentPage = 1;
     private int _pageSize = 10;
     private int _totalItems = 0;
     private int _totalPages = 1;
-
     // Sorting
     private string _sortColumn = "";
-
     // Loading states
     private bool _isLoading = false;
     private bool _isSaving = false;
-
-
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -881,34 +375,23 @@
 
         }
     }
-
-
-    
     bool showPopup = false;
-    // RolePagePermissionGroupDto? rolePagePermission;
-
     void closeSelectFeatures()
     {
         showPopup = false;
     }
-
     void ShowDetails(DisplayRolePagePermissionGroup newpermission)
     {
         _selectedMapping = newpermission;
         showPopup = true;
     }
-
     void ClosePopup()
     {
         showPopup = false;
     }
 
-
-
     private (int start, int end) GetMobilePageRange()
     {
-        //int windowSize = 2; // always show 2 page numbers
-
         int start = _currentPage;
         int end = _currentPage + 1;
 
@@ -921,8 +404,6 @@
         return (start, end);
     }
 
-
-
     protected override async Task OnInitializedAsync()
     {
         await LoadData();
@@ -933,16 +414,13 @@
         _isLoading = true;
         try
         {
-            // Load grouped mappings
             var response = await RBACService.GetGroupedRolePagePermissionsAsync();
             if (response.Success && response.Data != null)
             {
                 _groupedMappings = response.Data;
-
-                // Convert to display model
                 _displayMappings = _groupedMappings.Select(g => new DisplayRolePagePermissionGroup
                 {
-                    Id = Guid.NewGuid(), // Generate unique Id for display
+                    Id = Guid.NewGuid(),
                     DepartmentId = g.DepartmentId,
                     DepartmentName = g.DepartmentName,
                     RoleId = g.RoleId,
@@ -953,11 +431,8 @@
                     Permissions = g.Permissions,
                     CreatedAt = g.CreatedAt
                 }).ToList();
-
                 UpdateFilteredMappings();
             }
-
-            // Load roles, pages, departments for form
             var rolesResponse = await RBACService.GetAllRolesAsync();
             if (rolesResponse.Success && rolesResponse.Data != null)
             {
@@ -1000,7 +475,6 @@
                 .Where(m => FilterFunc(m))
                 .ToList();
         }
-
         // Sort
         _filteredMappings = (_sortColumn, _sortDirection) switch
         {
@@ -1111,7 +585,6 @@
             StateHasChanged();
         }
     }
-
      async Task OpenAddDialog()
     {
         _selectedMapping = null;
@@ -1121,7 +594,6 @@
         await JS.InvokeVoidAsync("focusInputById", "popupFirstInput");
 
     }
-
     async Task OpenEditDialog(DisplayRolePagePermissionGroup mapping)
     {
         _selectedMapping = mapping;
@@ -1129,7 +601,6 @@
         _isDialogOpen = true;
         await JS.InvokeVoidAsync("disableScroll");
     }
-
     async Task OpenViewDialog(DisplayRolePagePermissionGroup mapping)
     {
         _selectedMapping = mapping;
@@ -1137,7 +608,6 @@
         await JS.InvokeVoidAsync("disableScroll");
 
     }
-
     async Task CloseDialog()
     {
         _isDialogOpen = false;
@@ -1145,14 +615,12 @@
         _isEditMode = false;
         await JS.InvokeVoidAsync("enableScroll");
     }
-
     async Task CloseOffcanvas()
     {
         _isOffcanvasOpen = false;
         _selectedMapping = null;
         await JS.InvokeVoidAsync("enableScroll");
     }
-
     private async Task HandleSubmit(RolePagePermissionFormModel model)
     {
         _isSaving = true;
@@ -1162,8 +630,6 @@
             var pageId = Guid.Parse(model.PageId);
             Guid? departmentId = string.IsNullOrEmpty(model.DepartmentId) ? null : Guid.Parse(model.DepartmentId);
 
-            // Create or update mapping using batch endpoint
-            // The batch endpoint handles duplicates atomically - it updates existing Dept+Role+Page combinations
             var request = new CreateOrUpdatePermissionBatchRequest
             {
                 DepartmentId = departmentId,
@@ -1199,7 +665,6 @@
             await JS.InvokeVoidAsync("enableScroll");
         }
     }
-
     private async Task DeleteMapping(DisplayRolePagePermissionGroup mapping)
     {
         try
@@ -1239,7 +704,6 @@
             await JS.InvokeVoidAsync("showToast", "error", $"Error deleting permissions: {ex.Message}");
         }
     }
-
     private string GetBadgeClass(string permissionName)
     {
         return permissionName.ToLower() switch
@@ -1251,7 +715,6 @@
             _ => "badge-default"
         };
     }
-
     private string GetPermissionCode(string permissionName)
     {
         if (string.IsNullOrEmpty(permissionName)) return "?";
@@ -1265,11 +728,9 @@
             _ => permissionName[0].ToString().ToUpper()
         };
     }
-
     private int GetPermissionOrder(string permissionName)
     {
         if (string.IsNullOrEmpty(permissionName)) return 99;
-
         return permissionName.ToLower() switch
         {
             "view" => 1,

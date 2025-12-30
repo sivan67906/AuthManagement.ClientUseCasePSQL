@@ -17,27 +17,7 @@
 <script src="js/InputFocus.js"></script>
 
 <style>
-    /* Reusing same styles from Role/Permission pages */
-    .page-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 0; }
-
-    .page-title {
-        font-size: 1.125rem;
-        font-weight: 600;
-        color: #333;
-        margin: 0;
-    }
-
-    .breadcrumb {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 15px;
-        color: #666;
-        margin: 0;
-        padding: 0;
-        list-style: none;
-    }
-
+    
     .pages-list-label{
         font-size: 14px;
         font-weight: 600;
@@ -46,68 +26,11 @@
         letter-spacing: 0.5px;
         padding-left: 7px;
     }
-    .breadcrumb-item { display: flex; align-items: center; gap: 8px; }
-    .breadcrumb-separator { color: #999; }
-    .breadcrumb-link { color: #7c3aed; text-decoration: none; }
-    .breadcrumb-link:hover { text-decoration: underline; }
-    .breadcrumb-current { color: #666; }
     .page-container { background: white; border-radius: 8px; overflow: hidden;
         padding-left: 21px;
         padding-right: 21px;
         padding-bottom: 21px;
     }
-    .toolbar-container { display: flex; justify-content: space-between; align-items: center; padding: 14px 0px; background: white; border-bottom: 1px solid #f0f0f0; flex-wrap: wrap; gap: 16px; }
-    .toolbar-left { display: flex; align-items: center; }
-
-        .toolbar-left::before {
-            content: "";
-            height: 21px;
-            width: 0.2rem;
-            inset-block-start: 0.15rem;
-            inset-inline-start: -0.65rem;
-            background: linear-gradient(to bottom, #26bf9491 50%, #97959e8a 50%);
-            border-radius: 0.5rem;
-        }
-
-    .mappings-list-label {
-        font-size: 14px;
-        font-weight: 600;
-        color: #333;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        padding-left: 7px;
-    }
-    .toolbar-right { display: flex; align-items: center; gap: 12px; margin-left: auto; }
-    .search-box { position: relative; min-width: 280px; }
-
-    .search-input {
-        width: 100%;
-        padding: 8px 36px 8px 12px;
-        border: 1px solid #d9d9e3;
-        font-size: 14px;
-        border-radius: 0.25rem;
-        padding-top: 5px;
-        padding-bottom: 7px;
-    }
-    .search-input:focus { outline: none; border-color: #7c3aed; box-shadow: 0 0 0 0.2rem rgba(124, 58, 237, 0.1); }
-    /* Issue #3 FIX: Search icon on RIGHT side */
-    .search-icon { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: #999; font-size: 18px; }
-
-    .add-button {
-        background-color: var(--bs-primary) !important;
-        color: white;
-        border: none;
-        font-weight: 500;
-        cursor: pointer !important;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        white-space: nowrap;
-        font-size: 0.75rem;
-        padding: 0.42rem 0.5rem !important;
-        border-radius: 0.25rem;
-    }
-
     .page-table {
         width: 100%;
         border-collapse: collapse;
@@ -136,47 +59,13 @@
         }
     .serial-number { color: #666; font-weight: 500; }
     .page-name { color: #333; font-weight: 600; }
-    .action-buttons { display: flex; gap: 6px; justify-content: center; }
-    .action-btn { width: 32px; height: 32px; border: none; background: #f5f5f5; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
-    .action-btn:hover { transform: translateY(-2px); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); }
-
-        .action-btn i {
-            font-size: 14px;
-        }
-        .action-btn.view-btn {
-            background-color: #e3f2fdcf;
-            color: #2196f3;
-        }
-
-            .action-btn.view-btn:hover {
-                background-color: #2196f3;
-                color: white;
-            }
-
-        .action-btn.edit-btn {
-            background-color: #fff3e0ad;
-            color: #ff9800;
-        }
-    .action-btn.edit-btn:hover { background-color: #ff9800; color: white; }
-
-        .action-btn.delete-btn {
-            background-color: #ffebee94;
-            color: #f44336;
-        }
-
-            .action-btn.delete-btn:hover {
-                background-color: #f44336;
-                color: white;
-            }
-
+    
     .page-table tbody tr {
         transition: box-shadow 0.3s ease;
     }
-
         .page-table tbody tr td:first-child {
             position: relative;
         }
-
             .page-table tbody tr td:first-child::before {
                 content: "";
                 position: absolute;
@@ -188,101 +77,12 @@
                 opacity: 0;
                 transition: opacity 0.3s ease;
             }
-
-        /* HOVER */
         .page-table tbody tr:hover {
             box-shadow: inset 5px 0 0 #47cfc4, rgba(0, 0, 0, 0.15) 0px 15px 25px;
         }
-
-
             .page-table tbody tr:hover td:first-child::before {
                 opacity: 1;
             }
-
-    /* Pagination */
-    .pagination-container {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 13px 0px;
-        background: white;
- border-left: 1px solid #80808047;
-    margin-bottom: 1px;
-    border-right: 1px solid #80808047;
-    border-bottom: 1px solid #80808047;
-    }
-
-  
-
-    .pagination-info {
-        font-size: 14px;
-        color: #666;
-    }
-
-    .pagination-controls {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .page-size-selector {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin-right: 16px;
-    }
-
-        .page-size-selector label {
-            font-size: 14px;
-            color: #666;
-        }
-
-        .page-size-selector select {
-            padding: 4px 8px;
-            border: 1px solid #d9d9e3;
-            border-radius: 4px;
-            font-size: 14px;
-            cursor: pointer;
-        }
-
-    .pagination-buttons {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-    }
-
-    .page-btn {
-        min-width: 40px;
-        height: 40px;
-        padding: 0 8px;
-        border: 1px solid #d9d9e373;
-        border-radius: 50%;
-        font-size: 18px;
-        cursor: pointer;
-        transition: all 0.2s;
-        color: #333;
-    }
-
-        .page-btn:hover:not(:disabled) {
-            background: #f5f5f5;
-            border-color: var(--bs-primary);
-            color: var(--bs-primary) !important;
-        }
-
-        .page-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .page-btn.active {
-            color: white;
-            border-color: var(--bs-primary);
-            font-weight: 700;
-            background: var(--bs-primary);
-        }
-
-
-        /* Issue #4: Text Truncation */
         .page-table td.page-name {
             max-width: 250px;
             overflow: hidden;
@@ -295,20 +95,6 @@
             text-overflow: ellipsis;
             white-space: nowrap;
         }
-    
-    /* Issue #6: Offcanvas full text display */
-    .offcanvas-title {
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-        white-space: normal;
-        max-width: 100%;
-    }
-    
-    .offcanvas-body p, .offcanvas-body div {
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-        white-space: pre-wrap;
-    }
 </style>
 
 <div class="flex-grow-1">
@@ -349,10 +135,6 @@
                     {
                         <i class="ti tabler-search search-icon"></i>
                     }
-                    @* else
-                    {
-                        <i class="ti tabler-x clear-icon" @onclick="ClearSearch"></i>
-                    } *@
                 </div>
                 @if (_canAdd)
                 {
@@ -442,13 +224,8 @@
             </table>
 
                 <div class="pagination-container">
-                    @* <div class="pagination-info">
-          Showing @GetStartRecord() to @GetEndRecord() of @_totalItems entries
-      </div> *@
                     <div class="pagination-controls">
-
                         @* mobile  screen *@
-
                         @{
                             var range = GetMobilePageRange();
                         }
@@ -476,9 +253,6 @@
                             </button>
 
                         </div>
-
-
-
                         <div class="pagination-buttons web-Only">
                             <button class="page-btn" @onclick="() => GoToPage(1)" disabled="@(_currentPage == 1)">
                                 <i class="bi bi-chevron-bar-left"></i>
@@ -508,7 +282,6 @@
         }
         else
         {
-            @* Issue #3: Show NoResultsFound component when no pages match *@
             <NoResultsFound Message="No pages found" 
                            IconClass="ti tabler-file-off"
                            SearchTerm="@_searchString" />
@@ -542,16 +315,9 @@ Roles Details
             </div>
         </div>
     </div>
-
-
 }
 
-
-
-
-
 @code {
-
     private List<PageDto> _pages = new();
     private List<PageDto> _filteredPages = new();
     private List<PageDto> _pagedPages = new();
@@ -561,22 +327,18 @@ Roles Details
     private string _errorMessage = string.Empty, _searchString = string.Empty, _sortColumn = "", _sortDirection = "";
     private int _currentPage = 1, _pageSize = 10, _totalItems = 0, _totalPages = 1;
     private bool _canView, _canAdd, _canEdit, _canDelete;
-
-
-     bool showPopup = false;
- PageDto? selectedFeature;
+    bool showPopup = false;
+    PageDto? selectedFeature;
 
  void closeSelectFeatures()
  {
      showPopup=false;
  }
-
     void ShowDetails(PageDto feature)
  {
      selectedFeature = feature;
      showPopup = true;
  }
-
  void ClosePopup()
  {
      showPopup = false;
@@ -589,26 +351,18 @@ Roles Details
 
         }
     }
-
     // pagination
-
     private (int start, int end) GetMobilePageRange()
     {
-        //int windowSize = 2; // always show 2 page numbers
-
         int start = _currentPage;
         int end = _currentPage + 1;
-
         if (end > _totalPages)
         {
             end = _totalPages;
             start = Math.Max(1, end - 1);
         }
-
         return (start, end);
     }
-
-
     protected override async Task OnInitializedAsync()
     {
         try
